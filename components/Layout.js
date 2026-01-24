@@ -268,7 +268,7 @@ export default function Layout({ children }) {
                   <li><Link href="/events" className="hover:text-white transition-colors">Browse Campaigns</Link></li>
                   <li><Link href="/create" className="hover:text-white transition-colors">Start a Campaign</Link></li>
                   <li><Link href="/help-center" className="hover:text-white transition-colors">Help Center</Link></li>
-                  <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
+                  <li><Link href="/about-us" className="hover:text-white transition-colors">About Us</Link></li>
                 </ul>
               </div>
               <div>
@@ -276,8 +276,8 @@ export default function Layout({ children }) {
                 <ul className="space-y-2 text-orange-200 text-sm">
                   <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
                   <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
-                  <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                  <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+                  <li><Link href="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link></li>
+                  <li><Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
                 </ul>
               </div>
               <div>
