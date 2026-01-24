@@ -207,7 +207,7 @@ export default function Home() {
                     className="flex flex-col sm:flex-row gap-4 justify-center items-center"
                 >
                   <Link
-                      href="/auth/register"
+                      href="/events"
                       className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white px-8 py-4 rounded-2xl text-lg font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <span>Start your fundraiser</span>
@@ -442,7 +442,7 @@ export default function Home() {
             </div>
 
             <Link
-                href="/trust-safety"
+                href="/about-us"
                 className="inline-flex items-center text-white hover:text-orange-100 font-semibold text-lg"
             >
               Learn about Trust & Safety
@@ -516,7 +516,7 @@ export default function Home() {
                 Real people are here to help with your fundraiser, day or night
               </p>
               <Link
-                  href="/support"
+                  href="/help-center"
                   className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium"
               >
                 Meet our support team →
@@ -544,7 +544,7 @@ export default function Home() {
 
               <div className="space-y-6">
                 <Link
-                    href="/auth/register"
+                    href="/events"
                     className="inline-block w-full sm:w-auto bg-white text-orange-700 hover:bg-gray-50 px-10 py-5 rounded-2xl text-lg font-semibold transition-all shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Start your fundraiser — it's free

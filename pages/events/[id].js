@@ -66,7 +66,6 @@ export default function EventDetail() {
       try {
         await navigator.share({
           title: event.title,
-          text: `Support ${event.title} on our platform`,
           url: window.location.href,
         });
       } catch (err) {

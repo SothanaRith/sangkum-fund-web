@@ -119,7 +119,7 @@ export default function AboutUs() {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Link
-                                href="/create"
+                                href="/charities"
                                 className="px-8 py-4 bg-white text-orange-700 rounded-xl font-bold text-lg hover:bg-orange-50 transition-all shadow-xl"
                             >
                                 Start a Campaign
@@ -671,7 +671,7 @@ export default function AboutUs() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Link
-                            href="/create"
+                            href="/charities"
                             className="px-8 py-4 bg-white text-orange-700 rounded-xl font-bold text-lg hover:bg-orange-50 transition-all"
                         >
                             Start Your Campaign

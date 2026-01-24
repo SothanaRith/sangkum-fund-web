@@ -223,19 +223,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirm = window.confirm('Are you sure you want to delete your account? This action cannot be undone.');
-    if (!confirm) return;
-
-    try {
-      await userAPI.deleteAccount();
-      router.push('/auth/login');
-      showToast('Account deleted successfully', 'info');
-    } catch (err) {
-      showToast('Failed to delete account', 'error');
-    }
-  };
-
   const showToast = (message, type = 'info') => {
     // You can implement a toast notification system here
     alert(message); // Temporary
@@ -968,23 +955,6 @@ export default function SettingsPage() {
                           </div>
                         </div>
 
-                        {/* Delete Account */}
-                        <div className="p-6 bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl border border-red-200">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-bold text-red-900 text-lg mb-2">Delete Account</h3>
-                              <p className="text-red-700">
-                                Permanently delete your account and all associated data. This action cannot be undone.
-                              </p>
-                            </div>
-                            <button
-                                onClick={() => setShowDeleteModal(true)}
-                                className="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg font-semibold hover:from-red-700 hover:to-pink-700 transition-all shadow-md"
-                            >
-                              Delete Account
-                            </button>
-                          </div>
-                        </div>
                       </div>
                     </motion.div>
                 )}

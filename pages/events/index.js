@@ -517,10 +517,6 @@ export default function Events() {
                                   {event.title}
                                 </h3>
 
-                                <p className="text-gray-600 mb-4 text-sm line-clamp-2">
-                                  {event.description}
-                                </p>
-
                                 {/* Location & Date */}
                                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                                   <div className="flex items-center gap-1">
@@ -554,17 +550,6 @@ export default function Events() {
                                       )}
                                     </div>
                                   </div>
-                                </div>
-
-                                {/* Goal & Button */}
-                                <div className="mt-4 flex items-center justify-between">
-                                  <div>
-                                    <div className="text-xs text-gray-500">Goal</div>
-                                    <div className="font-bold text-gray-900">{formatCurrency(event.goalAmount)}</div>
-                                  </div>
-                                  <button className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg text-sm font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-md">
-                                    Donate Now
-                                  </button>
                                 </div>
                               </div>
                             </div>
