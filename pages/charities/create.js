@@ -16,6 +16,7 @@ export default function CreateCharity() {
     contactEmail: '',
     contactPhone: '',
     website: '',
+    category: '',
   });
 
   const handleChange = (e) => {
@@ -114,6 +115,36 @@ export default function CreateCharity() {
             />
             <p className="text-sm text-gray-500 mt-1">
               {formData.description.length} characters
+            </p>
+          </div>
+
+          {/* Category */}
+          <div className="mb-6">
+            <label className="block text-gray-700 font-semibold mb-2">
+              Organization Category <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-colors"
+            >
+              <option value="">Select a category...</option>
+              <option value="Education">📚 Education</option>
+              <option value="Healthcare">🏥 Healthcare</option>
+              <option value="Environment">🌱 Environment</option>
+              <option value="Animal Welfare">🐾 Animal Welfare</option>
+              <option value="Community Development">🏘️ Community Development</option>
+              <option value="Disaster Relief">🚨 Disaster Relief</option>
+              <option value="Arts & Culture">🎨 Arts & Culture</option>
+              <option value="Sports">⚽ Sports</option>
+              <option value="Technology">💻 Technology</option>
+              <option value="Human Rights">⚖️ Human Rights</option>
+              <option value="Other">📋 Other</option>
+            </select>
+            <p className="text-sm text-gray-500 mt-1">
+              Choose the category that best describes your organization
             </p>
           </div>
 

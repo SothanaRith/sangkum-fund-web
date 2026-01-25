@@ -1,16 +1,42 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import {
+  Bell,
+  Briefcase,
+  Facebook,
+  Globe,
+  HelpCircle,
+  Heart,
+  Instagram,
+  Landmark,
+  LayoutDashboard,
+  Linkedin,
+  Mail,
+  MapPin,
+  Menu,
+  Phone,
+  Settings,
+  SlidersHorizontal,
+  Target,
+  Twitter,
+  X,
+} from 'lucide-react';
+import { authAPI } from '@/lib/api';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function Layout({ children }) {
   const router = useRouter();
+  const { language, changeLanguage, t } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     checkAuth();
 
     const handleScroll = () => {
@@ -22,7 +48,9 @@ export default function Layout({ children }) {
   }, []);
 
   const checkAuth = () => {
-    const token = localStorage.getItem('token');
+    if (typeof window === 'undefined') return;
+    
+    const token = localStorage.getItem('accessToken');
     const userData = localStorage.getItem('user');
     setIsLoggedIn(!!token);
     if (userData) {
@@ -34,12 +62,24 @@ export default function Layout({ children }) {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setIsLoggedIn(false);
-    setUser(null);
-    router.push('/auth/login');
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        await authAPI.logout(refreshToken);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+      }
+      setIsLoggedIn(false);
+      setUser(null);
+      router.push('/auth/login');
+    }
   };
 
   const isActive = (path) => router.pathname === path || router.pathname.startsWith(path + '/');
@@ -74,7 +114,8 @@ export default function Layout({ children }) {
                               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
                       }`}
                   >
-                    🎯 Events
+                    <Target className="inline-block w-4 h-4 mr-2" />
+                    {t('nav.events')}
                   </Link>
                   <Link
                       href="/charities"
@@ -84,7 +125,8 @@ export default function Layout({ children }) {
                               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
                       }`}
                   >
-                    🏛️ Charities
+                    <Landmark className="inline-block w-4 h-4 mr-2" />
+                    {t('nav.charities')}
                   </Link>
                   <Link
                       href="/help-center"
@@ -94,7 +136,8 @@ export default function Layout({ children }) {
                               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
                       }`}
                   >
-                    ❓ Help
+                    <HelpCircle className="inline-block w-4 h-4 mr-2" />
+                    {t('nav.helpCenter')}
                   </Link>
                   {isLoggedIn && (
                       <>
@@ -106,7 +149,8 @@ export default function Layout({ children }) {
                                     : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
                             }`}
                         >
-                          📊 Dashboard
+                          <LayoutDashboard className="inline-block w-4 h-4 mr-2" />
+                          {t('nav.dashboard')}
                         </Link>
                         {isAdmin && (
                             <Link
@@ -117,7 +161,8 @@ export default function Layout({ children }) {
                                         : 'text-gray-700 hover:bg-amber-50 hover:text-amber-600'
                                 }`}
                             >
-                              🎛️ Admin
+                              <SlidersHorizontal className="inline-block w-4 h-4 mr-2" />
+                              Admin
                             </Link>
                         )}
                       </>
@@ -125,13 +170,23 @@ export default function Layout({ children }) {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
+                {/* Language Switcher */}
+                <button
+                    onClick={() => changeLanguage(language === 'en' ? 'km' : 'en')}
+                    className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-sm font-medium transition-all duration-200"
+                    title={language === 'en' ? 'Switch to Khmer' : 'Switch to English'}
+                >
+                  <Globe className="w-4 h-4" />
+                  <span className="hidden sm:inline">{language === 'en' ? 'ខ្មែរ' : 'EN'}</span>
+                </button>
+
                 {isLoggedIn ? (
                     <>
                       <Link
                           href="/notifications"
                           className="relative p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
-                        🔔
+                        <Bell className="w-5 h-5" />
                         {notificationCount > 0 && (
                             <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
                         {notificationCount}
@@ -142,19 +197,19 @@ export default function Layout({ children }) {
                           href="/settings"
                           className="p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
-                        ⚙️
+                        <Settings className="w-5 h-5" />
                       </Link>
                       <Link
                           href="/business-card"
                           className="hidden lg:inline-block p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
-                        💼
+                        <Briefcase className="w-5 h-5" />
                       </Link>
                       <button
                           onClick={handleLogout}
                           className="text-gray-700 hover:bg-orange-50 hover:text-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                       >
-                        Logout
+                        {t('nav.logout')}
                       </button>
                     </>
                 ) : (
@@ -163,13 +218,13 @@ export default function Layout({ children }) {
                           href="/auth/login"
                           className="text-gray-700 hover:bg-orange-50 hover:text-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                       >
-                        Login
+                        {t('nav.login')}
                       </Link>
                       <Link
                           href="/auth/register"
                           className="bg-gradient-to-r from-orange-600 to-amber-600 text-white hover:from-orange-700 hover:to-amber-700 px-5 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200 btn-ripple"
                       >
-                        Sign Up
+                        {t('nav.register')}
                       </Link>
                     </>
                 )}
@@ -179,7 +234,7 @@ export default function Layout({ children }) {
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     className="lg:hidden p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg"
                 >
-                  {mobileMenuOpen ? '✕' : '☰'}
+                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -191,19 +246,22 @@ export default function Layout({ children }) {
                       href="/events"
                       className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                   >
-                    🎯 Events
+                    <Target className="inline-block w-4 h-4 mr-2" />
+                    {t('nav.events')}
                   </Link>
                   <Link
                       href="/charities"
                       className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                   >
-                    🏛️ Charities
+                    <Landmark className="inline-block w-4 h-4 mr-2" />
+                    {t('nav.charities')}
                   </Link>
                   <Link
                       href="/help-center"
                       className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                   >
-                    ❓ Help Center
+                    <HelpCircle className="inline-block w-4 h-4 mr-2" />
+                    {t('nav.helpCenter')}
                   </Link>
                   {isLoggedIn && (
                       <>
@@ -211,20 +269,23 @@ export default function Layout({ children }) {
                             href="/dashboard"
                             className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                         >
-                          📊 Dashboard
+                          <LayoutDashboard className="inline-block w-4 h-4 mr-2" />
+                          {t('nav.dashboard')}
                         </Link>
                         <Link
                             href="/business-card"
                             className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                         >
-                          💼 Business Card
+                          <Briefcase className="inline-block w-4 h-4 mr-2" />
+                          {t('nav.businessCard')}
                         </Link>
                         {isAdmin && (
                             <Link
                                 href="/admin"
                                 className="block px-4 py-2 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50"
                             >
-                              🎛️ Admin
+                              <SlidersHorizontal className="inline-block w-4 h-4 mr-2" />
+                              Admin
                             </Link>
                         )}
                       </>
@@ -249,16 +310,16 @@ export default function Layout({ children }) {
                 <p className="text-orange-200 text-sm">Building a more compassionate Cambodia together.</p>
                 <div className="flex gap-3 mt-4">
                   <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    f
+                    <Facebook className="w-4 h-4" />
                   </a>
                   <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    𝕏
+                    <Twitter className="w-4 h-4" />
                   </a>
                   <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    in
+                    <Linkedin className="w-4 h-4" />
                   </a>
                   <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    📷
+                    <Instagram className="w-4 h-4" />
                   </a>
                 </div>
               </div>
@@ -284,18 +345,18 @@ export default function Layout({ children }) {
                 <h4 className="font-semibold mb-4 text-orange-100">Contact</h4>
                 <div className="space-y-3 text-orange-200 text-sm">
                   <div className="flex items-start gap-2">
-                    <span>📍</span>
+                    <MapPin className="w-4 h-4 mt-0.5" />
                     <div>
                       <p>Phnom Penh, Cambodia</p>
                       <p className="text-xs text-orange-300">Building 123, Street 456</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span>📧</span>
+                    <Mail className="w-4 h-4 mt-0.5" />
                     <p>support@sangkumfund.org</p>
                   </div>
                   <div className="flex items-start gap-2">
-                    <span>📞</span>
+                    <Phone className="w-4 h-4 mt-0.5" />
                     <p>+855 23 456 789</p>
                   </div>
                 </div>
@@ -305,8 +366,8 @@ export default function Layout({ children }) {
               <p className="text-sm text-orange-300">
                 © {new Date().getFullYear()} SangKumFund. All rights reserved.
               </p>
-              <p className="text-xs text-orange-400 mt-2">
-                Made with ❤️ for Cambodia
+              <p className="text-xs text-orange-400 mt-2 flex items-center justify-center gap-2">
+                Made with <Heart className="w-3 h-3" /> for Cambodia
               </p>
             </div>
           </div>

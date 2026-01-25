@@ -96,7 +96,12 @@ export default function CharityDetailPage() {
                       <span className="ml-3 text-green-500 text-3xl" title="Verified">✓</span>
                     )}
                   </h1>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {charity.category && (
+                      <span className="inline-block px-4 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-full">
+                        🏷️ {charity.category}
+                      </span>
+                    )}
                     {charity.status === 'VERIFIED' ? (
                       <span className="inline-block px-4 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
                         ✓ Verified Organization
@@ -118,6 +123,16 @@ export default function CharityDetailPage() {
 
               {/* Quick Actions */}
               <div className="flex gap-3 mt-4">
+                {/* Check if current user is the owner */}
+                {typeof window !== 'undefined' && localStorage.getItem('user') && 
+                 JSON.parse(localStorage.getItem('user')).id === charity.ownerId && (
+                  <Link
+                    href={`/charities/edit/${charity.id}`}
+                    className="inline-flex items-center px-6 py-2 bg-white border-2 border-primary-600 text-primary-600 rounded-xl font-semibold hover:bg-primary-50 transition-colors"
+                  >
+                    ✏️ Edit Charity
+                  </Link>
+                )}
                 {charity.website && (
                   <a
                     href={charity.website}

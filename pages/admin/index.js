@@ -24,7 +24,7 @@ export default function AdminDashboard() {
   }, []);
 
   const checkAuth = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/auth/login');
       return;

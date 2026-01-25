@@ -1,30 +1,75 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { eventsAPI } from '@/lib/api';
-import { useLanguage } from '@/lib/LanguageContext';
 import MapPicker from '@/components/MapPicker';
 
-export default function CreateEvent() {
+export default function EditEvent() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { id } = router.query;
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    category: '',
     targetAmount: '',
     startDate: '',
     endDate: '',
-    imageUrl: '',
     location: '',
     latitude: '',
     longitude: '',
-    category: '',
+    imageUrl: '',
+    visibility: 'PUBLIC',
   });
+
+  useEffect(() => {
+    if (id) {
+      fetchEvent();
+    }
+  }, [id]);
+
+  const fetchEvent = async () => {
+    try {
+      setFetchLoading(true);
+      const event = await eventsAPI.getById(id);
+      setFormData({
+        title: event.title || '',
+        description: event.description || '',
+        category: event.category || '',
+        targetAmount: event.goalAmount || '',
+        startDate: event.startDate || '',
+        endDate: event.endDate || '',
+        location: event.location || '',
+        latitude: event.latitude || '',
+        longitude: event.longitude || '',
+        imageUrl: event.imageUrl || '',
+        visibility: event.visibility || 'PUBLIC',
+      });
+      // Reset any pending uploads when loading a new event
+      setSelectedImages([]);
+      setImagePreviews([]);
+      
+      // Fetch existing images
+      try {
+        const images = await eventsAPI.getImages(id);
+        setExistingImages(images || []);
+      } catch (imgErr) {
+        console.error('Failed to load existing images:', imgErr);
+        setExistingImages([]);
+      }
+    } catch (err) {
+      setError('Failed to load event details');
+      console.error('Error fetching event:', err);
+    } finally {
+      setFetchLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,19 +83,17 @@ export default function CreateEvent() {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // Limit to 10 images
     if (selectedImages.length + files.length > 10) {
       alert('You can upload a maximum of 10 images');
       return;
     }
 
-    // Validate file types and sizes
-    const validFiles = files.filter(file => {
+    const validFiles = files.filter((file) => {
       if (!file.type.startsWith('image/')) {
         alert(`${file.name} is not an image file`);
         return false;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         alert(`${file.name} is too large. Maximum size is 5MB`);
         return false;
       }
@@ -59,11 +102,10 @@ export default function CreateEvent() {
 
     setSelectedImages([...selectedImages, ...validFiles]);
 
-    // Create previews
-    validFiles.forEach(file => {
+    validFiles.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result]);
+        setImagePreviews((prev) => [...prev, reader.result]);
       };
       reader.readAsDataURL(file);
     });
@@ -72,6 +114,18 @@ export default function CreateEvent() {
   const removeImage = (index) => {
     setSelectedImages(selectedImages.filter((_, i) => i !== index));
     setImagePreviews(imagePreviews.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = async (imageId) => {
+    if (!confirm('Are you sure you want to delete this image?')) return;
+    
+    try {
+      await eventsAPI.deleteImage(id, imageId);
+      setExistingImages(existingImages.filter(img => img.id !== imageId));
+    } catch (err) {
+      console.error('Failed to delete image:', err);
+      alert('Failed to delete image. Please try again.');
+    }
   };
 
   const handleMapSelect = (lat, lng) => {
@@ -87,56 +141,54 @@ export default function CreateEvent() {
     setError('');
     setLoading(true);
 
-    // Check if user is logged in
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      router.push('/auth/login');
-      return;
-    }
-
     try {
       const eventData = {
         ...formData,
         targetAmount: parseFloat(formData.targetAmount),
       };
 
-      const createdEvent = await eventsAPI.create(eventData);
-      
-      // Upload images if any selected
+      await eventsAPI.update(id, eventData);
+
       if (selectedImages.length > 0) {
         try {
-          await eventsAPI.uploadImages(createdEvent.id, selectedImages);
+          await eventsAPI.uploadImages(id, selectedImages);
         } catch (imgErr) {
-          console.error('Failed to upload images:', imgErr);
-          // Event created but images failed, still show success
+          console.error('Image upload failed:', imgErr);
         }
       }
-      
-      alert('🎉 Event created successfully! It has been submitted for admin approval.');
-      router.push('/dashboard');
+      alert('✅ Event updated successfully! It may need admin re-approval if it was previously rejected.');
+      router.push(`/events/${id}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create event. Please try again.');
+      setError(err.response?.data?.message || 'Failed to update event. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (fetchLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8 animate-fadeIn">
-          <Link href="/events" className="inline-flex items-center text-primary-600 hover:text-primary-700 font-semibold mb-4 group">
+          <Link href={`/events/${id}`} className="inline-flex items-center text-primary-600 hover:text-primary-700 font-semibold mb-4 group">
             <span className="mr-2 transform group-hover:-translate-x-1 transition-transform">←</span>
-            {t('common.back')}
+            Back to Event
           </Link>
           <h1 className="text-5xl font-bold mb-3">
             <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-              {t('createEvent.title')}
+              Edit Your Event
             </span>
           </h1>
           <p className="text-xl text-gray-600">
-            {t('createEvent.subtitle')}
+            Update your fundraising campaign details 📝
           </p>
         </div>
 
@@ -153,7 +205,7 @@ export default function CreateEvent() {
             {/* Event Title */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2">
-                📝 {t('createEvent.eventTitle')} *
+                📝 Event Title *
               </label>
               <input
                 type="text"
@@ -162,32 +214,30 @@ export default function CreateEvent() {
                 value={formData.title}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
-                placeholder={t('createEvent.eventTitlePlaceholder')}
+                placeholder="e.g., Help Build Clean Water Wells in Rural Areas"
               />
-              <p className="mt-2 text-sm text-gray-500">Make it compelling and descriptive</p>
             </div>
 
             {/* Description */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2">
-                📖 {t('createEvent.description')} *
+                📄 Description *
               </label>
               <textarea
                 name="description"
                 required
-                rows="6"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
-                placeholder={t('createEvent.descriptionPlaceholder')}
+                rows="6"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                placeholder="Describe your event and how the funds will be used..."
               />
-              <p className="mt-2 text-sm text-gray-500">Share the story behind your cause</p>
             </div>
 
             {/* Category */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2">
-                🏷️ {t('createEvent.category')} *
+                🏷️ Category *
               </label>
               <select
                 name="category"
@@ -196,18 +246,18 @@ export default function CreateEvent() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
               >
-                <option value="">{t('createEvent.selectCategory')}</option>
-                <option value="Education">📚 {t('categories.Education')}</option>
-                <option value="Healthcare">🏥 {t('categories.Healthcare')}</option>
-                <option value="Environment">🌱 {t('categories.Environment')}</option>
-                <option value="Animal Welfare">🐾 {t('categories.Animal Welfare')}</option>
-                <option value="Community Development">🏘️ {t('categories.Community Development')}</option>
-                <option value="Disaster Relief">🚨 {t('categories.Disaster Relief')}</option>
-                <option value="Arts & Culture">🎨 {t('categories.Arts & Culture')}</option>
-                <option value="Sports">⚽ {t('categories.Sports')}</option>
-                <option value="Technology">💻 {t('categories.Technology')}</option>
-                <option value="Human Rights">⚖️ {t('categories.Human Rights')}</option>
-                <option value="Other">📋 {t('categories.Other')}</option>
+                <option value="">Select a category</option>
+                <option value="Education">📚 Education</option>
+                <option value="Healthcare">🏥 Healthcare</option>
+                <option value="Environment">🌱 Environment</option>
+                <option value="Animal Welfare">🐾 Animal Welfare</option>
+                <option value="Community Development">🏘️ Community Development</option>
+                <option value="Disaster Relief">🚨 Disaster Relief</option>
+                <option value="Arts & Culture">🎨 Arts & Culture</option>
+                <option value="Sports">⚽ Sports</option>
+                <option value="Technology">💻 Technology</option>
+                <option value="Human Rights">⚖️ Human Rights</option>
+                <option value="Other">📋 Other</option>
               </select>
               <p className="mt-2 text-sm text-gray-500">Choose the category that best fits your event</p>
             </div>
@@ -215,30 +265,26 @@ export default function CreateEvent() {
             {/* Target Amount */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2">
-                💰 {t('createEvent.targetAmount')} *
+                💰 Target Amount (USD) *
               </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl text-gray-400">$</span>
-                <input
-                  type="number"
-                  name="targetAmount"
-                  required
-                  min="1"
-                  step="0.01"
-                  value={formData.targetAmount}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
-                  placeholder="10000.00"
-                />
-              </div>
-              <p className="mt-2 text-sm text-gray-500">Set a realistic target amount</p>
+              <input
+                type="number"
+                name="targetAmount"
+                required
+                min="1"
+                step="0.01"
+                value={formData.targetAmount}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
+                placeholder="10000"
+              />
             </div>
 
-            {/* Campaign Duration */}
+            {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2">
-                  🚀 {t('createEvent.startDate')} *
+                  📅 Start Date *
                 </label>
                 <input
                   type="date"
@@ -246,13 +292,12 @@ export default function CreateEvent() {
                   required
                   value={formData.startDate}
                   onChange={handleChange}
-                  min={new Date().toISOString().split('T')[0]}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-900 mb-2">
-                  🏁 {t('createEvent.endDate')} *
+                  📅 End Date *
                 </label>
                 <input
                   type="date"
@@ -260,7 +305,6 @@ export default function CreateEvent() {
                   required
                   value={formData.endDate}
                   onChange={handleChange}
-                  min={formData.startDate || new Date().toISOString().split('T')[0]}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                 />
               </div>
@@ -269,7 +313,7 @@ export default function CreateEvent() {
             {/* Location */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2">
-                📍 {t('createEvent.location')}
+                📍 Location
               </label>
               <input
                 type="text"
@@ -277,7 +321,7 @@ export default function CreateEvent() {
                 value={formData.location}
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
-                placeholder={t('createEvent.locationPlaceholder')}
+                placeholder="e.g., Phnom Penh, Cambodia"
               />
               <p className="mt-2 text-sm text-gray-500">Where will this event take place?</p>
             </div>
@@ -286,7 +330,7 @@ export default function CreateEvent() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-sm font-bold text-gray-900">
-                  🌐 {t('createEvent.latitude')} / {t('createEvent.longitude')}
+                  🌐 Event Coordinates
                 </label>
                 <button
                   type="button"
@@ -303,7 +347,7 @@ export default function CreateEvent() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">
-                    {t('createEvent.latitude')}
+                    Latitude
                   </label>
                   <input
                     type="number"
@@ -317,7 +361,7 @@ export default function CreateEvent() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-2">
-                    {t('createEvent.longitude')}
+                    Longitude
                   </label>
                   <input
                     type="number"
@@ -332,19 +376,52 @@ export default function CreateEvent() {
               </div>
               {(formData.latitude || formData.longitude) && (
                 <p className="text-xs text-gray-500 mt-2">
-                  💡 Tip: You can get coordinates from Google Maps by right-clicking on a location
+                  💡 Tip: You can also get coordinates from Google Maps by right-clicking on a location
                 </p>
               )}
             </div>
 
-            {/* Image URL */}
+            {/* Images */}
             <div>
               <label className="block text-sm font-bold text-gray-900 mb-2">
-                🖼️ {t('createEvent.images')}
+                🖼️ Event Images
               </label>
-              
+
               <div className="space-y-4">
-                {/* File Upload */}
+                {/* Existing Images from Database */}
+                {existingImages.length > 0 && (
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-3">Current Images:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {existingImages.map((image) => (
+                        <div key={image.id} className="relative group">
+                          <img
+                            src={image.imageUrl}
+                            alt="Event image"
+                            className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(image.id)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Delete image"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                          {image.isPrimary && (
+                            <div className="absolute bottom-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                              Primary
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload New Images */}
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary-500 transition-all">
                   <input
                     type="file"
@@ -357,44 +434,44 @@ export default function CreateEvent() {
                   <label htmlFor="image-upload" className="cursor-pointer">
                     <div className="text-4xl mb-2">📸</div>
                     <p className="text-sm font-semibold text-gray-700 mb-1">
-                      {t('createEvent.uploadImages')}
+                      {existingImages.length > 0 ? 'Add more photos' : 'Upload event photos'}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {t('createEvent.maxImages')}
-                    </p>
+                    <p className="text-xs text-gray-500">Max 10 images, 5MB each</p>
                   </label>
                 </div>
 
-                {/* Image Previews */}
+                {/* New Image Previews */}
                 {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                        {index === 0 && (
-                          <div className="absolute bottom-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
-                            Primary
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700 mb-3">New Images to Upload:</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                          {index === 0 && existingImages.length === 0 && (
+                            <div className="absolute bottom-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                              Primary
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* Or URL Input */}
                 <div>
                   <p className="text-sm text-gray-500 mb-2 text-center">or provide an image URL</p>
                   <input
@@ -409,13 +486,13 @@ export default function CreateEvent() {
               </div>
 
               <p className="mt-2 text-sm text-gray-500">
-                {selectedImages.length > 0 
-                  ? `${selectedImages.length} image(s) selected` 
-                  : 'Add compelling images to attract donors'}
+                {existingImages.length > 0 && `${existingImages.length} existing image(s)`}
+                {existingImages.length > 0 && selectedImages.length > 0 && ' • '}
+                {selectedImages.length > 0 && `${selectedImages.length} new image(s) to upload`}
+                {existingImages.length === 0 && selectedImages.length === 0 && 'Add compelling images to attract donors'}
               </p>
             </div>
 
-            {/* Preview of URL image if provided and no files selected */}
             {formData.imageUrl && selectedImages.length === 0 && (
               <div className="rounded-xl overflow-hidden border-2 border-gray-200">
                 <p className="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2">Image Preview:</p>
@@ -430,33 +507,31 @@ export default function CreateEvent() {
               </div>
             )}
 
-            {/* Info Box */}
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 mb-4">
-              <div className="flex items-start">
-                <div className="text-3xl mr-4">⏳</div>
-                <div>
-                  <h4 className="font-bold text-yellow-900 mb-2">Admin Verification Required</h4>
-                  <p className="text-sm text-yellow-800">
-                    Your event will be submitted for admin approval before it becomes visible to the public. 
-                    This helps ensure quality and compliance with our community guidelines.
-                  </p>
-                </div>
-              </div>
+            {/* Visibility */}
+            <div>
+              <label className="block text-sm font-bold text-gray-900 mb-2">
+                👁️ Visibility
+              </label>
+              <select
+                name="visibility"
+                value={formData.visibility}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+              >
+                <option value="PUBLIC">Public - Anyone can see</option>
+                <option value="PRIVATE">Private - Invite only</option>
+              </select>
             </div>
 
-            {/* Info Box */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+            {/* Warning Box */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
               <div className="flex items-start">
-                <div className="text-3xl mr-4">💡</div>
+                <div className="text-3xl mr-4">⚠️</div>
                 <div>
-                  <h4 className="font-bold text-blue-900 mb-2">Tips for Success</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>✓ Be specific about how funds will be used</li>
-                    <li>✓ Include a compelling image or video</li>
-                    <li>✓ Set a realistic and achievable goal</li>
-                    <li>✓ Share your campaign on social media</li>
-                    <li>✓ Update donors regularly on progress</li>
-                  </ul>
+                  <h4 className="font-bold text-yellow-900 mb-2">Update Notice</h4>
+                  <p className="text-sm text-yellow-800">
+                    If your event was previously rejected, updating it will resubmit it for admin approval with PENDING status.
+                  </p>
                 </div>
               </div>
             </div>
@@ -468,36 +543,27 @@ export default function CreateEvent() {
                 onClick={() => router.back()}
                 className="flex-1 px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all text-lg"
               >
-                {t('common.cancel')}
+                Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-8 py-4 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl font-bold hover:from-primary-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg btn-ripple"
+                className="flex-1 px-8 py-4 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl font-bold hover:from-primary-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    {t('common.loading')}
+                    Updating...
                   </span>
                 ) : (
-                  `🚀 ${t('common.submit')}`
+                  '💾 Save Changes'
                 )}
               </button>
             </div>
           </form>
         </div>
-
-        {/* Help Section */}
-        <div className="mt-8 text-center text-gray-600 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-          <p className="text-sm">
-            Need help? Check out our{' '}
-            <a href="#" className="text-primary-600 hover:text-primary-700 font-semibold">
-              Campaign Creation Guide
-            </a>
-          </p>
-        </div>
       </div>
+
       {/* Map Picker Modal */}
       <MapPicker
         isOpen={showMapPicker}
@@ -505,6 +571,7 @@ export default function CreateEvent() {
         onSelectLocation={handleMapSelect}
         initialLat={parseFloat(formData.latitude) || null}
         initialLng={parseFloat(formData.longitude) || null}
-      />    </div>
+      />
+    </div>
   );
 }

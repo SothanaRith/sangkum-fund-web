@@ -1,5 +1,32 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { contactAPI } from '../lib/api';
+import {
+    Building2,
+    Coins,
+    Clock,
+    Eye,
+    Globe,
+    Handshake,
+    Info,
+    Lightbulb,
+    List,
+    MapPin,
+    MessageCircle,
+    Phone,
+    PlayCircle,
+    Rocket,
+    Search,
+    Shield,
+    Smartphone,
+    Target,
+    TrendingUp,
+    User,
+    Users,
+    Wrench,
+    X,
+    Zap,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function HelpCenter() {
@@ -26,42 +53,42 @@ export default function HelpCenter() {
         {
             id: 'getting-started',
             title: 'Getting Started',
-            icon: '🚀',
+            icon: Rocket,
             color: 'from-orange-500 to-amber-500',
             count: 12
         },
         {
             id: 'campaigns',
             title: 'Managing Campaigns',
-            icon: '🎯',
+            icon: Target,
             color: 'from-orange-400 to-orange-600',
             count: 18
         },
         {
             id: 'donations',
             title: 'Donations & Payments',
-            icon: '💰',
+            icon: Coins,
             color: 'from-orange-500 to-yellow-500',
             count: 15
         },
         {
             id: 'account',
             title: 'Account Settings',
-            icon: '👤',
+            icon: User,
             color: 'from-amber-500 to-orange-400',
             count: 8
         },
         {
             id: 'trust',
             title: 'Trust & Safety',
-            icon: '🛡️',
+            icon: Shield,
             color: 'from-orange-600 to-red-500',
             count: 10
         },
         {
             id: 'troubleshooting',
             title: 'Troubleshooting',
-            icon: '🔧',
+            icon: Wrench,
             color: 'from-gray-600 to-gray-800',
             count: 7
         },
@@ -244,19 +271,24 @@ export default function HelpCenter() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle form submission
-        alert('Message sent! Our team will respond within 24 hours.');
-        setFormData({ name: '', email: '', category: '', message: '' });
-        setShowContactForm(false);
+        try {
+            await contactAPI.sendMessage(formData.name, formData.email, formData.category, formData.message);
+            alert('Message sent! Our team will respond within 24 hours.');
+            setFormData({ name: '', email: '', category: '', message: '' });
+            setShowContactForm(false);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again later.');
+        }
     };
 
     const quickActions = [
-        { icon: '📞', title: 'Call Us', desc: '+855 23 456 789', action: 'tel:+85523456789' },
-        { icon: '💬', title: 'Live Chat', desc: 'Available 24/7', action: () => setShowContactForm(true) },
-        { icon: '📍', title: 'Visit Office', desc: 'Phnom Penh', action: '/contact' },
-        { icon: '📱', title: 'Telegram Bot', desc: '@sangkumfund_support', action: 'https://t.me/sangkumfund_support' },
+        { icon: Phone, title: 'Call Us', desc: '+855 23 456 789', action: 'tel:+85523456789' },
+        { icon: MessageCircle, title: 'Live Chat', desc: 'Available 24/7', action: () => setShowContactForm(true) },
+        { icon: MapPin, title: 'Visit Office', desc: 'Phnom Penh', action: '/contact' },
+        { icon: Smartphone, title: 'Telegram Bot', desc: '@sangkumfund_support', action: 'https://t.me/sangkumfund_support' },
     ];
 
     return (
@@ -274,7 +306,7 @@ export default function HelpCenter() {
                         animate={{ opacity: 1, y: 0 }}
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
-                            <span className="text-lg">💁‍♀️</span>
+                            <Info className="w-4 h-4" />
                             <span className="text-sm font-medium">How can we help you?</span>
                         </div>
 
@@ -289,19 +321,20 @@ export default function HelpCenter() {
                         {/* Search Bar */}
                         <div className="max-w-2xl mx-auto mb-8">
                             <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="🔍 Search for help articles, FAQs, or guides..."
-                                    className="w-full px-6 py-4 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/20 focus:border-white focus:outline-none text-gray-900 text-lg shadow-xl"
+                                    placeholder="Search for help articles, FAQs, or guides..."
+                                    className="w-full pl-12 pr-6 py-4 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/20 focus:border-white focus:outline-none text-gray-900 text-lg shadow-xl"
                                 />
                                 {searchQuery && (
                                     <button
                                         onClick={() => setSearchQuery('')}
                                         className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                                     >
-                                        ✕
+                                        <X className="w-4 h-4" />
                                     </button>
                                 )}
                             </div>
@@ -326,10 +359,10 @@ export default function HelpCenter() {
                         {/* Quick Stats */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
                             {[
-                                { value: '24/7', label: 'Support Available', icon: '⏰' },
-                                { value: '15 min', label: 'Avg Response Time', icon: '⚡' },
-                                { value: '98%', label: 'Satisfaction Rate', icon: '⭐' },
-                                { value: 'Khmer/English', label: 'Languages', icon: '🌐' },
+                                { value: '24/7', label: 'Support Available', icon: Clock },
+                                { value: '15 min', label: 'Avg Response Time', icon: Zap },
+                                { value: '98%', label: 'Satisfaction Rate', icon: Users },
+                                { value: 'Khmer/English', label: 'Languages', icon: Globe },
                             ].map((stat, index) => (
                                 <motion.div
                                     key={index}
@@ -338,7 +371,9 @@ export default function HelpCenter() {
                                     transition={{ delay: index * 0.1 }}
                                     className="bg-white/10 backdrop-blur-sm rounded-2xl p-4"
                                 >
-                                    <div className="text-2xl mb-2">{stat.icon}</div>
+                                    <div className="text-2xl mb-2 flex justify-center">
+                                        <stat.icon className="w-6 h-6" />
+                                    </div>
                                     <div className="text-xl font-bold mb-1">{stat.value}</div>
                                     <div className="text-xs text-orange-200">{stat.label}</div>
                                 </motion.div>
@@ -373,7 +408,9 @@ export default function HelpCenter() {
                                     }
                                 }}
                             >
-                                <div className="text-3xl mb-4">{action.icon}</div>
+                                <div className="text-3xl mb-4">
+                                    <action.icon className="w-7 h-7 text-orange-600" />
+                                </div>
                                 <h3 className="font-bold text-gray-900 mb-2">{action.title}</h3>
                                 <p className="text-gray-600 text-sm">{action.desc}</p>
                             </motion.div>
@@ -412,7 +449,7 @@ export default function HelpCenter() {
                                 }}
                             >
                                 <div className={`text-3xl mb-3 ${activeCategory === category.id ? 'text-white' : ''}`}>
-                                    {category.icon}
+                                    <category.icon className="w-6 h-6" />
                                 </div>
                                 <div className={`font-semibold mb-2 ${activeCategory === category.id ? 'text-white' : 'text-gray-900'}`}>
                                     {category.title}
@@ -472,7 +509,7 @@ export default function HelpCenter() {
 
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-1 text-gray-500 text-sm">
-                                                <span>👁️</span>
+                                                <Eye className="w-4 h-4" />
                                                 <span>{article.views} views</span>
                                             </div>
                                             <button className="text-orange-600 hover:text-orange-700 font-medium text-sm">
@@ -485,7 +522,9 @@ export default function HelpCenter() {
                         </div>
                     ) : (
                         <div className="text-center py-12 bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl">
-                            <div className="text-5xl mb-4">🔍</div>
+                            <div className="flex items-center justify-center mb-4">
+                                <Search className="w-12 h-12 text-orange-500" />
+                            </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">No articles found</h3>
                             <p className="text-gray-600 mb-6 max-w-md mx-auto">
                                 We couldn't find any articles matching your search. Try different keywords or browse by category.
@@ -549,8 +588,9 @@ export default function HelpCenter() {
                                                                 {faq.a}
                                                                 {index === 0 && sectionIndex === 0 && (
                                                                     <div className="mt-4 p-4 bg-orange-50 rounded-lg">
-                                                                        <p className="text-sm font-medium text-orange-800">
-                                                                            💡 Tip: Use our mobile app for faster support and push notifications!
+                                                                        <p className="text-sm font-medium text-orange-800 flex items-center gap-2">
+                                                                            <Lightbulb className="w-4 h-4" />
+                                                                            <span>Tip: Use our mobile app for faster support and push notifications!</span>
                                                                         </p>
                                                                     </div>
                                                                 )}
@@ -593,28 +633,28 @@ export default function HelpCenter() {
                             {
                                 title: 'Campaign Success Guide',
                                 desc: 'Best practices for running successful campaigns',
-                                icon: '📈',
+                                icon: TrendingUp,
                                 link: '/guides/campaign-success',
                                 format: 'PDF'
                             },
                             {
                                 title: 'Video Tutorials',
                                 desc: 'Step-by-step video guides in Khmer',
-                                icon: '🎬',
+                                icon: PlayCircle,
                                 link: '/guides/videos',
                                 format: 'Video'
                             },
                             {
                                 title: 'Legal Documentation',
                                 desc: 'Terms, privacy policy, and compliance',
-                                icon: '📋',
+                                icon: List,
                                 link: '/legal',
                                 format: 'Legal'
                             },
                             {
                                 title: 'Partner Resources',
                                 desc: 'Tools for NGOs and business partners',
-                                icon: '🤝',
+                                icon: Handshake,
                                 link: '/partners/resources',
                                 format: 'Toolkit'
                             },
@@ -625,7 +665,7 @@ export default function HelpCenter() {
                                 whileHover={{ scale: 1.02 }}
                                 className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all border border-gray-100"
                             >
-                                <div className="text-4xl mb-4">{resource.icon}</div>
+                                <resource.icon className="w-9 h-9 mb-4 text-orange-600" />
                                 <div className="flex items-center justify-between mb-2">
                                     <h3 className="font-bold text-gray-900">{resource.title}</h3>
                                     <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-700 rounded">
@@ -656,7 +696,7 @@ export default function HelpCenter() {
                                         onClick={() => setShowContactForm(false)}
                                         className="text-gray-400 hover:text-gray-600"
                                     >
-                                        ✕
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
 
@@ -717,7 +757,7 @@ export default function HelpCenter() {
 
                                     <div className="p-4 bg-orange-50 rounded-xl">
                                         <div className="flex items-start gap-3">
-                                            <span className="text-xl">💡</span>
+                                            <Lightbulb className="w-5 h-5 text-orange-600" />
                                             <div>
                                                 <p className="text-orange-800 font-medium mb-1">For faster support:</p>
                                                 <ul className="text-sm text-orange-700 space-y-1">
@@ -767,19 +807,19 @@ export default function HelpCenter() {
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
                         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
-                            <div className="text-3xl mb-4">📞</div>
+                            <Phone className="w-8 h-8 text-white mb-4" />
                             <h3 className="font-bold text-lg mb-2">Call Us</h3>
                             <p className="text-orange-200">+855 23 456 789</p>
                             <p className="text-sm text-orange-300 mt-2">24/7 emergency line available</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
-                            <div className="text-3xl mb-4">💬</div>
+                            <MessageCircle className="w-8 h-8 text-white mb-4" />
                             <h3 className="font-bold text-lg mb-2">Live Chat</h3>
                             <p className="text-orange-200">Chat Now</p>
                             <p className="text-sm text-orange-300 mt-2">Average wait: 2 minutes</p>
                         </div>
                         <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
-                            <div className="text-3xl mb-4">🏢</div>
+                            <Building2 className="w-8 h-8 text-white mb-4" />
                             <h3 className="font-bold text-lg mb-2">Visit Office</h3>
                             <p className="text-orange-200">Phnom Penh</p>
                             <p className="text-sm text-orange-300 mt-2">Mon-Fri, 8AM-6PM</p>

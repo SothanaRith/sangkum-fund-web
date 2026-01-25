@@ -1,18 +1,37 @@
 import { useEffect, useState } from 'react';
+import {
+  BadgeCheck,
+  Bell,
+  Check,
+  CheckCircle,
+  Clock,
+  Coins,
+  Inbox,
+  Megaphone,
+  RefreshCw,
+  Rocket,
+  Settings,
+  Sparkles,
+  Target,
+  Trash2,
+  Trophy,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { notificationsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
 const notificationIcons = {
-  DONATION: '💰',
-  EVENT: '🎯',
-  ANNOUNCEMENT: '📢',
-  MILESTONE: '🏆',
-  VERIFICATION: '✅',
-  SYSTEM: '⚙️',
-  CAMPAIGN: '🚀',
-  COMMUNITY: '🤝',
-  SUCCESS: '🎉',
-  REMINDER: '⏰',
+  DONATION: Coins,
+  EVENT: Target,
+  ANNOUNCEMENT: Megaphone,
+  MILESTONE: Trophy,
+  VERIFICATION: BadgeCheck,
+  SYSTEM: Settings,
+  CAMPAIGN: Rocket,
+  COMMUNITY: Users,
+  SUCCESS: Sparkles,
+  REMINDER: Clock,
 };
 
 export default function NotificationsPage() {
@@ -80,7 +99,7 @@ export default function NotificationsPage() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50 to-white">
           <div className="text-center">
             <div className="relative">
-              <div className="text-6xl mb-4 animate-pulse">🔔</div>
+              <Bell className="w-14 h-14 mb-4 animate-pulse text-orange-600 mx-auto" />
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-orange-600 to-amber-600 rounded-full animate-ping opacity-75"></div>
             </div>
             <p className="text-gray-600">Loading notifications...</p>
@@ -97,7 +116,7 @@ export default function NotificationsPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="relative">
-                  <div className="text-3xl">🔔</div>
+                  <Bell className="w-8 h-8 text-orange-600" />
                   {unreadCount > 0 && (
                       <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform bg-gradient-to-r from-orange-600 to-amber-600 rounded-full min-w-[20px] min-h-[20px]">
                     {unreadCount}
@@ -115,7 +134,10 @@ export default function NotificationsPage() {
                       {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
                 </span>
                 ) : (
-                    <span className="text-green-600">✓ All caught up!</span>
+                    <span className="text-green-600 inline-flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      All caught up!
+                    </span>
                 )}
               </p>
             </div>
@@ -124,7 +146,10 @@ export default function NotificationsPage() {
                     onClick={handleMarkAllAsRead}
                     className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-semibold hover:from-orange-700 hover:to-amber-700 transition-all shadow-md hover:shadow-lg"
                 >
-                  ✓ Mark All Read
+                  <span className="inline-flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    Mark All Read
+                  </span>
                 </button>
             )}
           </div>
@@ -168,7 +193,7 @@ export default function NotificationsPage() {
               <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-200 animate-fadeIn">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl">⚡</span>
+                    <Zap className="w-5 h-5 text-orange-600" />
                     <div>
                       <p className="font-medium text-gray-900">Quick actions</p>
                       <p className="text-sm text-gray-600">Manage your notifications efficiently</p>
@@ -196,8 +221,12 @@ export default function NotificationsPage() {
           {filteredNotifications.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-2xl shadow-lg animate-fadeIn border border-gray-100" style={{ animationDelay: '0.2s' }}>
                 <div className="relative inline-block mb-6">
-                  <div className="text-8xl">
-                    {filter === 'unread' ? '🎉' : '📭'}
+                  <div className="flex items-center justify-center">
+                    {filter === 'unread' ? (
+                      <CheckCircle className="w-16 h-16 text-orange-500" />
+                    ) : (
+                      <Inbox className="w-16 h-16 text-gray-400" />
+                    )}
                   </div>
                   <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm px-3 py-1 rounded-full">
                     {filter === 'unread' ? 'All done!' : 'Empty'}
@@ -222,7 +251,10 @@ export default function NotificationsPage() {
                       onClick={loadNotifications}
                       className="px-6 py-3 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all border border-gray-200"
                   >
-                    ↻ Refresh
+                    <span className="inline-flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4" />
+                      Refresh
+                    </span>
                   </button>
                 </div>
               </div>
@@ -249,7 +281,10 @@ export default function NotificationsPage() {
                                   : 'bg-gray-100'
                           }`}>
                             <div className={`${!notification.isRead ? 'text-orange-600' : 'text-gray-500'}`}>
-                              {notificationIcons[notification.type] || '🔔'}
+                              {(() => {
+                                const Icon = notificationIcons[notification.type] || Bell;
+                                return <Icon className="w-6 h-6" />;
+                              })()}
                             </div>
                           </div>
                         </div>
@@ -276,7 +311,7 @@ export default function NotificationsPage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                         <span className="text-sm text-gray-500 flex items-center gap-1">
-                          <span className="hidden sm:inline">⏰</span>
+                          <Clock className="w-4 h-4 hidden sm:inline" />
                           {formatDate(notification.createdAt)}
                         </span>
                               {notification.category && (
@@ -292,14 +327,20 @@ export default function NotificationsPage() {
                                       onClick={() => handleMarkAsRead(notification.id)}
                                       className="px-4 py-1.5 bg-gradient-to-r from-orange-50 to-amber-50 text-orange-700 rounded-lg text-sm font-semibold hover:from-orange-100 hover:to-amber-100 transition-colors border border-orange-200"
                                   >
-                                    ✓ Mark Read
+                                    <span className="inline-flex items-center gap-2">
+                                      <Check className="w-4 h-4" />
+                                      Mark Read
+                                    </span>
                                   </button>
                               )}
                               <button
                                   onClick={() => handleDelete(notification.id)}
                                   className="px-4 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors border border-red-200"
                               >
-                                🗑️ Delete
+                                <span className="inline-flex items-center gap-2">
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete
+                                </span>
                               </button>
                             </div>
                           </div>

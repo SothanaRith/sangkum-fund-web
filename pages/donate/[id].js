@@ -58,7 +58,7 @@ export default function Donate() {
 
     try {
       // Check if user is logged in
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('accessToken');
       if (!token) {
         router.push('/auth/login');
         return;

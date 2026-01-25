@@ -17,7 +17,7 @@ export default function AdminEvents() {
   }, []);
 
   const checkAuth = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/auth/login');
     }

@@ -1,9 +1,68 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
+import { contactAPI } from '../lib/api';
+import {
+    BadgeCheck,
+    Briefcase,
+    Calendar,
+    Clock,
+    Coins,
+    Facebook,
+    Flag,
+    GraduationCap,
+    Handshake,
+    Heart,
+    HeartPulse,
+    Home,
+    Instagram,
+    Languages,
+    Leaf,
+    Linkedin,
+    Lock,
+    Mail,
+    MapPin,
+    Phone,
+    Sparkles,
+    Star,
+    Target,
+    Twitter,
+    Users,
+    Zap,
+} from 'lucide-react';
 
 export default function AboutUs() {
     const [activeSection, setActiveSection] = useState('story');
+    const [contactFormData, setContactFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        message: '',
+    });
+    const [contactFormSubmitting, setContactFormSubmitting] = useState(false);
+
+    const handleContactSubmit = async (e) => {
+        e.preventDefault();
+        setContactFormSubmitting(true);
+        try {
+            const fullName = `${contactFormData.firstName} ${contactFormData.lastName}`;
+            await contactAPI.sendMessage(fullName, contactFormData.email, 'General Inquiry', contactFormData.message);
+            alert('Message sent! Our team will respond within 24 hours.');
+            setContactFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: '',
+                message: '',
+            });
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again later.');
+        } finally {
+            setContactFormSubmitting(false);
+        }
+    };
 
     const teamMembers = [
         {
@@ -38,32 +97,32 @@ export default function AboutUs() {
 
     const values = [
         {
-            icon: '🤝',
+            icon: Handshake,
             title: 'Community First',
             description: 'Every decision we make prioritizes the well-being of Cambodian communities.'
         },
         {
-            icon: '🔒',
+            icon: Lock,
             title: 'Trust & Transparency',
             description: 'Complete transparency in how funds are collected, managed, and distributed.'
         },
         {
-            icon: '💝',
+            icon: Heart,
             title: 'Compassionate Support',
             description: 'We provide personalized guidance to every fundraiser creator and donor.'
         },
         {
-            icon: '🌱',
+            icon: Leaf,
             title: 'Sustainable Impact',
             description: 'Focusing on long-term solutions that create lasting positive change.'
         },
         {
-            icon: '🎯',
+            icon: Target,
             title: 'Local Relevance',
             description: 'Built specifically for Cambodian cultural context and needs.'
         },
         {
-            icon: '⚡',
+            icon: Zap,
             title: 'Innovation',
             description: 'Leveraging technology to make giving accessible and effective.'
         }
@@ -78,12 +137,12 @@ export default function AboutUs() {
     ];
 
     const impactStats = [
-        { number: '2,500+', label: 'Campaigns Funded', icon: '🎯' },
-        { number: '₿150K+', label: 'Total Raised', icon: '💰' },
-        { number: '75,000+', label: 'Donors', icon: '👥' },
-        { number: '24', label: 'Provinces Reached', icon: '📍' },
-        { number: '100+', label: 'Partner Organizations', icon: '🤝' },
-        { number: '98%', label: 'Success Rate', icon: '⭐' },
+        { number: '2,500+', label: 'Campaigns Funded', icon: Target },
+        { number: '₿150K+', label: 'Total Raised', icon: Coins },
+        { number: '75,000+', label: 'Donors', icon: Users },
+        { number: '24', label: 'Provinces Reached', icon: MapPin },
+        { number: '100+', label: 'Partner Organizations', icon: Handshake },
+        { number: '98%', label: 'Success Rate', icon: Star },
     ];
 
     return (
@@ -103,7 +162,7 @@ export default function AboutUs() {
                         className="text-center text-white"
                     >
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
-                            <span className="text-lg">🇰🇭</span>
+                            <Flag className="w-4 h-4" />
                             <span className="text-sm font-medium">Made in Cambodia</span>
                         </div>
 
@@ -196,7 +255,7 @@ export default function AboutUs() {
                             <div className="relative">
                                 <div className="bg-gradient-to-br from-orange-100 to-amber-100 rounded-3xl p-8 aspect-square flex items-center justify-center">
                                     <div className="text-center">
-                                        <div className="text-8xl mb-6">🤝</div>
+                                        <Handshake className="w-16 h-16 mb-6 text-orange-600 mx-auto" />
                                         <p className="text-xl font-bold text-gray-900 mb-2">SangKumFund</p>
                                         <p className="text-gray-600">/sɑːŋkʊmfʌnd/ • Compound Noun</p>
                                         <p className="text-gray-600 mt-2">"SangKum" means Community in Khmer - a collective fund for community support and growth</p>
@@ -248,7 +307,7 @@ export default function AboutUs() {
                         <div className="grid lg:grid-cols-2 gap-12">
                             <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-3xl p-8">
                                 <div className="text-center mb-6">
-                                    <div className="text-6xl mb-4">🎯</div>
+                                    <Target className="w-12 h-12 mb-4 text-orange-600 mx-auto" />
                                     <h3 className="text-3xl font-bold text-gray-900 mb-4">Our Mission</h3>
                                 </div>
                                 <p className="text-lg text-gray-700 leading-relaxed text-center">
@@ -260,7 +319,7 @@ export default function AboutUs() {
 
                             <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-3xl p-8">
                                 <div className="text-center mb-6">
-                                    <div className="text-6xl mb-4">🔮</div>
+                                    <Sparkles className="w-12 h-12 mb-4 text-orange-600 mx-auto" />
                                     <h3 className="text-3xl font-bold text-gray-900 mb-4">Our Vision</h3>
                                 </div>
                                 <p className="text-lg text-gray-700 leading-relaxed text-center">
@@ -278,36 +337,36 @@ export default function AboutUs() {
                                     {
                                         title: 'Local First Approach',
                                         description: 'Built specifically for Cambodian cultural context, payment methods, and social dynamics.',
-                                        icon: '🇰🇭'
+                                        icon: Flag
                                     },
                                     {
                                         title: 'Zero Platform Fees',
                                         description: 'We never take a percentage of donations. Our revenue comes from optional tips.',
-                                        icon: '💝'
+                                        icon: Heart
                                     },
                                     {
                                         title: 'Khmer Language Focus',
                                         description: 'Fully translated platform with local support teams who speak your language.',
-                                        icon: '📱'
+                                        icon: Languages
                                     },
                                     {
                                         title: 'Community Verification',
                                         description: 'Multi-layer verification system involving local leaders and partner NGOs.',
-                                        icon: '✅'
+                                        icon: BadgeCheck
                                     },
                                     {
                                         title: 'Offline Support',
                                         description: 'Help centers and workshops in communities with limited internet access.',
-                                        icon: '🏘️'
+                                        icon: Home
                                     },
                                     {
                                         title: 'Cultural Sensitivity',
                                         description: 'Guidance that respects local customs, religious practices, and social norms.',
-                                        icon: '🙏'
+                                        icon: Sparkles
                                     },
                                 ].map((item, index) => (
                                     <div key={index} className="text-center p-6">
-                                        <div className="text-4xl mb-4">{item.icon}</div>
+                                        <item.icon className="w-10 h-10 mb-4 text-orange-600 mx-auto" />
                                         <h4 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h4>
                                         <p className="text-gray-600">{item.description}</p>
                                     </div>
@@ -403,8 +462,8 @@ export default function AboutUs() {
                                     key={index}
                                     className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all group border border-gray-100"
                                 >
-                                    <div className="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
-                                        {value.icon}
+                                    <div className="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300 flex justify-center">
+                                        <value.icon className="w-10 h-10 text-orange-600" />
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h3>
                                     <p className="text-gray-600">{value.description}</p>
@@ -444,7 +503,9 @@ export default function AboutUs() {
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
                             {impactStats.map((stat, index) => (
                                 <div key={index} className="text-center">
-                                    <div className="text-4xl mb-4">{stat.icon}</div>
+                                    <div className="flex justify-center mb-4">
+                                        <stat.icon className="w-8 h-8 text-orange-600" />
+                                    </div>
                                     <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
                                     <div className="text-gray-600">{stat.label}</div>
                                 </div>
@@ -460,26 +521,26 @@ export default function AboutUs() {
                                         title: "Rural School Renovation",
                                         location: "Kampong Thom Province",
                                         description: "Raised $25,000 to rebuild classrooms for 300 students",
-                                        icon: "🏫"
+                                        icon: GraduationCap
                                     },
                                     {
                                         title: "Emergency Medical Fund",
                                         location: "Battambang",
                                         description: "Community came together to save a child's life",
-                                        icon: "🏥"
+                                        icon: HeartPulse
                                     },
                                     {
                                         title: "Women's Entrepreneurship",
                                         location: "Siem Reap",
                                         description: "Supported 50 women to start small businesses",
-                                        icon: "💼"
+                                        icon: Briefcase
                                     },
                                 ].map((story, index) => (
                                     <div key={index} className="bg-white rounded-2xl p-6 shadow-lg">
-                                        <div className="text-5xl mb-4">{story.icon}</div>
+                                        <story.icon className="w-10 h-10 mb-4 text-orange-600" />
                                         <h4 className="text-xl font-bold text-gray-900 mb-2">{story.title}</h4>
                                         <div className="flex items-center gap-2 text-gray-500 mb-3">
-                                            <span>📍</span>
+                                            <MapPin className="w-4 h-4" />
                                             <span>{story.location}</span>
                                         </div>
                                         <p className="text-gray-600">{story.description}</p>
@@ -536,7 +597,7 @@ export default function AboutUs() {
                             <div>
                                 <div className="space-y-8">
                                     <div className="flex items-start gap-4">
-                                        <div className="text-3xl">📍</div>
+                                        <MapPin className="w-6 h-6 text-orange-600" />
                                         <div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-2">Our Office</h3>
                                             <p className="text-gray-600">
@@ -548,7 +609,7 @@ export default function AboutUs() {
                                     </div>
 
                                     <div className="flex items-start gap-4">
-                                        <div className="text-3xl">📞</div>
+                                        <Phone className="w-6 h-6 text-orange-600" />
                                         <div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-2">Contact Numbers</h3>
                                             <p className="text-gray-600">
@@ -560,7 +621,7 @@ export default function AboutUs() {
                                     </div>
 
                                     <div className="flex items-start gap-4">
-                                        <div className="text-3xl">📧</div>
+                                        <Mail className="w-6 h-6 text-orange-600" />
                                         <div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-2">Email</h3>
                                             <p className="text-gray-600">
@@ -572,7 +633,7 @@ export default function AboutUs() {
                                     </div>
 
                                     <div className="flex items-start gap-4">
-                                        <div className="text-3xl">⏰</div>
+                                        <Clock className="w-6 h-6 text-orange-600" />
                                         <div>
                                             <h3 className="text-xl font-bold text-gray-900 mb-2">Hours</h3>
                                             <p className="text-gray-600">
@@ -586,28 +647,31 @@ export default function AboutUs() {
 
                                 <div className="mt-8 flex gap-4">
                                     <a href="#" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200">
-                                        <span className="text-xl">f</span>
+                                        <Facebook className="w-5 h-5" />
                                     </a>
                                     <a href="#" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200">
-                                        <span className="text-xl">𝕏</span>
+                                        <Twitter className="w-5 h-5" />
                                     </a>
                                     <a href="#" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200">
-                                        <span className="text-xl">in</span>
+                                        <Linkedin className="w-5 h-5" />
                                     </a>
                                     <a href="#" className="p-3 bg-gray-100 rounded-xl hover:bg-gray-200">
-                                        <span className="text-xl">📷</span>
+                                        <Instagram className="w-5 h-5" />
                                     </a>
                                 </div>
                             </div>
 
                             <div className="bg-white rounded-2xl shadow-lg p-8">
                                 <h3 className="text-2xl font-bold text-gray-900 mb-6">Send Us a Message</h3>
-                                <form className="space-y-6">
+                                <form className="space-y-6" onSubmit={handleContactSubmit}>
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-gray-700 mb-2">First Name</label>
                                             <input
                                                 type="text"
+                                                required
+                                                value={contactFormData.firstName}
+                                                onChange={(e) => setContactFormData({ ...contactFormData, firstName: e.target.value })}
                                                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
                                                 placeholder="Sokha"
                                             />
@@ -616,6 +680,9 @@ export default function AboutUs() {
                                             <label className="block text-gray-700 mb-2">Last Name</label>
                                             <input
                                                 type="text"
+                                                required
+                                                value={contactFormData.lastName}
+                                                onChange={(e) => setContactFormData({ ...contactFormData, lastName: e.target.value })}
                                                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
                                                 placeholder="Chan"
                                             />
@@ -626,6 +693,9 @@ export default function AboutUs() {
                                         <label className="block text-gray-700 mb-2">Email</label>
                                         <input
                                             type="email"
+                                            required
+                                            value={contactFormData.email}
+                                            onChange={(e) => setContactFormData({ ...contactFormData, email: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
                                             placeholder="sokha@example.com"
                                         />
@@ -635,6 +705,8 @@ export default function AboutUs() {
                                         <label className="block text-gray-700 mb-2">Phone</label>
                                         <input
                                             type="tel"
+                                            value={contactFormData.phone}
+                                            onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
                                             placeholder="+855 12 345 678"
                                         />
@@ -644,6 +716,9 @@ export default function AboutUs() {
                                         <label className="block text-gray-700 mb-2">Message</label>
                                         <textarea
                                             rows="4"
+                                            required
+                                            value={contactFormData.message}
+                                            onChange={(e) => setContactFormData({ ...contactFormData, message: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
                                             placeholder="How can we help you?"
                                         ></textarea>
@@ -651,9 +726,10 @@ export default function AboutUs() {
 
                                     <button
                                         type="submit"
-                                        className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all"
+                                        disabled={contactFormSubmitting}
+                                        className="w-full px-6 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all disabled:opacity-50"
                                     >
-                                        Send Message
+                                        {contactFormSubmitting ? 'Sending...' : 'Send Message'}
                                     </button>
                                 </form>
                             </div>

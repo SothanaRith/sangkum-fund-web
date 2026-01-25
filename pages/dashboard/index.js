@@ -31,7 +31,7 @@ export default function UserDashboard() {
   }, []);
 
   const checkAuth = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/auth/login');
     }
@@ -39,12 +39,14 @@ export default function UserDashboard() {
 
   const loadData = async () => {
     try {
-      // Load donations
-      const donationsData = await donationsAPI.getMyDonations();
+      // Load donations (first page with 10 items)
+      const donationsResponse = await donationsAPI.getMyDonations(0, 10);
+      const donationsData = donationsResponse.content || donationsResponse || [];
       setDonations(donationsData);
 
-      // Load my events
-      const eventsData = await eventsAPI.getMyEvents();
+      // Load my events (first page with 10 items)
+      const eventsResponse = await eventsAPI.getMyEvents(0, 10);
+      const eventsData = eventsResponse.content || eventsResponse || [];
       setMyEvents(eventsData);
 
       // Load analytics

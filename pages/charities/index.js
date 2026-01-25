@@ -1,21 +1,48 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { charitiesAPI } from '@/lib/api';
+import Pagination from '@/components/Pagination';
 
 export default function CharitiesPage() {
   const [charities, setCharities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all'); // all, verified, pending
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [pageSize] = useState(9);
 
   useEffect(() => {
     loadCharities();
-  }, []);
+  }, [currentPage, activeFilter]);
+
+  useEffect(() => {
+    // When search changes, reset to page 0
+    if (currentPage !== 0) {
+      setCurrentPage(0);
+    } else {
+      loadCharities();
+    }
+  }, [search]);
 
   const loadCharities = async () => {
     try {
-      const data = await charitiesAPI.getAll();
-      setCharities(data);
+      setLoading(true);
+      const status = activeFilter === 'verified' ? 'verified' : 
+                     activeFilter === 'pending' ? 'pending' : null;
+      
+      const response = await charitiesAPI.getAll(currentPage, pageSize, 'createdAt', 'desc', status);
+      
+      // Handle pagination response
+      const content = response.content || [];
+      setCharities(content);
+      setTotalPages(response.totalPages || 0);
+      setTotalElements(response.totalElements || 0);
+      setHasNext(response.hasNext || false);
+      setHasPrevious(response.hasPrevious || false);
     } catch (err) {
       console.error('Failed to load charities:', err);
     } finally {
@@ -23,17 +50,16 @@ export default function CharitiesPage() {
     }
   };
 
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const filteredCharities = charities.filter((charity) => {
     const matchesSearch = charity.name.toLowerCase().includes(search.toLowerCase()) ||
         charity.description?.toLowerCase().includes(search.toLowerCase());
-
-    if (activeFilter === 'verified') return matchesSearch && charity.status === 'VERIFIED';
-    if (activeFilter === 'pending') return matchesSearch && charity.status === 'PENDING';
     return matchesSearch;
   });
-
-  const verifiedCharities = charities.filter((c) => c.status === 'VERIFIED');
-  const pendingCharities = charities.filter((c) => c.status === 'PENDING');
 
   if (loading) {
     return (
@@ -70,26 +96,29 @@ export default function CharitiesPage() {
                 <div className="flex items-center gap-4">
                   <div className="text-4xl">🤝</div>
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{charities.length}</div>
-                    <div className="text-sm text-gray-600">Total Organizations</div>
+                    <div className="text-2xl font-bold text-gray-900">{totalElements}</div>
+                    <div className="text-sm text-gray-600">
+                      {activeFilter === 'all' ? 'Total Organizations' : 
+                       activeFilter === 'verified' ? 'Verified Partners' : 'Pending Review'}
+                    </div>
                   </div>
                 </div>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl">✅</div>
+                  <div className="text-4xl">📄</div>
                   <div>
-                    <div className="text-2xl font-bold text-green-600">{verifiedCharities.length}</div>
-                    <div className="text-sm text-gray-600">Verified Partners</div>
+                    <div className="text-2xl font-bold text-blue-600">{charities.length}</div>
+                    <div className="text-sm text-gray-600">On This Page</div>
                   </div>
                 </div>
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl">⏳</div>
+                  <div className="text-4xl">📊</div>
                   <div>
-                    <div className="text-2xl font-bold text-amber-600">{pendingCharities.length}</div>
-                    <div className="text-sm text-gray-600">Pending Review</div>
+                    <div className="text-2xl font-bold text-purple-600">{totalPages}</div>
+                    <div className="text-sm text-gray-600">Total Pages</div>
                   </div>
                 </div>
               </div>
@@ -120,34 +149,34 @@ export default function CharitiesPage() {
             {/* Filter Tabs */}
             <div className="flex gap-2 bg-white rounded-2xl shadow-lg p-2 max-w-md">
               <button
-                  onClick={() => setActiveFilter('all')}
+                  onClick={() => { setActiveFilter('all'); setCurrentPage(0); }}
                   className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                       activeFilter === 'all'
                           ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md'
                           : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
                   }`}
               >
-                All ({charities.length})
+                All
               </button>
               <button
-                  onClick={() => setActiveFilter('verified')}
+                  onClick={() => { setActiveFilter('verified'); setCurrentPage(0); }}
                   className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                       activeFilter === 'verified'
                           ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md'
                           : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
                   }`}
               >
-                Verified ({verifiedCharities.length})
+                Verified
               </button>
               <button
-                  onClick={() => setActiveFilter('pending')}
+                  onClick={() => { setActiveFilter('pending'); setCurrentPage(0); }}
                   className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
                       activeFilter === 'pending'
                           ? 'bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-md'
                           : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
                   }`}
               >
-                Pending ({pendingCharities.length})
+                Pending
               </button>
             </div>
           </div>
@@ -197,6 +226,15 @@ export default function CharitiesPage() {
                         <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors line-clamp-2">
                           {charity.name}
                         </h3>
+
+                        {/* Category */}
+                        {charity.category && (
+                            <div className="mb-2">
+                              <span className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full">
+                                {charity.category}
+                              </span>
+                            </div>
+                        )}
 
                         {/* Description */}
                         <p className="text-gray-600 text-sm line-clamp-3 mb-4">
@@ -312,6 +350,19 @@ export default function CharitiesPage() {
                   )}
                 </div>
               </div>
+          )}
+
+          {/* Pagination */}
+          {filteredCharities.length > 0 && (
+            <div className="max-w-6xl mx-auto">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                hasNext={hasNext}
+                hasPrevious={hasPrevious}
+              />
+            </div>
           )}
         </div>
       </div>

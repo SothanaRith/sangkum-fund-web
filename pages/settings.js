@@ -1,5 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import {
+  AlertTriangle,
+  Bell,
+  Check,
+  CheckCircle,
+  CloudUpload,
+  Frown,
+  Image,
+  KeyRound,
+  Link2,
+  Loader2,
+  Lock,
+  Monitor,
+  Save,
+  Settings as SettingsIcon,
+  Shield,
+  Smartphone,
+  User,
+} from 'lucide-react';
 import { settingsAPI, userAPI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -55,12 +74,12 @@ export default function SettingsPage() {
   });
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: '👤' },
-    { id: 'notifications', label: 'Notifications', icon: '🔔' },
-    { id: 'privacy', label: 'Privacy', icon: '🔒' },
-    { id: 'security', label: 'Security', icon: '🛡️' },
-    { id: 'integrations', label: 'Integrations', icon: '🔗' },
-    { id: 'danger', label: 'Danger Zone', icon: '⚠️' },
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'privacy', label: 'Privacy', icon: Lock },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'integrations', label: 'Integrations', icon: Link2 },
+    { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
 
   useEffect(() => {
@@ -235,9 +254,9 @@ export default function SettingsPage() {
             <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="text-6xl mb-4"
+                className="text-6xl mb-4 flex justify-center"
             >
-              ⚙️
+              <SettingsIcon className="w-14 h-14 text-orange-600" />
             </motion.div>
             <p className="text-gray-600">Loading your settings...</p>
           </div>
@@ -303,7 +322,7 @@ export default function SettingsPage() {
                                   : 'text-gray-700 hover:bg-orange-50'
                           }`}
                       >
-                        <span className="text-xl">{tab.icon}</span>
+                        <tab.icon className="w-5 h-5" />
                         <span>{tab.label}</span>
                       </motion.button>
                   ))}
@@ -392,7 +411,11 @@ export default function SettingsPage() {
                                         uploading ? 'opacity-50 cursor-not-allowed' : ''
                                     }`}
                                 >
-                                  <span className="text-lg">{uploading ? '📤' : '📷'}</span>
+                                  {uploading ? (
+                                    <CloudUpload className="w-5 h-5" />
+                                  ) : (
+                                    <Image className="w-5 h-5" />
+                                  )}
                                   {uploading ? 'Uploading...' : 'Change Photo'}
                                 </label>
                                 <p className="text-sm text-gray-500 mt-2">
@@ -485,7 +508,11 @@ export default function SettingsPage() {
                             disabled={saving}
                             className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg disabled:opacity-50"
                         >
-                          <span>{saving ? '⏳' : '💾'}</span>
+                          {saving ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <Save className="w-5 h-5" />
+                          )}
                           {saving ? 'Saving Changes...' : 'Save Profile'}
                         </button>
                       </div>
@@ -642,7 +669,14 @@ export default function SettingsPage() {
                             disabled={saving}
                             className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg disabled:opacity-50"
                         >
-                          {saving ? '⏳ Saving...' : '💾 Save Preferences'}
+                          <span className="inline-flex items-center gap-2">
+                            {saving ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Save className="w-4 h-4" />
+                            )}
+                            {saving ? 'Saving...' : 'Save Preferences'}
+                          </span>
                         </button>
                       </div>
                     </motion.div>
@@ -710,7 +744,14 @@ export default function SettingsPage() {
                           disabled={saving}
                           className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50"
                       >
-                        {saving ? '💾 Saving...' : '💾 Save Privacy Settings'}
+                        <span className="inline-flex items-center gap-2">
+                          {saving ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4" />
+                          )}
+                          {saving ? 'Saving...' : 'Save Privacy Settings'}
+                        </span>
                       </button>
                     </div>
                 )}
@@ -732,7 +773,7 @@ export default function SettingsPage() {
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <span className="text-2xl">🔐</span>
+                                <KeyRound className="w-6 h-6 text-orange-600" />
                                 <h3 className="font-bold text-gray-900 text-lg">Two-Factor Authentication</h3>
                                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                                     twoFactorEnabled
@@ -749,7 +790,10 @@ export default function SettingsPage() {
                               {twoFactorEnabled ? (
                                   <div className="space-y-4">
                                     <div className="p-4 bg-white rounded-xl border border-green-200">
-                                      <p className="text-green-700 font-medium mb-2">✓ 2FA is active on your account</p>
+                                      <p className="text-green-700 font-medium mb-2 inline-flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4" />
+                                        2FA is active on your account
+                                      </p>
                                       <p className="text-sm text-gray-600">Last used: Today at 14:30</p>
                                     </div>
                                     <button
@@ -830,7 +874,7 @@ export default function SettingsPage() {
                             <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                                  <span>💻</span>
+                                  <Monitor className="w-4 h-4 text-orange-600" />
                                 </div>
                                 <div>
                                   <p className="font-medium">Chrome on Windows</p>
@@ -845,7 +889,7 @@ export default function SettingsPage() {
                             <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                  <span>📱</span>
+                                  <Smartphone className="w-4 h-4 text-gray-600" />
                                 </div>
                                 <div>
                                   <p className="font-medium">Safari on iPhone</p>
@@ -870,7 +914,9 @@ export default function SettingsPage() {
                       {/* Telegram */}
                       <div className="border border-gray-200 rounded-xl p-6 mb-4">
                         <div className="flex items-start gap-4">
-                          <div className="text-5xl">📱</div>
+                          <div className="text-5xl">
+                            <Smartphone className="w-10 h-10 text-orange-600" />
+                          </div>
                           <div className="flex-1">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Telegram Bot</h3>
                             <p className="text-gray-600 mb-4">
@@ -879,8 +925,9 @@ export default function SettingsPage() {
 
                             {telegramConnected ? (
                                 <div className="flex items-center gap-4">
-                          <span className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-lg font-semibold">
-                            ✓ Connected
+                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg font-semibold">
+                            <Check className="w-4 h-4" />
+                            Connected
                           </span>
                                   <button
                                       onClick={handleDisconnectTelegram}
@@ -904,7 +951,9 @@ export default function SettingsPage() {
                       {/* Coming Soon */}
                       <div className="border border-gray-200 rounded-xl p-6 opacity-50">
                         <div className="flex items-start gap-4">
-                          <div className="text-5xl grayscale">🔗</div>
+                          <div className="text-5xl grayscale">
+                            <Link2 className="w-10 h-10 text-gray-500" />
+                          </div>
                           <div className="flex-1">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">More Integrations</h3>
                             <p className="text-gray-600 mb-4">
@@ -929,7 +978,9 @@ export default function SettingsPage() {
                         className="bg-white rounded-2xl shadow-xl p-8"
                     >
                       <div className="text-center mb-10">
-                        <div className="text-5xl mb-4">⚠️</div>
+                        <div className="text-5xl mb-4 flex justify-center">
+                          <AlertTriangle className="w-10 h-10 text-orange-600" />
+                        </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-3">Danger Zone</h2>
                         <p className="text-gray-600 max-w-2xl mx-auto">
                           These actions are irreversible. Please proceed with caution.
@@ -972,7 +1023,9 @@ export default function SettingsPage() {
                   className="bg-white rounded-2xl p-8 max-w-md w-full"
               >
                 <div className="text-center mb-6">
-                  <div className="text-5xl mb-4">😢</div>
+                  <div className="text-5xl mb-4 flex justify-center">
+                    <Frown className="w-10 h-10 text-orange-600" />
+                  </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Your Account?</h3>
                   <p className="text-gray-600">
                     This will permanently delete your account and all data. You won't be able to recover it.
@@ -982,7 +1035,10 @@ export default function SettingsPage() {
                 <div className="space-y-4 mb-6">
                   <div className="p-4 bg-red-50 rounded-xl border border-red-200">
                     <p className="text-red-700 font-medium text-sm">
-                      ⚠️ This action will delete:
+                      <span className="inline-flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        This action will delete:
+                      </span>
                     </p>
                     <ul className="text-red-600 text-sm mt-2 space-y-1">
                       <li>• Your profile information</li>

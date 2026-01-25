@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { eventsAPI, eventTimelineAPI, announcementsAPI, eventCommentsAPI, donationsAPI } from '@/lib/api';
+import { eventsAPI, eventTimelineAPI, announcementsAPI, eventCommentsAPI, donationsAPI, userAPI } from '@/lib/api';
 import { formatCurrency, formatDate, calculateProgress, timeAgo } from '@/lib/utils';
 import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown } from 'lucide-react';
 
@@ -9,6 +9,7 @@ export default function EventDetail() {
   const router = useRouter();
   const { id } = router.query;
   const [event, setEvent] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [timeline, setTimeline] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,6 +21,11 @@ export default function EventDetail() {
   const [newComment, setNewComment] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [recentDonations, setRecentDonations] = useState([]);
+  const [participants, setParticipants] = useState([]);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [eventImages, setEventImages] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const storyRef = useRef(null);
   const donationCardRef = useRef(null);
@@ -39,25 +45,59 @@ export default function EventDetail() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [id]);
 
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const profile = await userAPI.getProfile();
+        setCurrentUser(profile);
+      } catch (err) {
+        // Not logged in or token invalid; hide owner-only actions
+        setCurrentUser(null);
+      }
+    };
+
+    loadCurrentUser();
+  }, []);
+
   const loadEvent = async () => {
     try {
-      const [eventData, timelineData, announcementsData, commentsData, donationsData] = await Promise.all([
+      const [eventData, timelineData, announcementsData, commentsData, donationsData, imagesData] = await Promise.all([
         eventsAPI.getById(id),
         eventTimelineAPI.getByEvent(id).catch(() => []),
         announcementsAPI.getByEvent(id).catch(() => []),
         eventCommentsAPI.getByEvent(id).catch(() => []),
         donationsAPI.getRecentByEvent(id).catch(() => []),
+        eventsAPI.getImages(id).catch(() => []),
       ]);
       setEvent(eventData);
       setTimeline(timelineData);
       setAnnouncements(announcementsData);
       setComments(commentsData);
       setRecentDonations(donationsData.slice(0, 5));
+      setEventImages(imagesData);
+      
+      // Set selected image to primary or first image
+      if (imagesData.length > 0) {
+        const primary = imagesData.find(img => img.isPrimary);
+        setSelectedImage(primary || imagesData[0]);
+      }
     } catch (err) {
       setError('Failed to load fundraiser details');
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadParticipants = async () => {
+    try {
+      setLoadingParticipants(true);
+      const data = await eventsAPI.getParticipants(id);
+      setParticipants(data);
+    } catch (err) {
+      console.error('Failed to load participants:', err);
+    } finally {
+      setLoadingParticipants(false);
     }
   };
 
@@ -91,6 +131,71 @@ export default function EventDetail() {
       alert('Failed to add comment. Please try again.');
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleJoinEvent = async () => {
+    try {
+      setJoiningEvent(true);
+      await eventsAPI.joinEvent(id);
+      setJoined(true);
+      alert('🎉 You are now supporting this fundraiser!');
+      // Reload event to get updated participant count
+      loadEvent();
+    } catch (err) {
+      console.error('Failed to join event:', err);
+      if (err.response?.status === 401) {
+        alert('Please login to support this fundraiser');
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    try {
+      setUploadingImages(true);
+      const result = await eventsAPI.uploadImages(id, files);
+      alert(`✅ ${result.images.length} image(s) uploaded successfully!`);
+      
+      // Reload images
+      const imagesData = await eventsAPI.getImages(id);
+      setEventImages(imagesData);
+      
+      // Set first uploaded image as selected if no image selected
+      if (!selectedImage && imagesData.length > 0) {
+        setSelectedImage(imagesData[0]);
+      }
+    } catch (err) {
+      console.error('Failed to upload images:', err);
+      alert(err.response?.data?.error || 'Failed to upload images');
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId) => {
+    if (!confirm('Are you sure you want to delete this image?')) return;
+
+    try {
+      await eventsAPI.deleteImage(id, imageId);
+      const updatedImages = eventImages.filter(img => img.id !== imageId);
+      setEventImages(updatedImages);
+      
+      // Update selected image if deleted
+      if (selectedImage?.id === imageId) {
+        setSelectedImage(updatedImages[0] || null);
+      }
+      
+      alert('Image deleted successfully');
+    } catch (err) {
+      console.error('Failed to delete image:', err);
+      alert('Failed to delete image');
+    }
+  };
+
+      } else {
+        alert('Failed to join event. Please try again.');
+      }
+    } finally {
+      setJoiningEvent(false);
     }
   };
 
@@ -128,6 +233,8 @@ export default function EventDetail() {
     );
   }
 
+  const isOwner = currentUser && event && currentUser.id === event.ownerId;
+
   const progress = calculateProgress(event.currentAmount, event.goalAmount);
   const daysRemaining = event.endDate
       ? Math.ceil((new Date(event.endDate) - new Date()) / (1000 * 60 * 60 * 24))
@@ -135,16 +242,39 @@ export default function EventDetail() {
 
   return (
       <div className="min-h-screen bg-white">
-        {/* Hero Section */}
+        {/* Hero Section with Image Gallery */}
         <div className="relative">
-          {event.imageUrl ? (
+          {(selectedImage || event.imageUrl) ? (
               <div className="h-[60vh] md:h-[70vh] relative">
                 <img
-                    src={event.imageUrl}
+                    src={selectedImage?.imageUrl || event.imageUrl}
                     alt={event.title}
                     className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/20 to-transparent"></div>
+                
+                {/* Image Thumbnails */}
+                {eventImages.length > 0 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 max-w-full overflow-x-auto px-4">
+                    {eventImages.map((img) => (
+                      <button
+                        key={img.id}
+                        onClick={() => setSelectedImage(img)}
+                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                          selectedImage?.id === img.id 
+                            ? 'border-white scale-110' 
+                            : 'border-white/50 hover:border-white'
+                        }`}
+                      >
+                        <img
+                          src={img.imageUrl}
+                          alt="Thumbnail"
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
           ) : (
               <div className="h-[60vh] md:h-[70vh] bg-gradient-to-br from-primary-50 to-emerald-50 flex items-center justify-center">
@@ -236,19 +366,34 @@ export default function EventDetail() {
                     </span>
                     </div>
                   </div>
-                  <button className="text-primary-600 hover:text-primary-700 font-medium text-sm px-4 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors">
-                    Contact
-                  </button>
+                  <div className="flex gap-2">
+                    {isOwner && (
+                      <Link
+                        href={`/events/edit/${event.id}`}
+                        className="text-primary-600 hover:text-primary-700 font-medium text-sm px-4 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors"
+                      >
+                        ✏️ Edit Event
+                      </Link>
+                    )}
+                    <button className="text-primary-600 hover:text-primary-700 font-medium text-sm px-4 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors">
+                      Contact
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Tabs Navigation */}
               <div className="border-b border-gray-200">
                 <nav className="flex space-x-8" aria-label="Tabs">
-                  {['story', 'updates', 'support'].map((tab) => (
+                  {['story', 'updates', 'support', 'participants'].map((tab) => (
                       <button
                           key={tab}
-                          onClick={() => setActiveTab(tab)}
+                          onClick={() => {
+                            setActiveTab(tab);
+                            if (tab === 'participants' && participants.length === 0) {
+                              loadParticipants();
+                            }
+                          }}
                           className={`py-3 px-1 border-b-2 font-medium text-sm ${
                               activeTab === tab
                                   ? 'border-primary-500 text-primary-600'
@@ -258,6 +403,7 @@ export default function EventDetail() {
                         {tab === 'story' && 'The Story'}
                         {tab === 'updates' && `Updates (${announcements.length})`}
                         {tab === 'support' && `Words of Support (${comments.length})`}
+                        {tab === 'participants' && `Participants (${event.participantCount || 0})`}
                       </button>
                   ))}
                 </nav>
@@ -286,6 +432,109 @@ export default function EventDetail() {
                             </h3>
                             <p className="text-emerald-800">{event.impact}</p>
                           </div>
+                      )}
+
+                      {/* Image Gallery Management - Only for event owner */}
+                      {typeof window !== 'undefined' && localStorage.getItem('user') && 
+                       JSON.parse(localStorage.getItem('user')).id === event.ownerId && (
+                        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                              <span className="text-xl">🖼️</span> Event Gallery
+                            </h3>
+                            <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50">
+                              {uploadingImages ? (
+                                <span className="flex items-center gap-2">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                  Uploading...
+                                </span>
+                              ) : (
+                                '+ Add Images'
+                              )}
+                              <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleImageUpload}
+                                disabled={uploadingImages}
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+                          
+                          {eventImages.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              {eventImages.map((img) => (
+                                <div key={img.id} className="relative group">
+                                  <img
+                                    src={img.imageUrl}
+                                    alt="Event"
+                                    className="w-full h-32 object-cover rounded-lg"
+                                  />
+                                  {img.isPrimary && (
+                                    <div className="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                                      Primary
+                                    </div>
+                                  )}
+                                  <button
+                                    onClick={() => handleDeleteImage(img.id)}
+                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <div className="text-4xl mb-2">📸</div>
+                              <p className="text-sm">No images uploaded yet</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Location Map */}
+                      {event.location && (
+                        <div className="bg-white rounded-2xl p-6 border border-gray-200">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <MapPin className="text-primary-600" size={20} />
+                            Event Location
+                          </h3>
+                          <div className="space-y-3">
+                            <p className="text-gray-700">{event.location}</p>
+                            {event.latitude && event.longitude && (
+                              <>
+                                <p className="text-sm text-gray-500">
+                                  📍 Coordinates: {event.latitude.toFixed(6)}, {event.longitude.toFixed(6)}
+                                </p>
+                                {/* Map embed */}
+                                <div className="rounded-lg overflow-hidden border border-gray-200">
+                                  <iframe
+                                    width="100%"
+                                    height="300"
+                                    frameBorder="0"
+                                    style={{ border: 0 }}
+                                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${event.longitude - 0.01},${event.latitude - 0.01},${event.longitude + 0.01},${event.latitude + 0.01}&layer=mapnik&marker=${event.latitude},${event.longitude}`}
+                                    allowFullScreen
+                                  />
+                                  <div className="bg-gray-50 px-4 py-2 text-center">
+                                    <a
+                                      href={`https://www.openstreetmap.org/?mlat=${event.latitude}&mlon=${event.longitude}#map=15/${event.latitude}/${event.longitude}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-sm text-primary-600 hover:text-primary-700"
+                                    >
+                                      View Larger Map →
+                                    </a>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       )}
 
                       {/* Trust Assurance */}
@@ -451,6 +700,82 @@ export default function EventDetail() {
                     </div>
                 )}
               </div>
+
+              {/* Participants Tab */}
+              {activeTab === 'participants' && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-semibold text-gray-900">
+                        Participants ({participants.length})
+                      </h2>
+                    </div>
+
+                    {loadingParticipants ? (
+                        <div className="flex items-center justify-center py-12">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+                        </div>
+                    ) : participants.length === 0 ? (
+                        <div className="bg-gray-50 rounded-2xl p-8 text-center">
+                          <div className="text-gray-400 text-4xl mb-3">👥</div>
+                          <p className="text-gray-500 mb-2">No participants yet</p>
+                          <p className="text-gray-400 text-sm">Be the first to join this fundraiser!</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                          {participants.map((participant) => (
+                              <div
+                                  key={participant.userId}
+                                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-primary-200 hover:shadow-md transition-all"
+                              >
+                                <div className="flex items-center gap-4">
+                                  {participant.userAvatar ? (
+                                      <img
+                                          src={participant.userAvatar}
+                                          alt={participant.userName}
+                                          className="w-12 h-12 rounded-full object-cover"
+                                      />
+                                  ) : (
+                                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center text-primary-600 font-medium text-lg">
+                                        {participant.userName.charAt(0).toUpperCase()}
+                                      </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="font-semibold text-gray-900">{participant.userName}</span>
+                                      {participant.donationCount > 0 && (
+                                          <span className="inline-flex items-center text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                                            <Heart className="w-3 h-3 mr-1 fill-current" />
+                                            Donor
+                                          </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                                      <span>Joined {timeAgo(participant.joinedAt)}</span>
+                                      {participant.totalDonated > 0 && (
+                                          <>
+                                            <span>•</span>
+                                            <span className="font-medium text-primary-600">
+                                              {formatCurrency(participant.totalDonated)} donated
+                                            </span>
+                                          </>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {participant.donationCount > 1 && (
+                                      <div className="text-right">
+                                        <div className="text-sm font-medium text-gray-900">
+                                          {participant.donationCount}
+                                        </div>
+                                        <div className="text-xs text-gray-500">donations</div>
+                                      </div>
+                                  )}
+                                </div>
+                              </div>
+                          ))}
+                        </div>
+                    )}
+                  </div>
+              )}
             </div>
 
             {/* Right Column - Donation Card (Sticky) */}
@@ -513,27 +838,31 @@ export default function EventDetail() {
                       <div>
                         <h4 className="font-medium text-gray-900 mb-3">Recent supporters</h4>
                         <div className="space-y-3">
-                          {recentDonations.map((donation) => (
+                          {recentDonations.map((donation) => {
+                            const displayName = donation.donorName || (donation.isAnonymous ? 'Anonymous' : 'Supporter');
+                            const initial = displayName.charAt(0);
+                            return (
                               <div key={donation.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   {donation.donorAvatar ? (
-                                      <img
-                                          src={donation.donorAvatar}
-                                          alt={donation.donorName}
-                                          className="w-8 h-8 rounded-full object-cover"
-                                      />
+                                    <img
+                                      src={donation.donorAvatar}
+                                      alt={displayName}
+                                      className="w-8 h-8 rounded-full object-cover"
+                                    />
                                   ) : (
-                                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-600">
-                                        {donation.donorName.charAt(0)}
-                                      </div>
+                                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-600">
+                                      {initial}
+                                    </div>
                                   )}
-                                  <span className="text-sm text-gray-700">{donation.donorName}</span>
+                                  <span className="text-sm text-gray-700">{displayName}</span>
                                 </div>
                                 <div className="text-sm font-medium text-primary-600">
                                   {formatCurrency(donation.amount)}
                                 </div>
                               </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                   )}
@@ -552,7 +881,7 @@ export default function EventDetail() {
                       </span>
                       ) : (
                           <button
-                              // onClick={handleJoinEvent}
+                              onClick={handleJoinEvent}
                               disabled={joiningEvent}
                               className="text-primary-600 hover:text-primary-700 font-medium text-sm px-3 py-1 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors disabled:opacity-50"
                           >

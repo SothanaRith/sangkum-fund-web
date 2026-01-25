@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import {
+  Calendar,
+  Heart,
+  Megaphone,
+  MessageCircle,
+  Plus,
+  ThumbsUp,
+  User,
+} from 'lucide-react';
 import { announcementsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
@@ -73,7 +82,7 @@ export default function AnnouncementsPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">📢</div>
+          <Megaphone className="w-14 h-14 mb-4 animate-bounce text-purple-600 mx-auto" />
           <p className="text-gray-600">Loading announcements...</p>
         </div>
       </div>
@@ -86,16 +95,18 @@ export default function AnnouncementsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8 animate-fadeIn">
           <div>
-            <h1 className="text-4xl font-bold mb-2 gradient-text">
-              📢 Announcements & Updates
+            <h1 className="text-4xl font-bold mb-2 gradient-text flex items-center gap-3">
+              <Megaphone className="w-8 h-8 text-purple-600" />
+              Announcements & Updates
             </h1>
             <p className="text-gray-600">Stay updated with the latest news</p>
           </div>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="bg-gradient-to-r from-primary-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg"
+            className="bg-gradient-to-r from-primary-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg inline-flex items-center gap-2"
           >
-            ➕ New Announcement
+            <Plus className="w-4 h-4" />
+            New Announcement
           </button>
         </div>
 
@@ -148,7 +159,7 @@ export default function AnnouncementsPage() {
         {/* Announcements List */}
         {announcements.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-lg animate-fadeIn">
-            <div className="text-8xl mb-6">📢</div>
+            <Megaphone className="w-16 h-16 mb-6 text-purple-500 mx-auto" />
             <h3 className="text-2xl font-bold text-gray-900 mb-3">No announcements yet</h3>
             <p className="text-gray-600">Be the first to share an update!</p>
           </div>
@@ -166,11 +177,15 @@ export default function AnnouncementsPage() {
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
                       {announcement.title}
                     </h3>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <span className="mr-1">👤</span>
-                      <span className="mr-3">{announcement.authorName || 'Anonymous'}</span>
-                      <span className="mr-1">📅</span>
-                      <span>{formatDate(announcement.createdAt)}</span>
+                    <div className="flex items-center text-sm text-gray-500 gap-3">
+                      <span className="inline-flex items-center gap-1">
+                        <User className="w-4 h-4" />
+                        {announcement.authorName || 'Anonymous'}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <Calendar className="w-4 h-4" />
+                        {formatDate(announcement.createdAt)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -188,7 +203,7 @@ export default function AnnouncementsPage() {
                     onClick={() => handleReaction(announcement.id, 'LIKE')}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors group"
                   >
-                    <span className="text-2xl group-hover:scale-125 transition-transform">❤️</span>
+                    <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform" />
                     <span className="text-gray-700 font-semibold">
                       {announcement.reactions?.filter(r => r.type === 'LIKE').length || 0}
                     </span>
@@ -198,7 +213,7 @@ export default function AnnouncementsPage() {
                     onClick={() => handleReaction(announcement.id, 'SUPPORT')}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-yellow-50 transition-colors group"
                   >
-                    <span className="text-2xl group-hover:scale-125 transition-transform">👏</span>
+                    <ThumbsUp className="w-5 h-5 text-yellow-500 group-hover:scale-125 transition-transform" />
                     <span className="text-gray-700 font-semibold">
                       {announcement.reactions?.filter(r => r.type === 'SUPPORT').length || 0}
                     </span>
@@ -210,7 +225,7 @@ export default function AnnouncementsPage() {
                     )}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
                   >
-                    <span className="text-xl">💬</span>
+                    <MessageCircle className="w-5 h-5 text-blue-500" />
                     <span className="text-gray-700 font-semibold">
                       {announcement.comments?.length || 0} Comments
                     </span>

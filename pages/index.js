@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useLanguage } from '@/lib/LanguageContext';
 
 export default function Home() {
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
 
   const floatingItems = [

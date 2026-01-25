@@ -23,7 +23,7 @@ export default function AdminDonations() {
   }, [filter, searchTerm, donations]);
 
   const checkAuth = () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/auth/login');
     }

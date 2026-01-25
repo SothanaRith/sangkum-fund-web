@@ -42,7 +42,8 @@ export default function Register() {
 
       // Auto login after registration
       const loginResponse = await authAPI.login(formData.email, formData.password);
-      localStorage.setItem('token', loginResponse.token);
+      localStorage.setItem('accessToken', loginResponse.accessToken);
+      localStorage.setItem('refreshToken', loginResponse.refreshToken);
       if (loginResponse.user) {
         localStorage.setItem('user', JSON.stringify(loginResponse.user));
       }
@@ -62,44 +63,12 @@ export default function Register() {
     setError('');
 
     try {
-      // For Google OAuth sign-up
-      // This example assumes you have a backend endpoint that handles Google OAuth
-      // Adjust based on your actual implementation
-
-      // Option 1: Redirect to your backend's Google OAuth endpoint
-      // window.location.href = 'https://your-backend.com/auth/google';
-
-      // Option 2: If using NextAuth.js or similar, trigger signIn
-      // signIn('google', { callbackUrl: router.query.redirect || '/' });
-
-      // For now, we'll simulate the process
-      alert('Google sign-up would be implemented here. In production, this would redirect to Google OAuth.');
-
-      // Simulate successful registration and login (remove in production)
-      setTimeout(() => {
-        // Simulate getting user data
-        const mockUser = {
-          id: 'google_123',
-          name: formData.name || 'Google User',
-          email: formData.email || 'user@gmail.com',
-          avatar: 'https://via.placeholder.com/150',
-          emailVerified: true,
-          isNewUser: true
-        };
-
-        localStorage.setItem('token', 'google_mock_token');
-        localStorage.setItem('user', JSON.stringify(mockUser));
-
-        // Show welcome message for new users
-        alert('Welcome to SangKumFund! Your account has been created.');
-
-        router.push(router.query.redirect || '/');
-      }, 1000);
-
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      // Redirect to backend's Google OAuth endpoint
+      window.location.href = `${API_URL}/api/auth/oauth2/authorize/google`;
     } catch (err) {
       setError('Google sign-up failed. Please try again.');
       console.error('Google sign-up error:', err);
-    } finally {
       setGoogleLoading(false);
     }
   };

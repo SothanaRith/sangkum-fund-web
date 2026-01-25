@@ -1,10 +1,49 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  AlertTriangle,
+  Briefcase,
+  Coins,
+  Flame,
+  Globe,
+  GraduationCap,
+  HeartPulse,
+  Leaf,
+  List,
+  Loader2,
+  Map,
+  MapPin,
+  PawPrint,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Star,
+  Target,
+  Timer,
+  Users,
+} from 'lucide-react';
 import { eventsAPI } from '@/lib/api';
 import { formatCurrency, formatDate, calculateProgress, formatTimeAgo } from '@/lib/utils';
+import Pagination from '@/components/Pagination';
+import { useLanguage } from '@/lib/LanguageContext';
+
+// Dynamic import for map component (SSR disabled)
+const EventsMap = dynamic(() => import('@/components/EventsMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 rounded-xl">
+      <div className="text-center">
+        <Loader2 className="w-10 h-10 animate-spin mx-auto mb-2 text-gray-500" />
+        <p className="text-gray-600">Loading map...</p>
+      </div>
+    </div>
+  ),
+});
 
 export default function Events() {
+  const { t } = useLanguage();
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,29 +51,33 @@ export default function Events() {
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
   const [sortBy, setSortBy] = useState('trending');
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [pageSize] = useState(9);
   const [showFilters, setShowFilters] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('all');
 
   const categories = [
-    { id: 'all', label: 'All Causes', icon: '🌍', color: 'bg-gradient-to-r from-orange-500 to-amber-500' },
-    { id: 'medical', label: 'Medical', icon: '🏥', color: 'bg-gradient-to-r from-red-500 to-pink-500' },
-    { id: 'education', label: 'Education', icon: '🎓', color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
-    { id: 'emergency', label: 'Emergency', icon: '🚨', color: 'bg-gradient-to-r from-red-600 to-orange-600' },
-    { id: 'business', label: 'Business', icon: '💼', color: 'bg-gradient-to-r from-purple-500 to-indigo-500' },
-    { id: 'community', label: 'Community', icon: '🤝', color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
-    { id: 'animals', label: 'Animals', icon: '🐾', color: 'bg-gradient-to-r from-yellow-500 to-orange-500' },
-    { id: 'environment', label: 'Environment', icon: '🌱', color: 'bg-gradient-to-r from-green-600 to-teal-500' },
+    { id: 'all', label: 'All Causes', icon: Globe, color: 'bg-gradient-to-r from-orange-500 to-amber-500' },
+    { id: 'medical', label: 'Medical', icon: HeartPulse, color: 'bg-gradient-to-r from-red-500 to-pink-500' },
+    { id: 'education', label: 'Education', icon: GraduationCap, color: 'bg-gradient-to-r from-blue-500 to-cyan-500' },
+    { id: 'emergency', label: 'Emergency', icon: AlertTriangle, color: 'bg-gradient-to-r from-red-600 to-orange-600' },
+    { id: 'business', label: 'Business', icon: Briefcase, color: 'bg-gradient-to-r from-purple-500 to-indigo-500' },
+    { id: 'community', label: 'Community', icon: Users, color: 'bg-gradient-to-r from-green-500 to-emerald-500' },
+    { id: 'animals', label: 'Animals', icon: PawPrint, color: 'bg-gradient-to-r from-yellow-500 to-orange-500' },
+    { id: 'environment', label: 'Environment', icon: Leaf, color: 'bg-gradient-to-r from-green-600 to-teal-500' },
   ];
 
   const sortOptions = [
-    { id: 'trending', label: 'Trending', icon: '🔥' },
-    { id: 'newest', label: 'Newest', icon: '🆕' },
-    { id: 'ending', label: 'Ending Soon', icon: '⏰' },
-    { id: 'most_funded', label: 'Most Funded', icon: '💰' },
-    { id: 'nearest', label: 'Nearest to You', icon: '📍' },
+    { id: 'trending', label: 'Trending', icon: Flame },
+    { id: 'newest', label: 'Newest', icon: Sparkles },
+    { id: 'ending', label: 'Ending Soon', icon: Timer },
+    { id: 'most_funded', label: 'Most Funded', icon: Coins },
+    { id: 'nearest', label: 'Nearest to You', icon: MapPin },
   ];
 
   const locations = [
@@ -50,19 +93,37 @@ export default function Events() {
 
   useEffect(() => {
     loadEvents();
-  }, []);
+  }, [currentPage, sortBy]);
 
   useEffect(() => {
-    filterAndSortEvents();
-  }, [searchTerm, category, sortBy, selectedLocation, events]);
+    // When search or category changes, reset to page 0
+    if (currentPage !== 0) {
+      setCurrentPage(0);
+    } else {
+      loadEvents();
+    }
+  }, [searchTerm, category, selectedLocation]);
 
   const loadEvents = async () => {
     try {
       setLoading(true);
-      const data = await eventsAPI.getAll();
-      setEvents(data);
-      setFilteredEvents(data.slice(0, 9));
-      setHasMore(data.length > 9);
+      const sortField = sortBy === 'newest' ? 'createdAt' : 
+                       sortBy === 'ending' ? 'endDate' : 
+                       sortBy === 'most_funded' ? 'currentAmount' : 'createdAt';
+      const sortDirection = sortBy === 'ending' ? 'asc' : 'desc';
+      
+      const response = await eventsAPI.getAll(currentPage, pageSize, sortField, sortDirection);
+      
+      // Handle pagination response
+      setEvents(response.content || []);
+      setFilteredEvents(response.content || []);
+      setTotalPages(response.totalPages || 0);
+      setTotalElements(response.totalElements || 0);
+      setHasNext(response.hasNext || false);
+      setHasPrevious(response.hasPrevious || false);
+      
+      // Apply client-side filtering if needed
+      filterEvents(response.content || []);
     } catch (err) {
       setError('Failed to load events');
       console.error(err);
@@ -71,20 +132,8 @@ export default function Events() {
     }
   };
 
-  const loadMoreEvents = () => {
-    const nextPage = page + 1;
-    const startIndex = page * 9;
-    const newEvents = events.slice(startIndex, startIndex + 9);
-
-    if (newEvents.length > 0) {
-      setFilteredEvents(prev => [...prev, ...newEvents]);
-      setPage(nextPage);
-      setHasMore(events.length > (nextPage * 9));
-    }
-  };
-
-  const filterAndSortEvents = () => {
-    let filtered = [...events];
+  const filterEvents = (eventsToFilter) => {
+    let filtered = [...eventsToFilter];
 
     // Search filter
     if (searchTerm.trim()) {
@@ -105,27 +154,12 @@ export default function Events() {
       filtered = filtered.filter(event => event.location === selectedLocation);
     }
 
-    // Sorting
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        case 'trending':
-          return (b.donorsCount || 0) - (a.donorsCount || 0);
-        case 'ending':
-          return new Date(a.endDate) - new Date(b.endDate);
-        case 'most_funded':
-          return b.currentAmount - a.currentAmount;
-        case 'nearest':
-          // This would require location data
-          return 0;
-        default:
-          return 0;
-      }
-    });
+    setFilteredEvents(filtered);
+  };
 
-    setFilteredEvents(filtered.slice(0, page * 9));
-    setHasMore(filtered.length > (page * 9));
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getUrgencyColor = (endDate) => {
@@ -140,7 +174,7 @@ export default function Events() {
     return days > 0 ? days : 0;
   };
 
-  if (loading && page === 1) {
+  if (loading && currentPage === 1) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50">
           <div className="text-center">
@@ -203,10 +237,10 @@ export default function Events() {
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10 max-w-3xl mx-auto">
                 {[
-                  { value: '2.3M+', label: 'People Helped', icon: '👥' },
-                  { value: '₿75K+', label: 'Raised', icon: '💰' },
-                  { value: '12K+', label: 'Campaigns', icon: '🎯' },
-                  { value: '98%', label: 'Success Rate', icon: '⭐' },
+                  { value: '2.3M+', label: 'People Helped', icon: Users },
+                  { value: '₿75K+', label: 'Raised', icon: Coins },
+                  { value: '12K+', label: 'Campaigns', icon: Target },
+                  { value: '98%', label: 'Success Rate', icon: Star },
                 ].map((stat, index) => (
                     <motion.div
                         key={index}
@@ -215,7 +249,9 @@ export default function Events() {
                         transition={{ delay: index * 0.1 }}
                         className="bg-white/10 backdrop-blur-sm rounded-2xl p-4"
                     >
-                      <div className="text-3xl mb-2">{stat.icon}</div>
+                      <div className="text-3xl mb-2">
+                        <stat.icon className="w-7 h-7" />
+                      </div>
                       <div className="text-2xl font-bold mb-1">{stat.value}</div>
                       <div className="text-sm text-orange-200">{stat.label}</div>
                     </motion.div>
@@ -225,13 +261,14 @@ export default function Events() {
               {/* Search Bar */}
               <div className="max-w-2xl mx-auto">
                 <div className="relative">
-                  <input
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <input
                       type="text"
-                      placeholder="🔍 Search campaigns by name, location, or cause..."
+                      placeholder="Search campaigns by name, location, or cause..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full px-6 py-4 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/20 focus:border-white focus:outline-none text-gray-900 text-lg shadow-xl"
-                  />
+                      className="w-full pl-12 pr-6 py-4 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/20 focus:border-white focus:outline-none text-gray-900 text-lg shadow-xl"
+                    />
                   {searchTerm && (
                       <button
                           onClick={() => setSearchTerm('')}
@@ -261,7 +298,7 @@ export default function Events() {
                       onClick={() => setShowFilters(!showFilters)}
                       className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow"
                   >
-                    <span className="text-xl">⚙️</span>
+                    <SlidersHorizontal className="w-5 h-5" />
                     <span className="font-medium">Filters</span>
                     {showFilters ? '↑' : '↓'}
                   </button>
@@ -273,7 +310,7 @@ export default function Events() {
                             onClick={() => setCategory(cat.id)}
                             className={`px-4 py-2 rounded-full transition-all ${cat.id === category ? 'text-white ' + cat.color : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                         >
-                          <span className="mr-2">{cat.icon}</span>
+                          <cat.icon className="inline-block w-4 h-4 mr-2" />
                           {cat.label}
                         </button>
                     ))}
@@ -289,7 +326,7 @@ export default function Events() {
                             onClick={() => setCategory(cat.id)}
                             className={`flex-shrink-0 px-4 py-2 rounded-full transition-all ${cat.id === category ? 'text-white ' + cat.color : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                         >
-                          <span className="mr-1">{cat.icon}</span>
+                          <cat.icon className="inline-block w-4 h-4 mr-1" />
                           {cat.label}
                         </button>
                     ))}
@@ -305,7 +342,7 @@ export default function Events() {
                 >
                   {sortOptions.map((option) => (
                       <option key={option.id} value={option.id}>
-                        {option.icon} {option.label}
+                        {option.label}
                       </option>
                   ))}
                 </select>
@@ -314,8 +351,8 @@ export default function Events() {
                     onClick={() => setShowMap(!showMap)}
                     className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow"
                 >
-                  <span className="text-xl">{showMap ? '📋' : '🗺️'}</span>
-                  <span>{showMap ? 'List View' : 'Map View'}</span>
+                  {showMap ? <List className="w-5 h-5" /> : <Map className="w-5 h-5" />}
+                  <span>{showMap ? t('events.listView') : t('events.mapView')}</span>
                 </button>
               </div>
             </div>
@@ -418,30 +455,43 @@ export default function Events() {
           {/* Results Summary */}
           <div className="flex items-center justify-between mb-6">
             <div className="text-gray-700">
-              <span className="font-bold text-orange-600">{filteredEvents.length}</span> campaigns found
+              <span className="font-bold text-orange-600">{totalElements}</span> campaigns found
               {searchTerm && <span> for "<span className="font-semibold">{searchTerm}</span>"</span>}
               {category !== 'all' && <span> in <span className="font-semibold">{categories.find(c => c.id === category)?.label}</span></span>}
             </div>
             <div className="text-sm text-gray-500">
-              Showing {Math.min(page * 9, filteredEvents.length)} of {filteredEvents.length}
+              Showing {filteredEvents.length} of {totalElements}
             </div>
           </div>
 
           {/* Events Grid or Map */}
           {showMap ? (
-              <div className="bg-white rounded-2xl shadow-lg p-6 h-96 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-5xl mb-4">🗺️</div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Interactive Map</h3>
-                  <p className="text-gray-600 mb-4">Coming soon! View campaigns on a map of Cambodia.</p>
-                  <button
-                      onClick={() => setShowMap(false)}
-                      className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg font-medium"
-                  >
-                    Back to List View
-                  </button>
+              <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white rounded-2xl shadow-lg p-4 mb-8"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <Map className="w-5 h-5" />
+                    {t('events.campaignMap')}
+                  </h3>
+                  <div className="text-sm text-gray-600">
+                    {filteredEvents.filter(e => e.latitude && e.longitude).length} {t('events.campaignsWithLocation')}
+                  </div>
                 </div>
-              </div>
+                <div className="h-[600px] rounded-xl overflow-hidden">
+                  <EventsMap
+                      events={filteredEvents}
+                      selectedEvent={null}
+                      onEventSelect={(event) => {
+                        // Optionally handle event selection
+                        console.log('Selected event:', event);
+                      }}
+                  />
+                </div>
+              </motion.div>
           ) : (
               <motion.div
                   layout
@@ -520,7 +570,7 @@ export default function Events() {
                                 {/* Location & Date */}
                                 <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
                                   <div className="flex items-center gap-1">
-                                    <span>📍</span>
+                                    <MapPin className="w-4 h-4" />
                                     <span>{event.location || 'Cambodia'}</span>
                                   </div>
                                   <div className="flex items-center gap-1">
@@ -544,7 +594,10 @@ export default function Events() {
                                   <div className="flex-1">
                                     <div className="font-medium text-gray-900">{event.ownerName}</div>
                                     <div className="text-xs text-gray-500 flex items-center gap-2">
-                                      <span>👥 {event.donorsCount || 0} supporters</span>
+                                      <span className="inline-flex items-center gap-2">
+                                        <Users className="w-4 h-4" />
+                                        {event.donorsCount || 0} supporters
+                                      </span>
                                       {event.verified && (
                                           <span className="text-green-600">✓ Verified</span>
                                       )}
@@ -569,7 +622,7 @@ export default function Events() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center py-16"
                 >
-                  <div className="text-7xl mb-6">🔍</div>
+                  <Search className="w-14 h-14 mb-6 text-gray-400" />
                   <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {searchTerm ? 'No matching campaigns found' : 'No active campaigns right now'}
                   </h3>
@@ -593,21 +646,19 @@ export default function Events() {
                     </Link>
                   </div>
                 </motion.div>
-            ) : hasMore && !showMap && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center mt-12"
-                >
-                  <button
-                      onClick={loadMoreEvents}
-                      className="px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg"
-                  >
-                    Load More Campaigns
-                  </button>
-                </motion.div>
-            )}
+            ) : null}
           </AnimatePresence>
+
+          {/* Pagination */}
+          {filteredEvents.length > 0 && !showMap && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              hasNext={hasNext}
+              hasPrevious={hasPrevious}
+            />
+          )}
 
           {/* Featured Charity Section */}
           {filteredEvents.length > 0 && (

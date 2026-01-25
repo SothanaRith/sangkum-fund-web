@@ -1,5 +1,48 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import {
+    AlertTriangle,
+    Ban,
+    BarChart3,
+    Bell,
+    Building2,
+    Calendar,
+    Check,
+    Clock,
+    Coins,
+    CreditCard,
+    Download,
+    Eye,
+    FileText,
+    Globe,
+    Handshake,
+    HelpCircle,
+    Key,
+    KeyRound,
+    Landmark,
+    Link2,
+    Lock,
+    Mail,
+    MapPin,
+    Megaphone,
+    MessageCircle,
+    MousePointer2,
+    Pencil,
+    Pause,
+    Phone,
+    RefreshCw,
+    Scale,
+    ScrollText,
+    Settings,
+    Shield,
+    Smartphone,
+    Target,
+    TrendingUp,
+    User,
+    Users,
+    XCircle,
+    Zap,
+} from 'lucide-react';
 
 export default function PrivacyPolicy() {
     const [activeSection, setActiveSection] = useState('introduction');
@@ -31,7 +74,7 @@ export default function PrivacyPolicy() {
                 <div className="max-w-7xl mx-auto relative">
                     <div className="text-center text-white">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
-                            <span className="text-lg">🔒</span>
+                            <Lock className="w-4 h-4" />
                             <span className="text-sm font-medium">Your Privacy Matters</span>
                         </div>
 
@@ -45,11 +88,13 @@ export default function PrivacyPolicy() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <div className="text-sm text-orange-200 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                                📅 Last Updated: {lastUpdated}
+                            <div className="text-sm text-orange-200 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full inline-flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                Last Updated: {lastUpdated}
                             </div>
-                            <div className="text-sm text-orange-200 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                                ⚖️ Effective: {effectiveDate}
+                            <div className="text-sm text-orange-200 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full inline-flex items-center gap-2">
+                                <Scale className="w-4 h-4" />
+                                Effective: {effectiveDate}
                             </div>
                         </div>
                     </div>
@@ -95,19 +140,19 @@ export default function PrivacyPolicy() {
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">Key Principles</h3>
                                 <ul className="space-y-2 text-gray-700">
                                     <li className="flex items-start gap-2">
-                                        <span className="text-green-500 mt-1">✓</span>
+                                        <Check className="w-4 h-4 text-green-500 mt-1" />
                                         <span>We only collect information necessary to provide our services</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-green-500 mt-1">✓</span>
+                                        <Check className="w-4 h-4 text-green-500 mt-1" />
                                         <span>We never sell your personal information to third parties</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-green-500 mt-1">✓</span>
+                                        <Check className="w-4 h-4 text-green-500 mt-1" />
                                         <span>We implement strong security measures to protect your data</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-green-500 mt-1">✓</span>
+                                        <Check className="w-4 h-4 text-green-500 mt-1" />
                                         <span>You have control over your personal information</span>
                                     </li>
                                 </ul>
@@ -133,7 +178,7 @@ export default function PrivacyPolicy() {
                                 <h3 className="text-xl font-bold text-gray-900 mb-3">Information You Provide</h3>
                                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                        <div className="text-2xl mb-3">👤</div>
+                                        <User className="w-6 h-6 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Account Information</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Name and contact details</li>
@@ -143,7 +188,7 @@ export default function PrivacyPolicy() {
                                         </ul>
                                     </div>
                                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                        <div className="text-2xl mb-3">💰</div>
+                                        <Coins className="w-6 h-6 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Payment Information</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Payment method details</li>
@@ -153,7 +198,7 @@ export default function PrivacyPolicy() {
                                         </ul>
                                     </div>
                                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                        <div className="text-2xl mb-3">📄</div>
+                                        <FileText className="w-6 h-6 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Campaign Information</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Campaign details and story</li>
@@ -163,7 +208,7 @@ export default function PrivacyPolicy() {
                                         </ul>
                                     </div>
                                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                        <div className="text-2xl mb-3">💬</div>
+                                        <MessageCircle className="w-6 h-6 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Communication Data</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Messages to support</li>
@@ -183,19 +228,19 @@ export default function PrivacyPolicy() {
                                             <h4 className="font-bold text-gray-900 mb-2">Technical Information</h4>
                                             <ul className="text-gray-600 space-y-1">
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">🌐</span>
+                                                    <Globe className="w-4 h-4 text-orange-500" />
                                                     <span>IP address and device information</span>
                                                 </li>
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">📱</span>
+                                                    <Smartphone className="w-4 h-4 text-orange-500" />
                                                     <span>Browser type and version</span>
                                                 </li>
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">📍</span>
+                                                    <MapPin className="w-4 h-4 text-orange-500" />
                                                     <span>General location data</span>
                                                 </li>
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">⏰</span>
+                                                    <Clock className="w-4 h-4 text-orange-500" />
                                                     <span>Time zone and language settings</span>
                                                 </li>
                                             </ul>
@@ -204,19 +249,19 @@ export default function PrivacyPolicy() {
                                             <h4 className="font-bold text-gray-900 mb-2">Usage Information</h4>
                                             <ul className="text-gray-600 space-y-1">
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">📊</span>
+                                                    <BarChart3 className="w-4 h-4 text-orange-500" />
                                                     <span>Pages visited and time spent</span>
                                                 </li>
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">🔗</span>
+                                                    <Link2 className="w-4 h-4 text-orange-500" />
                                                     <span>Referring website information</span>
                                                 </li>
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">🖱️</span>
+                                                    <MousePointer2 className="w-4 h-4 text-orange-500" />
                                                     <span>Click patterns and interactions</span>
                                                 </li>
                                                 <li className="flex items-center gap-2">
-                                                    <span className="text-orange-500">📈</span>
+                                                    <TrendingUp className="w-4 h-4 text-orange-500" />
                                                     <span>Error logs and performance data</span>
                                                 </li>
                                             </ul>
@@ -232,15 +277,15 @@ export default function PrivacyPolicy() {
                                 </p>
                                 <ul className="text-gray-600 space-y-2">
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">🔒</span>
+                                        <Lock className="w-4 h-4 text-orange-500 mt-0.5" />
                                         <span>Social media platforms when you connect your account</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">🤝</span>
+                                        <Handshake className="w-4 h-4 text-orange-500 mt-0.5" />
                                         <span>Partners who help us verify campaign information</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500">📧</span>
+                                        <Mail className="w-4 h-4 text-orange-500 mt-0.5" />
                                         <span>Marketing partners for analytics and improvement</span>
                                     </li>
                                 </ul>
@@ -257,7 +302,7 @@ export default function PrivacyPolicy() {
                         <div className="space-y-6">
                             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                                    <span className="text-2xl">🎯</span>
+                                    <Target className="w-5 h-5 text-orange-600" />
                                     <span>To Provide Our Services</span>
                                 </h3>
                                 <ul className="text-gray-600 space-y-2">
@@ -271,7 +316,7 @@ export default function PrivacyPolicy() {
 
                             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                                    <span className="text-2xl">🔒</span>
+                                    <Lock className="w-5 h-5 text-orange-600" />
                                     <span>For Security and Fraud Prevention</span>
                                 </h3>
                                 <ul className="text-gray-600 space-y-2">
@@ -284,7 +329,7 @@ export default function PrivacyPolicy() {
 
                             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                                    <span className="text-2xl">📈</span>
+                                    <TrendingUp className="w-5 h-5 text-orange-600" />
                                     <span>To Improve Our Platform</span>
                                 </h3>
                                 <ul className="text-gray-600 space-y-2">
@@ -298,7 +343,7 @@ export default function PrivacyPolicy() {
 
                             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                                    <span className="text-2xl">📢</span>
+                                    <Megaphone className="w-5 h-5 text-orange-600" />
                                     <span>Communication</span>
                                 </h3>
                                 <ul className="text-gray-600 space-y-2">
@@ -317,17 +362,17 @@ export default function PrivacyPolicy() {
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                                     <div className="text-center p-4 bg-white rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-2">🤝</div>
+                                        <Handshake className="w-8 h-8 mb-2 text-orange-600 mx-auto" />
                                         <h4 className="font-bold text-gray-900">Consent</h4>
                                         <p className="text-sm text-gray-600">When you explicitly agree</p>
                                     </div>
                                     <div className="text-center p-4 bg-white rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-2">📜</div>
+                                        <ScrollText className="w-8 h-8 mb-2 text-orange-600 mx-auto" />
                                         <h4 className="font-bold text-gray-900">Contract</h4>
                                         <p className="text-sm text-gray-600">To fulfill our services</p>
                                     </div>
                                     <div className="text-center p-4 bg-white rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-2">⚖️</div>
+                                        <Scale className="w-8 h-8 mb-2 text-orange-600 mx-auto" />
                                         <h4 className="font-bold text-gray-900">Legal Obligation</h4>
                                         <p className="text-sm text-gray-600">To comply with laws</p>
                                     </div>
@@ -349,7 +394,7 @@ export default function PrivacyPolicy() {
                                 <div className="space-y-6">
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span className="text-blue-500">🏦</span>
+                                            <Landmark className="w-4 h-4 text-blue-500" />
                                             <span>Payment Processors</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -360,7 +405,7 @@ export default function PrivacyPolicy() {
 
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span className="text-green-500">🤝</span>
+                                            <Users className="w-4 h-4 text-green-500" />
                                             <span>Campaign Beneficiaries</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -371,7 +416,7 @@ export default function PrivacyPolicy() {
 
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span className="text-purple-500">⚙️</span>
+                                            <Settings className="w-4 h-4 text-purple-500" />
                                             <span>Service Providers</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -382,7 +427,7 @@ export default function PrivacyPolicy() {
 
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span className="text-red-500">⚖️</span>
+                                            <Scale className="w-4 h-4 text-red-500" />
                                             <span>Legal Requirements</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -397,7 +442,7 @@ export default function PrivacyPolicy() {
                                 <h3 className="text-lg font-bold text-gray-900 mb-4">What We Never Do</h3>
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
-                                        <span className="text-red-500 text-xl">❌</span>
+                                        <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
                                         <div>
                                             <h4 className="font-bold text-gray-900">We Never Sell Your Data</h4>
                                             <p className="text-gray-700 text-sm">
@@ -406,7 +451,7 @@ export default function PrivacyPolicy() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <span className="text-red-500 text-xl">❌</span>
+                                        <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
                                         <div>
                                             <h4 className="font-bold text-gray-900">No Unnecessary Sharing</h4>
                                             <p className="text-gray-700 text-sm">
@@ -415,7 +460,7 @@ export default function PrivacyPolicy() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
-                                        <span className="text-red-500 text-xl">❌</span>
+                                        <XCircle className="w-5 h-5 text-red-500 mt-0.5" />
                                         <div>
                                             <h4 className="font-bold text-gray-900">No Unauthorized Access</h4>
                                             <p className="text-gray-700 text-sm">
@@ -445,34 +490,35 @@ export default function PrivacyPolicy() {
 
                         <div className="space-y-8">
                             <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-8 rounded-2xl border border-orange-200">
-                                <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                                    🔒 Our Security Measures
+                                <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center flex items-center justify-center gap-2">
+                                    <Lock className="w-6 h-6 text-orange-600" />
+                                    Our Security Measures
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="bg-white p-5 rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-3">🔐</div>
+                                        <KeyRound className="w-7 h-7 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Encryption</h4>
                                         <p className="text-sm text-gray-600">
                                             All data is encrypted in transit using TLS 1.2+ and at rest using AES-256 encryption.
                                         </p>
                                     </div>
                                     <div className="bg-white p-5 rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-3">🛡️</div>
+                                        <Shield className="w-7 h-7 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Access Controls</h4>
                                         <p className="text-sm text-gray-600">
                                             Strict access controls and authentication mechanisms for all systems.
                                         </p>
                                     </div>
                                     <div className="bg-white p-5 rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-3">📊</div>
+                                        <BarChart3 className="w-7 h-7 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Regular Audits</h4>
                                         <p className="text-sm text-gray-600">
                                             Regular security audits, vulnerability assessments, and penetration testing.
                                         </p>
                                     </div>
                                     <div className="bg-white p-5 rounded-xl border border-orange-200">
-                                        <div className="text-3xl mb-3">🔄</div>
+                                        <RefreshCw className="w-7 h-7 mb-3 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Backups & Recovery</h4>
                                         <p className="text-sm text-gray-600">
                                             Regular backups and disaster recovery procedures to ensure data availability.
@@ -484,7 +530,7 @@ export default function PrivacyPolicy() {
                             <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Payment Security</h3>
                                 <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
-                                    <div className="text-4xl">💳</div>
+                                    <CreditCard className="w-10 h-10 text-orange-600" />
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2">PCI-DSS Compliant</h4>
                                         <p className="text-gray-600">
@@ -492,11 +538,13 @@ export default function PrivacyPolicy() {
                                             We never store complete credit card numbers on our servers.
                                         </p>
                                         <div className="flex items-center gap-4 mt-3">
-                                            <div className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                                                🔒 Secure Transactions
+                                            <div className="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full inline-flex items-center gap-1">
+                                                <Lock className="w-3 h-3" />
+                                                Secure Transactions
                                             </div>
-                                            <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
-                                                💳 Tokenized Payments
+                                            <div className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full inline-flex items-center gap-1">
+                                                <CreditCard className="w-3 h-3" />
+                                                Tokenized Payments
                                             </div>
                                         </div>
                                     </div>
@@ -510,31 +558,31 @@ export default function PrivacyPolicy() {
                                 </p>
                                 <ul className="text-gray-600 space-y-2">
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">🔑</span>
+                                        <Key className="w-4 h-4 text-orange-500 mt-1" />
                                         <span>Use a strong, unique password for your account</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">🚫</span>
-                                        <span>Never share your login credentials with others</span>
+                                        <Ban className="w-4 h-4 text-orange-500 mt-1" />
+                                        <span>Never share your login credentials with anyone</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">📱</span>
-                                        <span>Log out from shared devices</span>
+                                        <Smartphone className="w-4 h-4 text-orange-500 mt-1" />
+                                        <span>Enable two-factor authentication when available</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">🔔</span>
-                                        <span>Enable two-factor authentication if available</span>
+                                        <Bell className="w-4 h-4 text-orange-500 mt-1" />
+                                        <span>Monitor your account for suspicious activity</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">📧</span>
-                                        <span>Be cautious of phishing attempts</span>
+                                        <Mail className="w-4 h-4 text-orange-500 mt-1" />
+                                        <span>Report any security concerns to support immediately</span>
                                     </li>
                                 </ul>
                             </div>
 
                             <div className="bg-gradient-to-r from-red-50 to-orange-50 p-6 rounded-2xl border border-red-200">
                                 <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                                    <span>⚠️</span>
+                                    <AlertTriangle className="w-5 h-5 text-orange-600" />
                                     <span>Data Breach Response</span>
                                 </h3>
                                 <p className="text-gray-700">
@@ -565,32 +613,32 @@ export default function PrivacyPolicy() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                        <div className="text-2xl mb-2">👁️</div>
+                                        <Eye className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Right to Access</h4>
                                         <p className="text-sm text-gray-600">Access the personal information we hold about you</p>
                                     </div>
                                     <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                        <div className="text-2xl mb-2">✏️</div>
+                                        <Pencil className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Right to Correct</h4>
                                         <p className="text-sm text-gray-600">Request correction of inaccurate information</p>
                                     </div>
                                     <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                        <div className="text-2xl mb-2">🗑️</div>
+                                        <XCircle className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Right to Delete</h4>
                                         <p className="text-sm text-gray-600">Request deletion of your personal information</p>
                                     </div>
                                     <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                        <div className="text-2xl mb-2">⏸️</div>
+                                        <Pause className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Right to Restrict</h4>
                                         <p className="text-sm text-gray-600">Restrict processing of your information</p>
                                     </div>
                                     <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                        <div className="text-2xl mb-2">📥</div>
+                                        <Download className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Right to Portability</h4>
                                         <p className="text-sm text-gray-600">Receive your data in a portable format</p>
                                     </div>
                                     <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                        <div className="text-2xl mb-2">🚫</div>
+                                        <Ban className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Right to Object</h4>
                                         <p className="text-sm text-gray-600">Object to certain processing activities</p>
                                     </div>
@@ -603,7 +651,7 @@ export default function PrivacyPolicy() {
                                 <div className="space-y-4">
                                     <div className="p-4 bg-gray-50 rounded-xl">
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span>📧</span>
+                                            <Mail className="w-4 h-4 text-orange-600" />
                                             <span>Contact Our Privacy Team</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -613,7 +661,7 @@ export default function PrivacyPolicy() {
 
                                     <div className="p-4 bg-gray-50 rounded-xl">
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span>⚙️</span>
+                                            <Settings className="w-4 h-4 text-orange-600" />
                                             <span>Account Settings</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -623,7 +671,7 @@ export default function PrivacyPolicy() {
 
                                     <div className="p-4 bg-gray-50 rounded-xl">
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span>📄</span>
+                                            <FileText className="w-4 h-4 text-orange-600" />
                                             <span>Verification Required</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -640,19 +688,19 @@ export default function PrivacyPolicy() {
                                 </p>
                                 <ul className="text-gray-600 space-y-2">
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">💳</span>
+                                        <CreditCard className="w-4 h-4 text-orange-500 mt-1" />
                                         <span>We retain certain transaction records as required by law</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">📊</span>
+                                        <BarChart3 className="w-4 h-4 text-orange-500 mt-1" />
                                         <span>Campaign information may be preserved for transparency</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">⏳</span>
+                                        <Clock className="w-4 h-4 text-orange-500 mt-1" />
                                         <span>Deletion requests are processed within 30 days</span>
                                     </li>
                                     <li className="flex items-start gap-2">
-                                        <span className="text-orange-500 mt-1">📧</span>
+                                        <Mail className="w-4 h-4 text-orange-500 mt-1" />
                                         <span>You'll receive confirmation once deletion is complete</span>
                                     </li>
                                 </ul>
@@ -676,17 +724,17 @@ export default function PrivacyPolicy() {
 
                                 <div className="grid md:grid-cols-3 gap-4">
                                     <div className="bg-orange-50 p-4 rounded-xl border border-orange-200">
-                                        <div className="text-2xl mb-2">🔒</div>
+                                        <Lock className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Essential Cookies</h4>
                                         <p className="text-sm text-gray-600">Required for basic site functionality</p>
                                     </div>
                                     <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                                        <div className="text-2xl mb-2">⚙️</div>
+                                        <Settings className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Preference Cookies</h4>
                                         <p className="text-sm text-gray-600">Remember your settings and preferences</p>
                                     </div>
                                     <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200">
-                                        <div className="text-2xl mb-2">📈</div>
+                                        <TrendingUp className="w-6 h-6 mb-2 text-orange-600" />
                                         <h4 className="font-bold text-gray-900 mb-2">Analytics Cookies</h4>
                                         <p className="text-sm text-gray-600">Help us understand how you use our site</p>
                                     </div>
@@ -699,7 +747,7 @@ export default function PrivacyPolicy() {
                                 <div className="space-y-4">
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span>🌐</span>
+                                            <Globe className="w-4 h-4 text-orange-600" />
                                             <span>Browser Settings</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -710,7 +758,7 @@ export default function PrivacyPolicy() {
 
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span>⚡</span>
+                                            <Zap className="w-4 h-4 text-orange-600" />
                                             <span>Cookie Banner</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -721,7 +769,7 @@ export default function PrivacyPolicy() {
 
                                     <div>
                                         <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                            <span>🚫</span>
+                                            <Ban className="w-4 h-4 text-orange-600" />
                                             <span>Opt-Out Options</span>
                                         </h4>
                                         <p className="text-gray-600">
@@ -786,19 +834,19 @@ export default function PrivacyPolicy() {
                                         <h4 className="font-bold text-gray-900 mb-2">How We Notify You</h4>
                                         <ul className="text-gray-600 space-y-2">
                                             <li className="flex items-start gap-2">
-                                                <span className="text-orange-500 mt-1">📧</span>
+                                                <Mail className="w-4 h-4 text-orange-500 mt-1" />
                                                 <span>Email notifications for significant changes</span>
                                             </li>
                                             <li className="flex items-start gap-2">
-                                                <span className="text-orange-500 mt-1">🔔</span>
+                                                <Bell className="w-4 h-4 text-orange-500 mt-1" />
                                                 <span>In-app notifications and banners</span>
                                             </li>
                                             <li className="flex items-start gap-2">
-                                                <span className="text-orange-500 mt-1">📱</span>
+                                                <Smartphone className="w-4 h-4 text-orange-500 mt-1" />
                                                 <span>Updated "Last Updated" date on this page</span>
                                             </li>
                                             <li className="flex items-start gap-2">
-                                                <span className="text-orange-500 mt-1">📄</span>
+                                                <FileText className="w-4 h-4 text-orange-500 mt-1" />
                                                 <span>Version history available upon request</span>
                                             </li>
                                         </ul>
@@ -901,7 +949,7 @@ export default function PrivacyPolicy() {
                         <div className="space-y-8">
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                                    <div className="text-4xl mb-4">📧</div>
+                                    <Mail className="w-10 h-10 mb-4 text-orange-600" />
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">Email Us</h3>
                                     <p className="text-gray-600 mb-4">
                                         For privacy-related inquiries, please email our dedicated privacy team.
@@ -913,7 +961,7 @@ export default function PrivacyPolicy() {
                                 </div>
 
                                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                                    <div className="text-4xl mb-4">📞</div>
+                                    <Phone className="w-10 h-10 mb-4 text-orange-600" />
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">Call Us</h3>
                                     <p className="text-gray-600 mb-4">
                                         For urgent privacy matters, you can call our support team.
@@ -929,7 +977,7 @@ export default function PrivacyPolicy() {
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Mailing Address</h3>
                                 <div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
                                     <div className="flex items-start gap-3">
-                                        <span className="text-2xl mt-1">🏢</span>
+                                        <Building2 className="w-6 h-6 mt-1 text-orange-600" />
                                         <div>
                                             <p className="font-bold text-gray-900">SangKumFund Privacy Team</p>
                                             <p className="text-gray-600">Building 123, Street 456</p>
@@ -972,7 +1020,7 @@ export default function PrivacyPolicy() {
                             </div>
 
                             <div className="text-center p-8 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl border border-orange-200">
-                                <div className="text-5xl mb-4">🤝</div>
+                                <Handshake className="w-10 h-10 mb-4 text-orange-600 mx-auto" />
                                 <h3 className="text-2xl font-bold text-gray-900 mb-3">Thank You</h3>
                                 <p className="text-gray-700 max-w-2xl mx-auto">
                                     Thank you for taking the time to read our Privacy Policy. We are committed to
@@ -991,7 +1039,7 @@ export default function PrivacyPolicy() {
                         href="/terms-of-service"
                         className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
                     >
-                        <div className="text-2xl mb-2">📜</div>
+                        <ScrollText className="w-6 h-6 mb-2 text-orange-600 mx-auto" />
                         <h4 className="font-bold text-gray-900">Terms of Service</h4>
                         <p className="text-sm text-gray-600">Read our terms and conditions</p>
                     </Link>
@@ -999,7 +1047,7 @@ export default function PrivacyPolicy() {
                         href="/help-center"
                         className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
                     >
-                        <div className="text-2xl mb-2">❓</div>
+                        <HelpCircle className="w-6 h-6 mb-2 text-orange-600 mx-auto" />
                         <h4 className="font-bold text-gray-900">Help Center</h4>
                         <p className="text-sm text-gray-600">Get help with privacy questions</p>
                     </Link>
@@ -1007,7 +1055,7 @@ export default function PrivacyPolicy() {
                         href="/contact"
                         className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
                     >
-                        <div className="text-2xl mb-2">📞</div>
+                        <Phone className="w-6 h-6 mb-2 text-orange-600 mx-auto" />
                         <h4 className="font-bold text-gray-900">Contact Us</h4>
                         <p className="text-sm text-gray-600">Get in touch with our team</p>
                     </Link>
