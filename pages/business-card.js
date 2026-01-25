@@ -2,16 +2,51 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { businessCardsAPI, userAPI } from '@/lib/api';
 import QRCode from 'qrcode.react';
+import {
+  Rocket,
+  Gem,
+  Rainbow,
+  Sunset,
+  Sparkles,
+  Sun,
+  Flame,
+  Star,
+  Briefcase,
+  Edit,
+  Eye,
+  AlignCenter,
+  AlignLeft,
+  Circle,
+  Palette,
+  Loader2,
+  ArrowLeft,
+  Mail,
+  Phone,
+  Globe,
+  Linkedin,
+  Twitter,
+  Github,
+  Instagram,
+  Facebook,
+  Users,
+  Share2,
+  Link as LinkIcon,
+  Copy,
+  Smartphone,
+  MessageCircle,
+  Save,
+  Download,
+} from 'lucide-react';
 
 const templates = [
-  { id: 'orange-modern', name: 'Modern Orange', gradient: 'from-orange-500 to-amber-600', icon: '🚀' },
-  { id: 'orange-elegant', name: 'Elegant', gradient: 'from-orange-800 to-amber-800', icon: '💎' },
-  { id: 'orange-vibrant', name: 'Vibrant', gradient: 'from-orange-500 to-red-500', icon: '🌈' },
-  { id: 'sunset', name: 'Sunset', gradient: 'from-orange-400 to-red-600', icon: '🌅' },
-  { id: 'amber-glow', name: 'Amber Glow', gradient: 'from-amber-500 to-orange-400', icon: '✨' },
-  { id: 'citrus', name: 'Citrus', gradient: 'from-orange-500 to-yellow-500', icon: '🍊' },
-  { id: 'warm', name: 'Warm', gradient: 'from-orange-600 to-amber-400', icon: '🔥' },
-  { id: 'golden', name: 'Golden', gradient: 'from-yellow-600 to-orange-500', icon: '🌟' },
+  { id: 'orange-modern', name: 'Modern Orange', gradient: 'from-orange-500 to-amber-600', Icon: Rocket },
+  { id: 'orange-elegant', name: 'Elegant', gradient: 'from-orange-800 to-amber-800', Icon: Gem },
+  { id: 'orange-vibrant', name: 'Vibrant', gradient: 'from-orange-500 to-red-500', Icon: Rainbow },
+  { id: 'sunset', name: 'Sunset', gradient: 'from-orange-400 to-red-600', Icon: Sunset },
+  { id: 'amber-glow', name: 'Amber Glow', gradient: 'from-amber-500 to-orange-400', Icon: Sparkles },
+  { id: 'citrus', name: 'Citrus', gradient: 'from-orange-500 to-yellow-500', Icon: Sun },
+  { id: 'warm', name: 'Warm', gradient: 'from-orange-600 to-amber-400', Icon: Flame },
+  { id: 'golden', name: 'Golden', gradient: 'from-yellow-600 to-orange-500', Icon: Star },
 ];
 
 const cardStyles = [
@@ -22,10 +57,10 @@ const cardStyles = [
 ];
 
 const cardLayouts = [
-  { id: 'centered', name: 'Centered', icon: '📍' },
-  { id: 'left-aligned', name: 'Left', icon: '◀️' },
-  { id: 'minimal', name: 'Minimal', icon: '⚪' },
-  { id: 'creative', name: 'Creative', icon: '🎨' },
+  { id: 'centered', name: 'Centered', Icon: AlignCenter },
+  { id: 'left-aligned', name: 'Left', Icon: AlignLeft },
+  { id: 'minimal', name: 'Minimal', Icon: Circle },
+  { id: 'creative', name: 'Creative', Icon: Palette },
 ];
 
 const fontStyles = [
@@ -195,7 +230,7 @@ export default function BusinessCardPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50 to-white">
           <div className="text-center">
-            <div className="text-6xl mb-4 animate-pulse">💼</div>
+            <Loader2 className="w-12 h-12 text-orange-600 animate-spin mx-auto mb-4" />
             <p className="text-gray-600">Loading...</p>
           </div>
         </div>
@@ -208,7 +243,7 @@ export default function BusinessCardPage() {
           {/* Header */}
           <div className="text-center mb-8 animate-fadeIn">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-amber-100 rounded-full mb-4">
-              <span className="text-lg">💼</span>
+              <Briefcase className="w-5 h-5 text-orange-700" />
               <span className="text-sm font-medium text-orange-800">Professional Network</span>
             </div>
             <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
@@ -220,11 +255,11 @@ export default function BusinessCardPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Editor */}
             <div className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn border border-gray-100">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {editing ? '✏️ Edit Card' : '👁️ View Mode'}
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  {editing ? <Edit className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {editing ? 'Edit Card' : 'View Mode'}
                 </h2>
                 <button
                     onClick={() => setEditing(!editing)}
@@ -240,22 +275,25 @@ export default function BusinessCardPage() {
                     <div>
                       <label className="block text-gray-700 font-semibold mb-3">Card Template</label>
                       <div className="grid grid-cols-2 gap-3">
-                        {templates.map((template) => (
-                            <button
-                                key={template.id}
-                                onClick={() => handleChange('template', template.id)}
-                                className={`p-4 rounded-xl border-2 transition-all ${
-                                    formData.template === template.id
-                                        ? 'border-orange-600 bg-gradient-to-r from-orange-50 to-amber-50 shadow-lg'
-                                        : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
-                                }`}
-                            >
-                              <div className={`h-12 rounded-lg bg-gradient-to-r ${template.gradient} mb-2 flex items-center justify-center text-2xl`}>
-                                {template.icon}
-                              </div>
-                              <p className="font-semibold text-sm">{template.name}</p>
-                            </button>
-                        ))}
+                        {templates.map((template) => {
+                          const TemplateIcon = template.Icon;
+                          return (
+                              <button
+                                  key={template.id}
+                                  onClick={() => handleChange('template', template.id)}
+                                  className={`p-4 rounded-xl border-2 transition-all ${
+                                      formData.template === template.id
+                                          ? 'border-orange-600 bg-gradient-to-r from-orange-50 to-amber-50 shadow-lg'
+                                          : 'border-gray-200 hover:border-orange-300 hover:shadow-md'
+                                  }`}
+                              >
+                                <div className={`h-12 rounded-lg bg-gradient-to-r ${template.gradient} mb-2 flex items-center justify-center text-white`}>
+                                  <TemplateIcon className="w-6 h-6" />
+                                </div>
+                                <p className="font-semibold text-sm">{template.name}</p>
+                              </button>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -284,20 +322,25 @@ export default function BusinessCardPage() {
                     <div>
                       <label className="block text-gray-700 font-semibold mb-3">Layout</label>
                       <div className="grid grid-cols-4 gap-2">
-                        {cardLayouts.map((layout) => (
-                            <button
-                                key={layout.id}
-                                onClick={() => handleChange('layout', layout.id)}
-                                className={`p-3 rounded-lg border-2 transition-all ${
-                                    formData.layout === layout.id
-                                        ? 'border-orange-600 bg-gradient-to-r from-orange-50 to-amber-50'
-                                        : 'border-gray-200 hover:border-orange-300'
-                                }`}
-                            >
-                              <div className="text-2xl mb-1">{layout.icon}</div>
-                              <p className="text-xs font-semibold">{layout.name}</p>
-                            </button>
-                        ))}
+                        {cardLayouts.map((layout) => {
+                          const LayoutIcon = layout.Icon;
+                          return (
+                              <button
+                                  key={layout.id}
+                                  onClick={() => handleChange('layout', layout.id)}
+                                  className={`p-3 rounded-lg border-2 transition-all ${
+                                      formData.layout === layout.id
+                                          ? 'border-orange-600 bg-gradient-to-r from-orange-50 to-amber-50'
+                                          : 'border-gray-200 hover:border-orange-300'
+                                  }`}
+                              >
+                                <div className="text-2xl mb-1 flex justify-center">
+                                  <LayoutIcon className="w-6 h-6" />
+                                </div>
+                                <p className="text-xs font-semibold">{layout.name}</p>
+                              </button>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -399,63 +442,63 @@ export default function BusinessCardPage() {
                             type="email"
                             value={formData.contactInfo.email || ''}
                             onChange={(e) => handleContactChange('email', e.target.value)}
-                            placeholder="📧 Email"
+                          placeholder="Email"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="tel"
                             value={formData.contactInfo.phone || ''}
                             onChange={(e) => handleContactChange('phone', e.target.value)}
-                            placeholder="📞 Phone"
+                          placeholder="Phone"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="url"
                             value={formData.contactInfo.website || ''}
                             onChange={(e) => handleContactChange('website', e.target.value)}
-                            placeholder="🌐 Website"
+                          placeholder="Website"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="text"
                             value={formData.contactInfo.linkedin || ''}
                             onChange={(e) => handleContactChange('linkedin', e.target.value)}
-                            placeholder="💼 LinkedIn"
+                          placeholder="LinkedIn"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="text"
                             value={formData.contactInfo.twitter || ''}
                             onChange={(e) => handleContactChange('twitter', e.target.value)}
-                            placeholder="🐦 Twitter (@username)"
+                          placeholder="Twitter (@username)"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="text"
                             value={formData.contactInfo.github || ''}
                             onChange={(e) => handleContactChange('github', e.target.value)}
-                            placeholder="💻 GitHub (@username)"
+                          placeholder="GitHub (@username)"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="text"
                             value={formData.contactInfo.instagram || ''}
                             onChange={(e) => handleContactChange('instagram', e.target.value)}
-                            placeholder="📷 Instagram (@username)"
+                          placeholder="Instagram (@username)"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="text"
                             value={formData.contactInfo.facebook || ''}
                             onChange={(e) => handleContactChange('facebook', e.target.value)}
-                            placeholder="👥 Facebook"
+                            placeholder="Facebook"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                         <input
                             type="tel"
                             value={formData.contactInfo.whatsapp || ''}
                             onChange={(e) => handleContactChange('whatsapp', e.target.value)}
-                            placeholder="💬 WhatsApp"
+                            placeholder="WhatsApp"
                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none bg-white"
                         />
                       </div>
@@ -469,12 +512,12 @@ export default function BusinessCardPage() {
                     >
                       {saving ? (
                           <>
-                            <span className="animate-spin">⏳</span>
+                            <Loader2 className="w-4 h-4 animate-spin" />
                             <span>Saving...</span>
                           </>
                       ) : (
                           <>
-                            <span>💾</span>
+                            <Save className="w-4 h-4" />
                             <span>Save Card</span>
                           </>
                       )}
@@ -482,7 +525,7 @@ export default function BusinessCardPage() {
                   </div>
               ) : (
                   <div className="text-center py-8 text-gray-600 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
-                    <div className="text-4xl mb-3">👈</div>
+                    <ArrowLeft className="w-8 h-8 mx-auto mb-3 text-orange-500" />
                     <p className="font-medium text-gray-900">Your card preview is on the right</p>
                     <p className="text-sm text-gray-600 mt-1">Click "Edit" to customize your card</p>
                   </div>
@@ -494,7 +537,7 @@ export default function BusinessCardPage() {
               {/* Card Preview */}
               <div className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn border border-gray-100" style={{ animationDelay: '0.1s' }}>
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span>👁️</span>
+                  <Eye className="w-5 h-5" />
                   <span>Preview</span>
                 </h2>
 
@@ -590,7 +633,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`Email: ${formData.contactInfo.email}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>📧</span>
+                          <Mail className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.phone && (
@@ -601,7 +644,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`Phone: ${formData.contactInfo.phone}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>📞</span>
+                          <Phone className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.whatsapp && (
@@ -614,7 +657,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`WhatsApp: ${formData.contactInfo.whatsapp}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>💬</span>
+                          <MessageCircle className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.website && (
@@ -627,7 +670,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`Website: ${formData.contactInfo.website}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>🌐</span>
+                          <Globe className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.linkedin && (
@@ -640,7 +683,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`LinkedIn: ${formData.contactInfo.linkedin}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>💼</span>
+                          <Linkedin className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.twitter && (
@@ -653,7 +696,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`Twitter: ${formData.contactInfo.twitter}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>🐦</span>
+                          <Twitter className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.github && (
@@ -666,7 +709,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`GitHub: ${formData.contactInfo.github}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>💻</span>
+                          <Github className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.instagram && (
@@ -679,7 +722,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`Instagram: ${formData.contactInfo.instagram}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>📷</span>
+                          <Instagram className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                     {formData.contactInfo.facebook && (
@@ -692,7 +735,7 @@ export default function BusinessCardPage() {
                             } bg-white bg-opacity-20 rounded-full flex items-center justify-center backdrop-blur hover:bg-opacity-30 transition-all cursor-pointer border border-white border-opacity-20 hover:border-opacity-40`}
                             title={`Facebook: ${formData.contactInfo.facebook}`}
                         >
-                          <span className={formData.layout === 'minimal' ? 'text-lg' : 'text-xl'}>👥</span>
+                          <Facebook className={formData.layout === 'minimal' ? 'w-5 h-5' : 'w-6 h-6'} />
                         </a>
                     )}
                   </div>
@@ -703,19 +746,21 @@ export default function BusinessCardPage() {
               {card && (
                   <div className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn border border-gray-100" style={{ animationDelay: '0.2s' }}>
                     <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                      <span>📤</span>
+                      <Share2 className="w-5 h-5" />
                       <span>Share Your Card</span>
                     </h2>
 
                     {/* QR Code */}
                     <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-8 rounded-2xl mb-6 text-center border-2 border-orange-200">
                       <QRCode value={shareUrl} size={180} className="mx-auto mb-4" level="H" />
-                      <p className="text-sm text-gray-600 font-semibold">📱 Scan QR Code to view card</p>
+                      <p className="text-sm text-gray-600 font-semibold flex items-center gap-2 justify-center"><Smartphone className="w-4 h-4" /> Scan QR Code to view card</p>
                     </div>
 
                     {/* Share Link */}
                     <div className="mb-4">
-                      <label className="block text-gray-700 font-semibold mb-2">🔗 Share Link</label>
+                      <label className="block text-gray-700 font-semibold mb-2 flex items-center gap-2">
+                        <LinkIcon className="w-4 h-4" /> Share Link
+                      </label>
                       <div className="flex gap-2">
                         <input
                             type="text"
@@ -726,11 +771,11 @@ export default function BusinessCardPage() {
                         <button
                             onClick={() => {
                               navigator.clipboard.writeText(shareUrl);
-                              alert('✅ Link copied to clipboard!');
+                              alert('Link copied to clipboard!');
                             }}
                             className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-semibold hover:from-orange-700 hover:to-amber-700 transition-colors shadow-md flex items-center gap-2"
                         >
-                          <span>📋</span>
+                          <Copy className="w-4 h-4" />
                           <span>Copy</span>
                         </button>
                       </div>
@@ -741,7 +786,7 @@ export default function BusinessCardPage() {
                         onClick={downloadVCard}
                         className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
                     >
-                      <span>📥</span>
+                      <Download className="w-4 h-4" />
                       <span>Download Contact Card (.vcf)</span>
                     </button>
                     <p className="text-xs text-gray-500 mt-2 text-center">

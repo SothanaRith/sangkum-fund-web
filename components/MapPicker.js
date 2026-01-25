@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
+import { MapPin, Lightbulb } from 'lucide-react';
 
 // Dynamic import to avoid SSR issues with Leaflet
 const MapPickerContent = dynamic(() => import('./MapPickerContent'), {
@@ -22,7 +23,9 @@ export default function MapPicker({ isOpen, onClose, onSelectLocation, initialLa
         <div className="bg-gradient-to-r from-primary-600 to-purple-600 text-white p-6">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold">📍 Select Event Location</h2>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <MapPin className="w-7 h-7" /> Select Event Location
+              </h2>
               <p className="text-sm text-white/80 mt-1">Click on the map to set coordinates</p>
             </div>
             <button
@@ -48,8 +51,8 @@ export default function MapPicker({ isOpen, onClose, onSelectLocation, initialLa
         {/* Footer */}
         <div className="bg-gray-50 p-4 border-t border-gray-200">
           <div className="flex justify-between items-center">
-            <p className="text-sm text-gray-600">
-              💡 Tip: Click anywhere on the map to set your event location
+            <p className="text-sm text-gray-600 flex items-center gap-1">
+              <Lightbulb className="w-4 h-4" /> Tip: Click anywhere on the map to set your event location
             </p>
             <button
               onClick={onClose}

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { adminDonationsAPI } from '@/lib/admin-api';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { CreditCard, Search } from 'lucide-react';
 
 export default function AdminDonations() {
   const router = useRouter();
@@ -131,9 +132,10 @@ export default function AdminDonations() {
             <Link href="/admin" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-block">
               ← Back to Dashboard
             </Link>
-            <h1 className="text-4xl font-bold">
+            <h1 className="text-4xl font-bold flex items-center gap-3">
+              <CreditCard className="w-9 h-9 text-primary-600" />
               <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-                💳 Donation Management
+                Donation Management
               </span>
             </h1>
           </div>
@@ -165,7 +167,7 @@ export default function AdminDonations() {
             <div>
               <input
                 type="text"
-                placeholder="🔍 Search by event, donor, or transaction..."
+                placeholder="Search by event, donor, or transaction..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
@@ -276,7 +278,7 @@ export default function AdminDonations() {
 
           {filteredDonations.length === 0 && (
             <div className="text-center py-12">
-              <div className="text-7xl mb-4">🔍</div>
+              <Search className="w-28 h-28 mb-4 text-gray-300" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No donations found</h3>
               <p className="text-gray-600">Try adjusting your filters</p>
             </div>

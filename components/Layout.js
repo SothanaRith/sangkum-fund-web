@@ -15,6 +15,7 @@ import {
   Mail,
   MapPin,
   Menu,
+  Newspaper,
   Phone,
   Settings,
   SlidersHorizontal,
@@ -139,6 +140,17 @@ export default function Layout({ children }) {
                     <HelpCircle className="inline-block w-4 h-4 mr-2" />
                     {t('nav.helpCenter')}
                   </Link>
+                  <Link
+                      href="/blog"
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          isActive('/blog')
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'
+                      }`}
+                  >
+                    <Newspaper className="inline-block w-4 h-4 mr-2" />
+                    Blog
+                  </Link>
                   {isLoggedIn && (
                       <>
                         <Link
@@ -262,6 +274,13 @@ export default function Layout({ children }) {
                   >
                     <HelpCircle className="inline-block w-4 h-4 mr-2" />
                     {t('nav.helpCenter')}
+                  </Link>
+                  <Link
+                      href="/blog"
+                      className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                  >
+                    <Newspaper className="inline-block w-4 h-4 mr-2" />
+                    Blog
                   </Link>
                   {isLoggedIn && (
                       <>

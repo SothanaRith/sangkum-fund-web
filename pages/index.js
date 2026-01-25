@@ -3,55 +3,77 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
+import { Hospital, AlertCircle, Briefcase, Bird, GraduationCap, HandshakeIcon, Rocket, Megaphone, RefreshCw, BarChart3, Smartphone, DollarSign, Sparkles, Zap, Banknote, Shield, Users, Heart, Building2, Star, Play, Smile, Loader2, Calendar, User, Tag, ChevronRight } from 'lucide-react';
+import { postsAPI } from '@/lib/api';
+import { formatDate } from '@/lib/utils';
 
 export default function Home() {
   const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
+  const [featuredPosts, setFeaturedPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(false);
 
   const floatingItems = [
     {
       id: 1,
       label: 'Medical',
-      icon: '🏥',
+      Icon: Hospital,
       top: '16%',
       left: '20%',
     },
     {
       id: 2,
       label: 'Emergency',
-      icon: '🚨',
+      Icon: AlertCircle,
       top: '45%',
       left: '10%',
     },
     {
       id: 3,
       label: 'Business',
-      icon: '💼',
+      Icon: Briefcase,
       top: '16%',
       right: '18%',
     },
     {
       id: 4,
       label: 'Memorial',
-      icon: '🕊️',
+      Icon: Bird,
       top: '52%',
       right: '10%',
     },
     {
       id: 5,
       label: 'Education',
-      icon: '🎓',
+      Icon: GraduationCap,
       bottom: '14%',
       left: '22%',
     },
     {
       id: 6,
       label: 'Nonprofit',
-      icon: '🤝',
+      Icon: HandshakeIcon,
       bottom: '20%',
       right: '25%',
     },
-  ]
+  ];
+
+  useEffect(() => {
+    setMounted(true);
+    loadFeaturedPosts();
+  }, []);
+
+  const loadFeaturedPosts = async () => {
+    try {
+      setLoadingPosts(true);
+      const posts = await postsAPI.getFeatured(3);
+      setFeaturedPosts(posts || []);
+    } catch (err) {
+      console.error('Failed to load featured posts:', err);
+    } finally {
+      setLoadingPosts(false);
+    }
+  };
 
   const featuredTopics = [
     {
@@ -81,34 +103,26 @@ export default function Home() {
     {
       title: "Start strong",
       description: "Set a clear goal and tell your story authentically",
-      icon: "🚀"
+      Icon: Rocket
     },
     {
       title: "Share widely",
       description: "Reach more people with our sharing tools",
-      icon: "📢"
+      Icon: Megaphone
     },
     {
       title: "Update often",
       description: "Keep supporters engaged with regular updates",
-      icon: "🔄"
+      Icon: RefreshCw
     }
   ];
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const trustSignals = [
-    { icon: "🛡️", label: "Trust & Safety", description: "Verified campaigns, secure transfers" },
-    { icon: "💸", label: "Lowest fees", description: "One simple fee, no hidden costs" },
-    { icon: "⚡", label: "Fast access", description: "Withdraw funds in 2-3 business days" },
-    { icon: "🤝", label: "24/7 support", description: "Real help when you need it" }
+    { Icon: Shield, label: "Trust & Safety", description: "Verified campaigns, secure transfers" },
+    { Icon: Banknote, label: "Lowest fees", description: "One simple fee, no hidden costs" },
+    { Icon: Zap, label: "Fast access", description: "Withdraw funds in 2-3 business days" },
+    { Icon: HandshakeIcon, label: "24/7 support", description: "Real help when you need it" }
   ];
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
@@ -157,7 +171,7 @@ export default function Home() {
                       ease: 'easeInOut',
                     }}
                 >
-                  <span className="text-2xl">{item.icon}</span>
+                  <item.Icon className="w-8 h-8" />
 
                   <div className="absolute -bottom-8 px-2 py-1 bg-white rounded-md shadow text-sm font-medium">
                     {item.label}
@@ -322,7 +336,7 @@ export default function Home() {
                   >
                     <div className="relative h-64 overflow-hidden">
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-8xl opacity-20">📊</span>
+                        <BarChart3 className="w-32 h-32 opacity-20" />
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-6">
                         <h3 className="text-2xl font-bold text-white mb-2">
@@ -354,7 +368,7 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               <div className="text-center p-6">
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">⚡</span>
+                  <Zap className="w-8 h-8 text-orange-600" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Start fundraising in minutes</h3>
                 <p className="text-gray-600">Easy setup with guided steps</p>
@@ -362,7 +376,7 @@ export default function Home() {
 
               <div className="text-center p-6">
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">💸</span>
+                  <Banknote className="w-8 h-8 text-orange-600" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Donations made easy</h3>
                 <p className="text-gray-600">Secure payments with multiple options</p>
@@ -370,7 +384,7 @@ export default function Home() {
 
               <div className="text-center p-6">
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🛡️</span>
+                  <Shield className="w-8 h-8 text-orange-600" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Built-in trust & safety</h3>
                 <p className="text-gray-600">Verified campaigns and secure transfers</p>
@@ -389,14 +403,14 @@ export default function Home() {
             <div className="relative bg-gradient-to-br from-orange-100 to-amber-100 rounded-3xl p-12">
               <div className="grid grid-cols-4 gap-8 mb-12">
                 {[
-                  { icon: '👨‍👩‍👧‍👦', label: 'Start' },
-                  { icon: '📱', label: 'Share' },
-                  { icon: '💝', label: 'Receive' },
-                  { icon: '🏦', label: 'Withdraw' }
+                  { Icon: Users, label: 'Start' },
+                  { Icon: Smartphone, label: 'Share' },
+                  { Icon: Heart, label: 'Receive' },
+                  { Icon: Building2, label: 'Withdraw' }
                 ].map((step, index) => (
                     <div key={index} className="text-center">
                       <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <span className="text-3xl">{step.icon}</span>
+                        <step.Icon className="w-10 h-10 text-orange-600" />
                       </div>
                       <div className="font-semibold">{step.label}</div>
                     </div>
@@ -405,7 +419,7 @@ export default function Home() {
 
               <div className="relative">
                 <div className="w-24 h-24 bg-orange-600 rounded-full flex items-center justify-center mx-auto shadow-2xl cursor-pointer hover:scale-110 transition-transform">
-                  <span className="text-4xl text-white">▶</span>
+                  <Play className="w-12 h-12 text-white fill-white" />
                 </div>
                 <div className="text-sm text-gray-600 mt-4">Watch video explainer</div>
               </div>
@@ -427,17 +441,17 @@ export default function Home() {
 
             <div className="grid md:grid-cols-3 gap-8 text-left mb-12">
               <div className="p-6 bg-orange-800/50 rounded-2xl backdrop-blur-sm">
-                <div className="text-3xl mb-4">💰</div>
+                <DollarSign className="w-12 h-12 mb-4" />
                 <h4 className="font-bold text-lg mb-3">Simple pricing</h4>
                 <p className="text-orange-100">One low fee with no hidden charges</p>
               </div>
               <div className="p-6 bg-orange-800/50 rounded-2xl backdrop-blur-sm">
-                <div className="text-3xl mb-4">🛡️</div>
+                <Shield className="w-12 h-12 mb-4" />
                 <h4 className="font-bold text-lg mb-3">Trust & Safety team</h4>
                 <p className="text-orange-100">24/7 monitoring and support</p>
               </div>
               <div className="p-6 bg-orange-800/50 rounded-2xl backdrop-blur-sm">
-                <div className="text-3xl mb-4">😌</div>
+                <Smile className="w-12 h-12 mb-4" />
                 <h4 className="font-bold text-lg mb-3">Peace of mind</h4>
                 <p className="text-orange-100">Secure transfers and fraud protection</p>
               </div>
@@ -463,7 +477,7 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8">
               {tips.map((tip, index) => (
                   <div key={index} className="bg-white rounded-2xl shadow-lg p-8 hover:shadow-xl transition-shadow">
-                    <div className="text-4xl mb-6">{tip.icon}</div>
+                    <tip.Icon className="w-16 h-16 text-orange-600 mb-6" />
                     <h3 className="text-xl font-bold text-gray-900 mb-4">
                       {tip.title}
                     </h3>
@@ -501,7 +515,7 @@ export default function Home() {
                       key={signal.label}
                       className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow border border-gray-100"
                   >
-                    <div className="text-3xl mb-4">{signal.icon}</div>
+                    <signal.Icon className="w-12 h-12 text-orange-600 mb-4" />
                     <h3 className="font-bold text-gray-900 mb-2">{signal.label}</h3>
                     <p className="text-sm text-gray-600">{signal.description}</p>
                   </div>
@@ -527,6 +541,91 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Featured Stories Section */}
+        {featuredPosts.length > 0 && (
+            <section className="py-20 px-4 bg-white">
+              <div className="max-w-6xl mx-auto">
+                <div className="text-center mb-12">
+                  <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6 }}
+                      viewport={{ once: true }}
+                  >
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                      Inspiring Stories from Our Community
+                    </h2>
+                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                      Read how individuals and communities are making a difference
+                    </p>
+                  </motion.div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  {featuredPosts.map((post, index) => (
+                      <motion.div
+                          key={post.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: index * 0.1 }}
+                          viewport={{ once: true }}
+                      >
+                        <Link href={`/blog/${post.slug}`}>
+                          <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full border border-gray-100">
+                            {/* Cover Image */}
+                            <div className="relative h-40 bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden">
+                              {post.coverImageUrl ? (
+                                  <img
+                                      src={post.coverImageUrl}
+                                      alt={post.title}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                              ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-white/50 text-4xl">📰</span>
+                                  </div>
+                              )}
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-4">
+                              <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600 transition-colors">
+                                {post.title}
+                              </h3>
+                              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                                {post.excerpt || post.content?.substring(0, 100)}
+                              </p>
+                              <div className="flex items-center justify-between text-xs text-gray-500">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {formatDate(post.publishedAt || post.createdAt)}
+                                </div>
+                                {post.tags && post.tags.length > 0 && (
+                                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">
+                                      {post.tags[0]}
+                                    </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                  ))}
+                </div>
+
+                <div className="text-center">
+                  <Link
+                      href="/blog"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg"
+                  >
+                    Read All Stories
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            </section>
+        )}
+
         {/* Final Invitation - Emotional Close */}
         <section className="py-20 px-4 bg-gradient-to-br from-orange-600 via-amber-600 to-orange-700">
           <div className="max-w-3xl mx-auto text-center text-white">
@@ -536,7 +635,7 @@ export default function Home() {
                 transition={{ duration: 0.6 }}
                 viewport={{ once: true }}
             >
-              <div className="text-5xl mb-6">✨</div>
+              <Sparkles className="w-20 h-20 mx-auto mb-6" />
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
                 Your story matters
               </h2>

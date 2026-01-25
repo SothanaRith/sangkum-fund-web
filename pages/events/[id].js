@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { eventsAPI, eventTimelineAPI, announcementsAPI, eventCommentsAPI, donationsAPI, userAPI } from '@/lib/api';
 import { formatCurrency, formatDate, calculateProgress, timeAgo } from '@/lib/utils';
-import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown } from 'lucide-react';
+import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown, PartyPopper, Camera, Image as ImageIcon, Sparkles, MessageCircle, Megaphone, Clock, User, Edit } from 'lucide-react';
 
 export default function EventDetail() {
   const router = useRouter();
@@ -139,7 +139,7 @@ export default function EventDetail() {
       setJoiningEvent(true);
       await eventsAPI.joinEvent(id);
       setJoined(true);
-      alert('🎉 You are now supporting this fundraiser!');
+      alert('You are now supporting this fundraiser!');
       // Reload event to get updated participant count
       loadEvent();
     } catch (err) {
@@ -153,7 +153,7 @@ export default function EventDetail() {
     try {
       setUploadingImages(true);
       const result = await eventsAPI.uploadImages(id, files);
-      alert(`✅ ${result.images.length} image(s) uploaded successfully!`);
+      alert(`${result.images.length} image(s) uploaded successfully!`);
       
       // Reload images
       const imagesData = await eventsAPI.getImages(id);
@@ -336,7 +336,7 @@ export default function EventDetail() {
                       />
                   ) : (
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center border-2 border-primary-100">
-                        <div className="text-2xl">👤</div>
+                        <User className="w-8 h-8 text-primary-600" />
                       </div>
                   )}
                   <div className="flex-1">
@@ -428,7 +428,7 @@ export default function EventDetail() {
                       {event.impact && (
                           <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
                             <h3 className="text-lg font-semibold text-emerald-900 mb-3 flex items-center gap-2">
-                              <span className="text-xl">✨</span> The Impact
+                              <Sparkles className="w-5 h-5" /> The Impact
                             </h3>
                             <p className="text-emerald-800">{event.impact}</p>
                           </div>
@@ -440,7 +440,7 @@ export default function EventDetail() {
                         <div className="bg-white rounded-2xl p-6 border border-gray-200">
                           <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                              <span className="text-xl">🖼️</span> Event Gallery
+                              <ImageIcon className="w-5 h-5" /> Event Gallery
                             </h3>
                             <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50">
                               {uploadingImages ? (
@@ -489,7 +489,7 @@ export default function EventDetail() {
                             </div>
                           ) : (
                             <div className="text-center py-8 text-gray-500">
-                              <div className="text-4xl mb-2">📸</div>
+                              <Camera className="w-16 h-16 mx-auto mb-2 text-gray-400" />
                               <p className="text-sm">No images uploaded yet</p>
                             </div>
                           )}
@@ -507,8 +507,8 @@ export default function EventDetail() {
                             <p className="text-gray-700">{event.location}</p>
                             {event.latitude && event.longitude && (
                               <>
-                                <p className="text-sm text-gray-500">
-                                  📍 Coordinates: {event.latitude.toFixed(6)}, {event.longitude.toFixed(6)}
+                                <p className="text-sm text-gray-500 flex items-center gap-1">
+                                  <MapPin className="w-4 h-4" /> Coordinates: {event.latitude.toFixed(6)}, {event.longitude.toFixed(6)}
                                 </p>
                                 {/* Map embed */}
                                 <div className="rounded-lg overflow-hidden border border-gray-200">
@@ -579,7 +579,7 @@ export default function EventDetail() {
                     <div className="space-y-6 animate-fadeIn">
                       {announcements.length === 0 ? (
                           <div className="text-center py-12">
-                            <div className="text-4xl mb-4">📝</div>
+                            <Edit className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                             <p className="text-gray-600">No updates yet</p>
                             <p className="text-gray-500 text-sm mt-2">The organizer will post updates here</p>
                           </div>
@@ -590,7 +590,7 @@ export default function EventDetail() {
                                   <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
                                       <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                                        <span className="text-primary-600">📢</span>
+                                        <Megaphone className="w-5 h-5 text-primary-600" />
                                       </div>
                                     </div>
                                     <div className="flex-1">
@@ -609,7 +609,7 @@ export default function EventDetail() {
                                           <span>{update.reactionCount || 0}</span>
                                         </button>
                                         <button className="flex items-center gap-1 hover:text-primary-600">
-                                          <span>💬</span>
+                                          <MessageCircle size={14} />
                                           <span>{update.commentCount || 0}</span>
                                         </button>
                                       </div>
@@ -716,7 +716,7 @@ export default function EventDetail() {
                         </div>
                     ) : participants.length === 0 ? (
                         <div className="bg-gray-50 rounded-2xl p-8 text-center">
-                          <div className="text-gray-400 text-4xl mb-3">👥</div>
+                          <Users className="w-16 h-16 mx-auto mb-3 text-gray-400" />
                           <p className="text-gray-500 mb-2">No participants yet</p>
                           <p className="text-gray-400 text-sm">Be the first to join this fundraiser!</p>
                         </div>
@@ -807,7 +807,7 @@ export default function EventDetail() {
                   {daysRemaining > 0 && (
                       <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
                         <div className="flex items-center gap-2 text-amber-800 mb-1">
-                          <span className="text-lg">⏰</span>
+                          <Clock className="w-5 h-5" />
                           <span className="font-medium">{daysRemaining} days left</span>
                         </div>
                         <p className="text-amber-700 text-sm">

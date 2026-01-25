@@ -4,6 +4,24 @@ import Link from 'next/link';
 import { eventsAPI } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 import MapPicker from '@/components/MapPicker';
+import {
+  FileText,
+  DollarSign,
+  Rocket,
+  Calendar,
+  MapPin,
+  Lightbulb,
+  Image as ImageIcon,
+  Camera,
+  Trophy,
+  Hospital,
+  GraduationCap,
+  Heart,
+  Users,
+  AlertCircle,
+  Briefcase,
+  Palette,
+} from 'lucide-react';
 
 export default function CreateEvent() {
   const router = useRouter();
@@ -112,7 +130,7 @@ export default function CreateEvent() {
         }
       }
       
-      alert('🎉 Event created successfully! It has been submitted for admin approval.');
+      alert('Event created successfully! It has been submitted for admin approval.');
       router.push('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event. Please try again.');
@@ -152,8 +170,8 @@ export default function CreateEvent() {
 
             {/* Event Title */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                📝 {t('createEvent.eventTitle')} *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5" /> {t('createEvent.eventTitle')} *
               </label>
               <input
                 type="text"
@@ -169,8 +187,8 @@ export default function CreateEvent() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                📖 {t('createEvent.description')} *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5" /> {t('createEvent.description')} *
               </label>
               <textarea
                 name="description"
@@ -186,8 +204,8 @@ export default function CreateEvent() {
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                🏷️ {t('createEvent.category')} *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <Trophy className="w-5 h-5" /> {t('createEvent.category')} *
               </label>
               <select
                 name="category"
@@ -197,25 +215,25 @@ export default function CreateEvent() {
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
               >
                 <option value="">{t('createEvent.selectCategory')}</option>
-                <option value="Education">📚 {t('categories.Education')}</option>
-                <option value="Healthcare">🏥 {t('categories.Healthcare')}</option>
-                <option value="Environment">🌱 {t('categories.Environment')}</option>
-                <option value="Animal Welfare">🐾 {t('categories.Animal Welfare')}</option>
-                <option value="Community Development">🏘️ {t('categories.Community Development')}</option>
-                <option value="Disaster Relief">🚨 {t('categories.Disaster Relief')}</option>
-                <option value="Arts & Culture">🎨 {t('categories.Arts & Culture')}</option>
-                <option value="Sports">⚽ {t('categories.Sports')}</option>
-                <option value="Technology">💻 {t('categories.Technology')}</option>
-                <option value="Human Rights">⚖️ {t('categories.Human Rights')}</option>
-                <option value="Other">📋 {t('categories.Other')}</option>
+                <option value="Education">{t('categories.Education')}</option>
+                <option value="Healthcare">{t('categories.Healthcare')}</option>
+                <option value="Environment">{t('categories.Environment')}</option>
+                <option value="Animal Welfare">{t('categories.Animal Welfare')}</option>
+                <option value="Community Development">{t('categories.Community Development')}</option>
+                <option value="Disaster Relief">{t('categories.Disaster Relief')}</option>
+                <option value="Arts & Culture">{t('categories.Arts & Culture')}</option>
+                <option value="Sports">{t('categories.Sports')}</option>
+                <option value="Technology">{t('categories.Technology')}</option>
+                <option value="Human Rights">{t('categories.Human Rights')}</option>
+                <option value="Other">{t('categories.Other')}</option>
               </select>
               <p className="mt-2 text-sm text-gray-500">Choose the category that best fits your event</p>
             </div>
 
             {/* Target Amount */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                💰 {t('createEvent.targetAmount')} *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <DollarSign className="w-5 h-5" /> {t('createEvent.targetAmount')} *
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl text-gray-400">$</span>
@@ -237,8 +255,8 @@ export default function CreateEvent() {
             {/* Campaign Duration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  🚀 {t('createEvent.startDate')} *
+                <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <Rocket className="w-5 h-5" /> {t('createEvent.startDate')} *
                 </label>
                 <input
                   type="date"
@@ -251,8 +269,8 @@ export default function CreateEvent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  🏁 {t('createEvent.endDate')} *
+                <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> {t('createEvent.endDate')} *
                 </label>
                 <input
                   type="date"
@@ -268,8 +286,8 @@ export default function CreateEvent() {
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                📍 {t('createEvent.location')}
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <MapPin className="w-5 h-5" /> {t('createEvent.location')}
               </label>
               <input
                 type="text"
@@ -285,8 +303,8 @@ export default function CreateEvent() {
             {/* Coordinates (Optional) */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-bold text-gray-900">
-                  🌐 {t('createEvent.latitude')} / {t('createEvent.longitude')}
+                <label className="block text-sm font-bold text-gray-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" /> {t('createEvent.latitude')} / {t('createEvent.longitude')}
                 </label>
                 <button
                   type="button"
@@ -331,16 +349,16 @@ export default function CreateEvent() {
                 </div>
               </div>
               {(formData.latitude || formData.longitude) && (
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Tip: You can get coordinates from Google Maps by right-clicking on a location
+                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                  <Lightbulb className="w-4 h-4" /> Tip: You can get coordinates from Google Maps by right-clicking on a location
                 </p>
               )}
             </div>
 
             {/* Image URL */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                🖼️ {t('createEvent.images')}
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <ImageIcon className="w-5 h-5" /> {t('createEvent.images')}
               </label>
               
               <div className="space-y-4">
@@ -355,7 +373,7 @@ export default function CreateEvent() {
                     className="hidden"
                   />
                   <label htmlFor="image-upload" className="cursor-pointer">
-                    <div className="text-4xl mb-2">📸</div>
+                    <Camera className="w-16 h-16 mx-auto mb-2 text-gray-400" />
                     <p className="text-sm font-semibold text-gray-700 mb-1">
                       {t('createEvent.uploadImages')}
                     </p>
@@ -447,7 +465,7 @@ export default function CreateEvent() {
             {/* Info Box */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
               <div className="flex items-start">
-                <div className="text-3xl mr-4">💡</div>
+                <Lightbulb className="w-12 h-12 mr-4 text-blue-600" />
                 <div>
                   <h4 className="font-bold text-blue-900 mb-2">Tips for Success</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
@@ -481,7 +499,10 @@ export default function CreateEvent() {
                     {t('common.loading')}
                   </span>
                 ) : (
-                  `🚀 ${t('common.submit')}`
+                  <span className="flex items-center justify-center gap-2">
+                    <Rocket className="w-5 h-5" />
+                    {t('common.submit')}
+                  </span>
                 )}
               </button>
             </div>

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { eventsAPI } from '@/lib/api';
 import MapPicker from '@/components/MapPicker';
+import { FileText, Calendar, DollarSign, MapPin, Image as ImageIcon, Camera, Lightbulb, CheckCircle } from 'lucide-react';
 
 export default function EditEvent() {
   const router = useRouter();
@@ -156,7 +157,7 @@ export default function EditEvent() {
           console.error('Image upload failed:', imgErr);
         }
       }
-      alert('✅ Event updated successfully! It may need admin re-approval if it was previously rejected.');
+      alert('Event updated successfully! It may need admin re-approval if it was previously rejected.');
       router.push(`/events/${id}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update event. Please try again.');
@@ -188,7 +189,7 @@ export default function EditEvent() {
             </span>
           </h1>
           <p className="text-xl text-gray-600">
-            Update your fundraising campaign details 📝
+            Update your fundraising campaign details
           </p>
         </div>
 
@@ -204,8 +205,8 @@ export default function EditEvent() {
 
             {/* Event Title */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                📝 Event Title *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5" /> Event Title *
               </label>
               <input
                 type="text"
@@ -220,8 +221,8 @@ export default function EditEvent() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                📄 Description *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5" /> Description *
               </label>
               <textarea
                 name="description"
@@ -236,8 +237,8 @@ export default function EditEvent() {
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                🏷️ Category *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <FileText className="w-5 h-5" /> Category *
               </label>
               <select
                 name="category"
@@ -247,16 +248,16 @@ export default function EditEvent() {
                 className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
               >
                 <option value="">Select a category</option>
-                <option value="Education">📚 Education</option>
-                <option value="Healthcare">🏥 Healthcare</option>
-                <option value="Environment">🌱 Environment</option>
-                <option value="Animal Welfare">🐾 Animal Welfare</option>
-                <option value="Community Development">🏘️ Community Development</option>
-                <option value="Disaster Relief">🚨 Disaster Relief</option>
-                <option value="Arts & Culture">🎨 Arts & Culture</option>
-                <option value="Sports">⚽ Sports</option>
-                <option value="Technology">💻 Technology</option>
-                <option value="Human Rights">⚖️ Human Rights</option>
+                <option value="Education">Education</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Environment">Environment</option>
+                <option value="Animal Welfare">Animal Welfare</option>
+                <option value="Community Development">Community Development</option>
+                <option value="Disaster Relief">Disaster Relief</option>
+                <option value="Arts & Culture">Arts & Culture</option>
+                <option value="Sports">Sports</option>
+                <option value="Technology">Technology</option>
+                <option value="Human Rights">Human Rights</option>
                 <option value="Other">📋 Other</option>
               </select>
               <p className="mt-2 text-sm text-gray-500">Choose the category that best fits your event</p>
@@ -264,8 +265,8 @@ export default function EditEvent() {
 
             {/* Target Amount */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                💰 Target Amount (USD) *
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <DollarSign className="w-5 h-5" /> Target Amount (USD) *
               </label>
               <input
                 type="number"
@@ -283,8 +284,8 @@ export default function EditEvent() {
             {/* Dates */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  📅 Start Date *
+                <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> Start Date *
                 </label>
                 <input
                   type="date"
@@ -296,8 +297,8 @@ export default function EditEvent() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
-                  📅 End Date *
+                <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <Calendar className="w-5 h-5" /> End Date *
                 </label>
                 <input
                   type="date"
@@ -312,8 +313,8 @@ export default function EditEvent() {
 
             {/* Location */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                📍 Location
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <MapPin className="w-5 h-5" /> Location
               </label>
               <input
                 type="text"
@@ -375,16 +376,16 @@ export default function EditEvent() {
                 </div>
               </div>
               {(formData.latitude || formData.longitude) && (
-                <p className="text-xs text-gray-500 mt-2">
-                  💡 Tip: You can also get coordinates from Google Maps by right-clicking on a location
+                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                  <Lightbulb className="w-4 h-4" /> Tip: You can also get coordinates from Google Maps by right-clicking on a location
                 </p>
               )}
             </div>
 
             {/* Images */}
             <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2">
-                🖼️ Event Images
+              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                <ImageIcon className="w-5 h-5" /> Event Images
               </label>
 
               <div className="space-y-4">
@@ -432,7 +433,7 @@ export default function EditEvent() {
                     className="hidden"
                   />
                   <label htmlFor="image-upload" className="cursor-pointer">
-                    <div className="text-4xl mb-2">📸</div>
+                    <Camera className="w-16 h-16 mx-auto mb-2 text-gray-400" />
                     <p className="text-sm font-semibold text-gray-700 mb-1">
                       {existingImages.length > 0 ? 'Add more photos' : 'Upload event photos'}
                     </p>

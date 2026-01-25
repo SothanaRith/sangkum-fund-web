@@ -10,6 +10,7 @@ import {
   TopEventsChart,
   EventsPerformanceChart
 } from '@/components/DashboardCharts';
+import { CheckCircle, Clock, XCircle, HelpCircle, BarChart3 } from 'lucide-react';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -88,15 +89,16 @@ export default function UserDashboard() {
   };
 
   const getStatusIcon = (status) => {
+    const className = "w-5 h-5";
     switch (status) {
       case 'SUCCESS':
-        return '✅';
+        return <CheckCircle className={className + " text-green-500"} />;
       case 'PENDING':
-        return '⏳';
+        return <Clock className={className + " text-yellow-500"} />;
       case 'FAILED':
-        return '❌';
+        return <XCircle className={className + " text-red-500"} />;
       default:
-        return '❓';
+        return <HelpCircle className={className + " text-gray-500"} />;
     }
   };
 
@@ -118,7 +120,7 @@ export default function UserDashboard() {
           <div className="mb-8 animate-fadeIn">
             <div className="flex items-center gap-3 mb-2">
               <div className="p-3 bg-gradient-to-r from-orange-100 to-amber-100 rounded-2xl">
-                <span className="text-2xl">📊</span>
+                <BarChart3 className="w-8 h-8 text-orange-600" />
               </div>
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">

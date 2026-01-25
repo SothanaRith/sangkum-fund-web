@@ -15,6 +15,13 @@ import {
   Loader2,
   Map,
   MapPin,
+  Building2,
+  ArrowRight,
+  X,
+  ChevronDown,
+  ChevronUp,
+  ShieldCheck,
+  AlertCircle,
   PawPrint,
   Search,
   SlidersHorizontal,
@@ -133,25 +140,30 @@ export default function Events() {
   };
 
   const filterEvents = (eventsToFilter) => {
+    const normalizedCategory = category?.toLowerCase();
+    const normalizedLocation = selectedLocation?.toLowerCase();
+    const search = searchTerm.toLowerCase().trim();
+
     let filtered = [...eventsToFilter];
 
     // Search filter
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(event =>
-          event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          event.ownerName?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    if (search) {
+      filtered = filtered.filter((event) => {
+        const title = event.title?.toLowerCase() || '';
+        const description = event.description?.toLowerCase() || '';
+        const owner = event.ownerName?.toLowerCase() || '';
+        return title.includes(search) || description.includes(search) || owner.includes(search);
+      });
     }
 
-    // Category filter
-    if (category !== 'all') {
-      filtered = filtered.filter(event => event.category === category);
+    // Category filter (case-insensitive)
+    if (normalizedCategory && normalizedCategory !== 'all') {
+      filtered = filtered.filter((event) => (event.category || '').toLowerCase() === normalizedCategory);
     }
 
-    // Location filter
-    if (selectedLocation !== 'all') {
-      filtered = filtered.filter(event => event.location === selectedLocation);
+    // Location filter (case-insensitive match against stored location)
+    if (normalizedLocation && normalizedLocation !== 'all') {
+      filtered = filtered.filter((event) => (event.location || '').toLowerCase() === normalizedLocation);
     }
 
     setFilteredEvents(filtered);
@@ -181,9 +193,9 @@ export default function Events() {
             <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="text-6xl mb-4"
+                className="mb-4"
             >
-              🌟
+              <Star className="w-24 h-24 text-orange-500 mx-auto" fill="currentColor" />
             </motion.div>
             <p className="text-gray-600 text-lg font-medium">Discovering amazing causes...</p>
           </div>
@@ -199,7 +211,7 @@ export default function Events() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center"
           >
-            <div className="text-7xl mb-4">😞</div>
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
             <div className="text-red-600 text-xl font-medium mb-6">{error}</div>
             <button
                 onClick={loadEvents}
@@ -273,8 +285,9 @@ export default function Events() {
                       <button
                           onClick={() => setSearchTerm('')}
                           className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                          aria-label="Clear search"
                       >
-                        ✕
+                        <X className="w-5 h-5" />
                       </button>
                   )}
                 </div>
@@ -300,7 +313,7 @@ export default function Events() {
                   >
                     <SlidersHorizontal className="w-5 h-5" />
                     <span className="font-medium">Filters</span>
-                    {showFilters ? '↑' : '↓'}
+                    {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
 
                   <div className="hidden lg:flex items-center gap-2 flex-wrap">
@@ -415,7 +428,9 @@ export default function Events() {
                         <div className="space-y-2">
                           <label className="flex items-center gap-2">
                             <input type="checkbox" className="w-4 h-4 text-orange-600 rounded" defaultChecked />
-                            <span className="text-gray-700">✓ Verified Only</span>
+                            <span className="text-gray-700 inline-flex items-center gap-1">
+                              <ShieldCheck className="w-4 h-4" /> Verified Only
+                            </span>
                           </label>
                           <label className="flex items-center gap-2">
                             <input type="checkbox" className="w-4 h-4 text-orange-600 rounded" />
@@ -524,7 +539,7 @@ export default function Events() {
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
-                                      <span className="text-6xl">🌟</span>
+                                      <Star className="w-24 h-24 text-white" fill="currentColor" />
                                     </div>
                                 )}
 
@@ -599,7 +614,10 @@ export default function Events() {
                                         {event.donorsCount || 0} supporters
                                       </span>
                                       {event.verified && (
-                                          <span className="text-green-600">✓ Verified</span>
+                                          <span className="inline-flex items-center gap-1 text-green-600">
+                                            <ShieldCheck className="w-4 h-4" />
+                                            Verified
+                                          </span>
                                       )}
                                     </div>
                                   </div>
@@ -681,13 +699,13 @@ export default function Events() {
                           className="inline-flex items-center gap-2 bg-white text-orange-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
                       >
                         Explore Charity Partners
-                        <span>→</span>
+                        <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       {['Red Cross', 'Angkor Children', 'Cambodian Children', 'Local NGOs'].map((charity, idx) => (
                           <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center">
-                            <div className="text-3xl mb-2">🏛️</div>
+                            <Building2 className="w-6 h-6 mx-auto mb-2" />
                             <div className="font-medium">{charity}</div>
                           </div>
                       ))}
