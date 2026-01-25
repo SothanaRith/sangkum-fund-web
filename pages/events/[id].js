@@ -25,6 +25,7 @@ export default function EventDetail() {
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [relatedEvents, setRelatedEvents] = useState([]);
   const [loadingRelated, setLoadingRelated] = useState(false);
+  const [relatedImages, setRelatedImages] = useState({});
   const [eventImages, setEventImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -258,6 +259,26 @@ export default function EventDetail() {
       const fallbackList = list.filter((item) => item.id !== base.id);
       const candidates = (filteredByCategory.length > 0 ? filteredByCategory : fallbackList).slice(0, 3);
       setRelatedEvents(candidates);
+
+      // Fetch primary image for each related event (best-effort)
+      const imageFetches = await Promise.all(
+        candidates.map(async (ev) => {
+          try {
+            const imgs = await eventsAPI.getImages(ev.id);
+            const primary = Array.isArray(imgs) ? imgs.find((img) => img.isPrimary) : null;
+            const first = Array.isArray(imgs) && imgs.length > 0 ? imgs[0] : null;
+            const url = primary?.imageUrl || first?.imageUrl || ev.imageUrl || null;
+            return { id: ev.id, url };
+          } catch {
+            return { id: ev.id, url: ev.imageUrl || null };
+          }
+        })
+      );
+      const imgMap = imageFetches.reduce((acc, cur) => {
+        if (cur.url) acc[cur.id] = cur.url;
+        return acc;
+      }, {});
+      setRelatedImages(imgMap);
     } catch (err) {
       console.error('Failed to load related events:', err);
     } finally {
@@ -1111,13 +1132,26 @@ export default function EventDetail() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {relatedEvents.slice(0, 3).map((related) => (
+                      {relatedEvents.slice(0, 3).map((related) => {
+                        const imgSrc = relatedImages[related.id] || related.imageUrl || null;
+                        return (
                           <Link
-                              key={related.id}
-                              href={`/events/${related.id}`}
-                              className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-orange-200 transition-all duration-200 hover:shadow-lg group"
+                            key={related.id}
+                            href={`/events/${related.id}`}
+                            className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-orange-200 transition-all duration-200 hover:shadow-lg group"
                           >
-                            <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 group-hover:opacity-90 transition-opacity"></div>
+                            <div className="h-40 relative">
+                              {imgSrc ? (
+                                <img
+                                  src={imgSrc}
+                                  alt={related.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full bg-gradient-to-br from-gray-100 to-gray-200" />
+                              )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            </div>
                             <div className="p-5">
                               <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600">
                                 {related.title}
@@ -1128,13 +1162,14 @@ export default function EventDetail() {
                               </div>
                               <div className="w-full bg-gray-100 rounded-full h-1.5">
                                 <div
-                                    className="bg-orange-400 h-1.5 rounded-full"
-                                    style={{ width: `${calculateProgress(related.currentAmount, related.goalAmount)}%` }}
+                                  className="bg-orange-400 h-1.5 rounded-full"
+                                  style={{ width: `${calculateProgress(related.currentAmount, related.goalAmount)}%` }}
                                 />
                               </div>
                             </div>
                           </Link>
-                      ))}
+                        );
+                      })}
                     </div>
                 )}
               </div>
