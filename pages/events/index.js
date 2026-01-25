@@ -30,6 +30,7 @@ import {
   Target,
   Timer,
   Users,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { eventsAPI } from '@/lib/api';
 import { formatCurrency, formatDate, calculateProgress, formatTimeAgo } from '@/lib/utils';
@@ -121,16 +122,34 @@ export default function Events() {
       
       const response = await eventsAPI.getAll(currentPage, pageSize, sortField, sortDirection);
       
+      // Fetch images for each event
+      const eventsWithImages = await Promise.all(
+        (response.content || []).map(async (event) => {
+          try {
+            const images = await eventsAPI.getImages(event.id);
+            const primaryImage = images.find(img => img.isPrimary);
+            return {
+              ...event,
+              images: images || [],
+              primaryImage: primaryImage || images[0] || null
+            };
+          } catch (err) {
+            console.error(`Failed to load images for event ${event.id}:`, err);
+            return { ...event, images: [], primaryImage: null };
+          }
+        })
+      );
+      
       // Handle pagination response
-      setEvents(response.content || []);
-      setFilteredEvents(response.content || []);
+      setEvents(eventsWithImages);
+      setFilteredEvents(eventsWithImages);
       setTotalPages(response.totalPages || 0);
       setTotalElements(response.totalElements || 0);
       setHasNext(response.hasNext || false);
       setHasPrevious(response.hasPrevious || false);
       
       // Apply client-side filtering if needed
-      filterEvents(response.content || []);
+      filterEvents(eventsWithImages);
     } catch (err) {
       setError('Failed to load events');
       console.error(err);
@@ -272,14 +291,14 @@ export default function Events() {
 
               {/* Search Bar */}
               <div className="max-w-2xl mx-auto">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <div className="relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                     <input
                       type="text"
                       placeholder="Search campaigns by name, location, or cause..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-12 pr-6 py-4 rounded-full bg-white/90 backdrop-blur-sm border-2 border-white/20 focus:border-white focus:outline-none text-gray-900 text-lg shadow-xl"
+                      className="w-full pl-14 pr-14 py-4 rounded-2xl bg-white border-2 border-transparent focus:border-orange-300 focus:outline-none focus:ring-4 focus:ring-orange-100 text-gray-900 text-lg shadow-2xl hover:shadow-xl transition-all"
                     />
                   {searchTerm && (
                       <button
@@ -309,22 +328,22 @@ export default function Events() {
                 <div className="flex items-center gap-4">
                   <button
                       onClick={() => setShowFilters(!showFilters)}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                      className="flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-200 hover:border-orange-300 font-medium text-gray-700"
                   >
                     <SlidersHorizontal className="w-5 h-5" />
-                    <span className="font-medium">Filters</span>
+                    <span>Filters</span>
                     {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
 
-                  <div className="hidden lg:flex items-center gap-2 flex-wrap">
+                  <div className="hidden lg:flex items-center gap-3 flex-wrap">
                     {categories.map((cat) => (
                         <button
                             key={cat.id}
                             onClick={() => setCategory(cat.id)}
-                            className={`px-4 py-2 rounded-full transition-all ${cat.id === category ? 'text-white ' + cat.color : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                            className={`px-5 py-2.5 rounded-full transition-all duration-200 font-medium flex items-center gap-2 shadow-sm hover:shadow-md transform hover:scale-105 ${cat.id === category ? 'text-white shadow-lg scale-105 ' + cat.color : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'}`}
                         >
-                          <cat.icon className="inline-block w-4 h-4 mr-2" />
-                          {cat.label}
+                          <cat.icon className="w-4 h-4" />
+                          <span>{cat.label}</span>
                         </button>
                     ))}
                   </div>
@@ -332,26 +351,26 @@ export default function Events() {
 
                 {/* Mobile Categories */}
                 <div className="lg:hidden mt-4">
-                  <div className="flex gap-2 overflow-x-auto pb-2">
+                  <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-hide">
                     {categories.map((cat) => (
                         <button
                             key={cat.id}
                             onClick={() => setCategory(cat.id)}
-                            className={`flex-shrink-0 px-4 py-2 rounded-full transition-all ${cat.id === category ? 'text-white ' + cat.color : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                            className={`flex-shrink-0 px-5 py-2.5 rounded-full transition-all duration-200 font-medium flex items-center gap-2 shadow-sm ${cat.id === category ? 'text-white shadow-md scale-105 ' + cat.color : 'bg-white text-gray-700 border border-gray-200'}`}
                         >
-                          <cat.icon className="inline-block w-4 h-4 mr-1" />
-                          {cat.label}
+                          <cat.icon className="w-4 h-4" />
+                          <span className="whitespace-nowrap">{cat.label}</span>
                         </button>
                     ))}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="px-4 py-2.5 bg-white rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    className="px-4 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-200 font-medium text-gray-700 cursor-pointer transition-all"
                 >
                   {sortOptions.map((option) => (
                       <option key={option.id} value={option.id}>
@@ -362,10 +381,10 @@ export default function Events() {
 
                 <button
                     onClick={() => setShowMap(!showMap)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white rounded-xl shadow-md hover:shadow-lg transition-all border border-gray-200 font-medium text-gray-700 hover:border-orange-300"
                 >
                   {showMap ? <List className="w-5 h-5" /> : <Map className="w-5 h-5" />}
-                  <span>{showMap ? t('events.listView') : t('events.mapView')}</span>
+                  <span className="hidden sm:inline">{showMap ? t('events.listView') : t('events.mapView')}</span>
                 </button>
               </div>
             </div>
@@ -468,13 +487,14 @@ export default function Events() {
           </motion.div>
 
           {/* Results Summary */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="text-gray-700">
-              <span className="font-bold text-orange-600">{totalElements}</span> campaigns found
-              {searchTerm && <span> for "<span className="font-semibold">{searchTerm}</span>"</span>}
-              {category !== 'all' && <span> in <span className="font-semibold">{categories.find(c => c.id === category)?.label}</span></span>}
+          <div className="flex items-center justify-between mb-8 bg-white rounded-xl px-6 py-4 shadow-sm border border-gray-100">
+            <div className="text-gray-700 font-medium">
+              <span className="text-2xl font-bold text-orange-600">{totalElements}</span>
+              <span className="text-gray-600 ml-2">campaigns found</span>
+              {searchTerm && <span className="text-gray-500"> for "<span className="font-semibold text-gray-700">{searchTerm}</span>"</span>}
+              {category !== 'all' && <span className="text-gray-500"> in <span className="font-semibold text-gray-700">{categories.find(c => c.id === category)?.label}</span></span>}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
               Showing {filteredEvents.length} of {totalElements}
             </div>
           </div>
@@ -531,15 +551,29 @@ export default function Events() {
                             <div className="group bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer h-full border border-gray-100 hover:shadow-2xl transition-all duration-300">
                               {/* Image with Overlay */}
                               <div className="relative h-48 overflow-hidden">
-                                {event.imageUrl ? (
+                                {event.primaryImage?.imageUrl || event.imageUrl ? (
                                     <img
-                                        src={event.imageUrl}
+                                        src={event.primaryImage?.imageUrl || event.imageUrl}
+                                        alt={event.title}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                ) : event.images && event.images.length > 0 ? (
+                                    <img
+                                        src={event.images[0].imageUrl}
                                         alt={event.title}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
                                       <Star className="w-24 h-24 text-white" fill="currentColor" />
+                                    </div>
+                                )}
+
+                                {/* Image Count Badge */}
+                                {event.images && event.images.length > 1 && (
+                                    <div className="absolute top-4 right-4 bg-black/60 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                                      <ImageIcon className="w-3 h-3" />
+                                      {event.images.length}
                                     </div>
                                 )}
 

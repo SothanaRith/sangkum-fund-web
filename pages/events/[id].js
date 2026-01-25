@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { eventsAPI, eventTimelineAPI, announcementsAPI, eventCommentsAPI, donationsAPI, userAPI } from '@/lib/api';
 import { formatCurrency, formatDate, calculateProgress, timeAgo } from '@/lib/utils';
-import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown, PartyPopper, Camera, Image as ImageIcon, Sparkles, MessageCircle, Megaphone, Clock, User, Edit } from 'lucide-react';
+import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown, PartyPopper, Camera, Image as ImageIcon, Sparkles, MessageCircle, Megaphone, Clock, User, Edit, Copy, Link2, X } from 'lucide-react';
 
 export default function EventDetail() {
   const router = useRouter();
@@ -23,10 +23,16 @@ export default function EventDetail() {
   const [recentDonations, setRecentDonations] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
+  const [relatedEvents, setRelatedEvents] = useState([]);
+  const [loadingRelated, setLoadingRelated] = useState(false);
   const [eventImages, setEventImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [copyState, setCopyState] = useState('idle');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
   const storyRef = useRef(null);
   const donationCardRef = useRef(null);
 
@@ -46,6 +52,12 @@ export default function EventDetail() {
   }, [id]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setShareUrl(window.location.href);
+    }
+  }, [id]);
+
+  useEffect(() => {
     const loadCurrentUser = async () => {
       try {
         const profile = await userAPI.getProfile();
@@ -60,6 +72,7 @@ export default function EventDetail() {
   }, []);
 
   const loadEvent = async () => {
+    setRelatedEvents([]);
     try {
       const [eventData, timelineData, announcementsData, commentsData, donationsData, imagesData] = await Promise.all([
         eventsAPI.getById(id),
@@ -75,11 +88,14 @@ export default function EventDetail() {
       setComments(commentsData);
       setRecentDonations(donationsData.slice(0, 5));
       setEventImages(imagesData);
+      loadRelatedEvents(eventData);
       
-      // Set selected image to primary or first image
       if (imagesData.length > 0) {
         const primary = imagesData.find(img => img.isPrimary);
         setSelectedImage(primary || imagesData[0]);
+      } else if (!selectedImage && eventData.imageUrl) {
+        // If no uploaded images but has imageUrl, create a temporary image object
+        setSelectedImage({ imageUrl: eventData.imageUrl, isPrimary: true });
       }
     } catch (err) {
       setError('Failed to load fundraiser details');
@@ -101,20 +117,40 @@ export default function EventDetail() {
     }
   };
 
+  const handleCopyLink = async () => {
+    const urlToCopy = shareUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    if (!urlToCopy) return;
+
+    try {
+      await navigator.clipboard.writeText(urlToCopy);
+      setCopyState('copied');
+      setTimeout(() => setCopyState('idle'), 2000);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      alert('Failed to copy link. Please copy it manually:\n' + urlToCopy);
+    }
+  };
+
   const handleShare = async () => {
+    const urlToShare = shareUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    if (!urlToShare) return;
+
+    const shareData = {
+      title: event?.title || 'Support this fundraiser',
+      text: event?.shortDescription || 'Help make a difference today',
+      url: urlToShare,
+    };
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: event.title,
-          url: window.location.href,
-        });
+        await navigator.share(shareData);
+        return;
       } catch (err) {
         console.log('Share cancelled');
       }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
     }
+
+    await handleCopyLink();
   };
 
   const handleAddComment = async (e) => {
@@ -134,18 +170,37 @@ export default function EventDetail() {
     }
   };
 
-  const handleJoinEvent = async () => {
+  const handleJoinEvent = async (joinType = 'free') => {
     try {
       setJoiningEvent(true);
-      await eventsAPI.joinEvent(id);
+      await eventsAPI.joinEvent(id, { joinType });
       setJoined(true);
-      alert('You are now supporting this fundraiser!');
-      // Reload event to get updated participant count
+      setShowJoinModal(false);
+      
+      if (joinType === 'free') {
+        alert('You are now supporting this fundraiser!');
+      } else if (joinType === 'donation') {
+        alert('Great! Please make a donation to join.');
+        window.location.href = `/donate/${id}`;
+      } else if (joinType === 'paid') {
+        alert('Processing payment...');
+        // Redirect to payment page
+        window.location.href = `/donate/${id}?type=paid`;
+      }
+      
       loadEvent();
     } catch (err) {
       console.error('Failed to join event:', err);
       if (err.response?.status === 401) {
         alert('Please login to support this fundraiser');
+      } else {
+        alert('Failed to join event. Please try again.');
+      }
+    } finally {
+      setJoiningEvent(false);
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -155,11 +210,9 @@ export default function EventDetail() {
       const result = await eventsAPI.uploadImages(id, files);
       alert(`${result.images.length} image(s) uploaded successfully!`);
       
-      // Reload images
       const imagesData = await eventsAPI.getImages(id);
       setEventImages(imagesData);
       
-      // Set first uploaded image as selected if no image selected
       if (!selectedImage && imagesData.length > 0) {
         setSelectedImage(imagesData[0]);
       }
@@ -179,7 +232,6 @@ export default function EventDetail() {
       const updatedImages = eventImages.filter(img => img.id !== imageId);
       setEventImages(updatedImages);
       
-      // Update selected image if deleted
       if (selectedImage?.id === imageId) {
         setSelectedImage(updatedImages[0] || null);
       }
@@ -191,11 +243,25 @@ export default function EventDetail() {
     }
   };
 
-      } else {
-        alert('Failed to join event. Please try again.');
-      }
+  const loadRelatedEvents = async (currentEvent) => {
+    const base = currentEvent || event;
+    if (!base) return;
+
+    try {
+      setLoadingRelated(true);
+      const response = await eventsAPI.getAll(0, 12, 'createdAt', 'desc');
+      const list = response.content || response || [];
+      const normalizedCategory = (base.category || '').toLowerCase();
+      const filteredByCategory = list.filter((item) =>
+          item.id !== base.id && normalizedCategory && (item.category || '').toLowerCase() === normalizedCategory
+      );
+      const fallbackList = list.filter((item) => item.id !== base.id);
+      const candidates = (filteredByCategory.length > 0 ? filteredByCategory : fallbackList).slice(0, 3);
+      setRelatedEvents(candidates);
+    } catch (err) {
+      console.error('Failed to load related events:', err);
     } finally {
-      setJoiningEvent(false);
+      setLoadingRelated(false);
     }
   };
 
@@ -204,9 +270,9 @@ export default function EventDetail() {
         <div className="min-h-screen flex items-center justify-center bg-white">
           <div className="text-center space-y-4">
             <div className="relative">
-              <div className="w-16 h-16 border-3 border-t-primary-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-3 border-t-orange-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 bg-primary-100 rounded-full"></div>
+                <div className="w-8 h-8 bg-orange-100 rounded-full"></div>
               </div>
             </div>
             <p className="text-gray-600 font-medium">Loading fundraiser details...</p>
@@ -224,7 +290,7 @@ export default function EventDetail() {
             <p className="text-gray-600 mb-6">We couldn't find the fundraiser you're looking for.</p>
             <Link
                 href="/events"
-                className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium"
+                className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium"
             >
               ← Browse all fundraisers
             </Link>
@@ -239,15 +305,21 @@ export default function EventDetail() {
   const daysRemaining = event.endDate
       ? Math.ceil((new Date(event.endDate) - new Date()) / (1000 * 60 * 60 * 24))
       : null;
+  const encodedShareUrl = shareUrl ? encodeURIComponent(shareUrl) : '';
+  const shareEmailHref = shareUrl
+      ? `mailto:?subject=${encodeURIComponent(event?.title || 'Support this fundraiser')}&body=${encodeURIComponent((event?.shortDescription || 'Join me in supporting this fundraiser.') + '\n\n' + shareUrl)}`
+      : '';
+  const closeShareModal = () => setShowShareModal(false);
+  const openShareModal = () => setShowShareModal(true);
 
   return (
       <div className="min-h-screen bg-white">
         {/* Hero Section with Image Gallery */}
         <div className="relative">
-          {(selectedImage || event.imageUrl) ? (
+          {(selectedImage || eventImages.length > 0 || event.imageUrl) ? (
               <div className="h-[60vh] md:h-[70vh] relative">
                 <img
-                    src={selectedImage?.imageUrl || event.imageUrl}
+                    src={selectedImage?.imageUrl || eventImages[0]?.imageUrl || event.imageUrl}
                     alt={event.title}
                     className="w-full h-full object-cover"
                 />
@@ -277,7 +349,7 @@ export default function EventDetail() {
                 )}
               </div>
           ) : (
-              <div className="h-[60vh] md:h-[70vh] bg-gradient-to-br from-primary-50 to-emerald-50 flex items-center justify-center">
+              <div className="h-[60vh] md:h-[70vh] bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-7xl mb-4">🙏</div>
                   <p className="text-lg text-gray-600">Support this cause</p>
@@ -299,7 +371,7 @@ export default function EventDetail() {
           {event.category && (
               <div className="absolute top-4 right-4">
             <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-medium text-gray-700">
-              <span className="w-2 h-2 bg-primary-500 rounded-full"></span>
+              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
               {event.category}
             </span>
               </div>
@@ -332,18 +404,18 @@ export default function EventDetail() {
                       <img
                           src={event.ownerAvatar}
                           alt={event.ownerName}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-primary-100"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-orange-100"
                       />
                   ) : (
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center border-2 border-primary-100">
-                        <User className="w-8 h-8 text-primary-600" />
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center border-2 border-orange-100">
+                        <User className="w-8 h-8 text-orange-600" />
                       </div>
                   )}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-lg font-semibold text-gray-900">{event.ownerName}</h3>
                       {event.ownerVerified && (
-                          <span className="inline-flex items-center gap-1 text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">
                         <CheckCircle size={12} />
                         Verified
                       </span>
@@ -370,12 +442,12 @@ export default function EventDetail() {
                     {isOwner && (
                       <Link
                         href={`/events/edit/${event.id}`}
-                        className="text-primary-600 hover:text-primary-700 font-medium text-sm px-4 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors"
+                        className="text-orange-600 hover:text-orange-700 font-medium text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors"
                       >
                         ✏️ Edit Event
                       </Link>
                     )}
-                    <button className="text-primary-600 hover:text-primary-700 font-medium text-sm px-4 py-2 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors">
+                    <button className="text-orange-600 hover:text-orange-700 font-medium text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors">
                       Contact
                     </button>
                   </div>
@@ -396,7 +468,7 @@ export default function EventDetail() {
                           }}
                           className={`py-3 px-1 border-b-2 font-medium text-sm ${
                               activeTab === tab
-                                  ? 'border-primary-500 text-primary-600'
+                                  ? 'border-orange-500 text-orange-600'
                                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                       >
@@ -426,11 +498,11 @@ export default function EventDetail() {
                       </div>
 
                       {event.impact && (
-                          <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-100">
-                            <h3 className="text-lg font-semibold text-emerald-900 mb-3 flex items-center gap-2">
+                          <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+                            <h3 className="text-lg font-semibold text-amber-900 mb-3 flex items-center gap-2">
                               <Sparkles className="w-5 h-5" /> The Impact
                             </h3>
-                            <p className="text-emerald-800">{event.impact}</p>
+                            <p className="text-amber-800">{event.impact}</p>
                           </div>
                       )}
 
@@ -442,7 +514,7 @@ export default function EventDetail() {
                             <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                               <ImageIcon className="w-5 h-5" /> Event Gallery
                             </h3>
-                            <label className="cursor-pointer bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50">
+                            <label className="cursor-pointer bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium disabled:opacity-50">
                               {uploadingImages ? (
                                 <span className="flex items-center gap-2">
                                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -472,7 +544,7 @@ export default function EventDetail() {
                                     className="w-full h-32 object-cover rounded-lg"
                                   />
                                   {img.isPrimary && (
-                                    <div className="absolute top-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                                    <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
                                       Primary
                                     </div>
                                   )}
@@ -500,7 +572,7 @@ export default function EventDetail() {
                       {event.location && (
                         <div className="bg-white rounded-2xl p-6 border border-gray-200">
                           <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <MapPin className="text-primary-600" size={20} />
+                            <MapPin className="text-orange-600" size={20} />
                             Event Location
                           </h3>
                           <div className="space-y-3">
@@ -525,7 +597,7 @@ export default function EventDetail() {
                                       href={`https://www.openstreetmap.org/?mlat=${event.latitude}&mlon=${event.longitude}#map=15/${event.latitude}/${event.longitude}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="text-sm text-primary-600 hover:text-primary-700"
+                                      className="text-sm text-orange-600 hover:text-orange-700"
                                     >
                                       View Larger Map →
                                     </a>
@@ -540,8 +612,8 @@ export default function EventDetail() {
                       {/* Trust Assurance */}
                       <div className="bg-gray-50 rounded-2xl p-6">
                         <div className="flex items-start gap-3 mb-4">
-                          <div className="p-2 bg-primary-100 rounded-lg">
-                            <Shield className="text-primary-600" size={20} />
+                          <div className="p-2 bg-orange-100 rounded-lg">
+                            <Shield className="text-orange-600" size={20} />
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900">Your donation is protected</h3>
@@ -589,8 +661,8 @@ export default function EventDetail() {
                                 <div key={update.id} className="pb-6 border-b border-gray-100 last:border-0">
                                   <div className="flex items-start gap-4">
                                     <div className="flex-shrink-0">
-                                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                                        <Megaphone className="w-5 h-5 text-primary-600" />
+                                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                        <Megaphone className="w-5 h-5 text-orange-600" />
                                       </div>
                                     </div>
                                     <div className="flex-1">
@@ -604,11 +676,11 @@ export default function EventDetail() {
                                         {update.content}
                                       </div>
                                       <div className="flex items-center gap-4 text-sm text-gray-500">
-                                        <button className="flex items-center gap-1 hover:text-primary-600">
+                                        <button className="flex items-center gap-1 hover:text-orange-600">
                                           <Heart size={14} />
                                           <span>{update.reactionCount || 0}</span>
                                         </button>
-                                        <button className="flex items-center gap-1 hover:text-primary-600">
+                                        <button className="flex items-center gap-1 hover:text-orange-600">
                                           <MessageCircle size={14} />
                                           <span>{update.commentCount || 0}</span>
                                         </button>
@@ -634,7 +706,7 @@ export default function EventDetail() {
                           onChange={(e) => setNewComment(e.target.value)}
                           placeholder="Leave a message of encouragement..."
                           rows="3"
-                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary-300 focus:ring-2 focus:ring-primary-50 focus:outline-none resize-none bg-white"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-orange-300 focus:ring-2 focus:ring-orange-50 focus:outline-none resize-none bg-white"
                       />
                           <div className="flex justify-between items-center">
                             <div className="text-sm text-gray-500">
@@ -643,7 +715,7 @@ export default function EventDetail() {
                             <button
                                 type="submit"
                                 disabled={submittingComment || !newComment.trim()}
-                                className="px-6 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="px-6 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                               {submittingComment ? 'Posting...' : 'Post message'}
                             </button>
@@ -678,7 +750,7 @@ export default function EventDetail() {
                                       <div className="flex items-center gap-2">
                                         <span className="font-medium text-gray-900">{comment.userName}</span>
                                         {comment.donationAmount && (
-                                            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                                            <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
                                     Donated {formatCurrency(comment.donationAmount)}
                                   </span>
                                         )}
@@ -725,7 +797,7 @@ export default function EventDetail() {
                           {participants.map((participant) => (
                               <div
                                   key={participant.userId}
-                                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-primary-200 hover:shadow-md transition-all"
+                                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-orange-200 hover:shadow-md transition-all"
                               >
                                 <div className="flex items-center gap-4">
                                   {participant.userAvatar ? (
@@ -735,7 +807,7 @@ export default function EventDetail() {
                                           className="w-12 h-12 rounded-full object-cover"
                                       />
                                   ) : (
-                                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center text-primary-600 font-medium text-lg">
+                                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center text-orange-600 font-medium text-lg">
                                         {participant.userName.charAt(0).toUpperCase()}
                                       </div>
                                   )}
@@ -743,7 +815,7 @@ export default function EventDetail() {
                                     <div className="flex items-center gap-2 mb-1">
                                       <span className="font-semibold text-gray-900">{participant.userName}</span>
                                       {participant.donationCount > 0 && (
-                                          <span className="inline-flex items-center text-xs font-medium text-primary-600 bg-primary-50 px-2 py-0.5 rounded-full">
+                                          <span className="inline-flex items-center text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
                                             <Heart className="w-3 h-3 mr-1 fill-current" />
                                             Donor
                                           </span>
@@ -754,7 +826,7 @@ export default function EventDetail() {
                                       {participant.totalDonated > 0 && (
                                           <>
                                             <span>•</span>
-                                            <span className="font-medium text-primary-600">
+                                            <span className="font-medium text-orange-600">
                                               {formatCurrency(participant.totalDonated)} donated
                                             </span>
                                           </>
@@ -789,11 +861,11 @@ export default function EventDetail() {
                   <div>
                     <div className="flex justify-between items-center mb-3">
                       <h3 className="text-lg font-semibold text-gray-900">Fundraising progress</h3>
-                      <span className="text-primary-600 font-bold">{progress.toFixed(1)}%</span>
+                      <span className="text-orange-600 font-bold">{progress.toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2 mb-2 overflow-hidden">
                       <div
-                          className="bg-gradient-to-r from-primary-400 to-emerald-400 h-2 rounded-full transition-all duration-1000 ease-out"
+                          className="bg-gradient-to-r from-orange-400 to-amber-400 h-2 rounded-full transition-all duration-1000 ease-out"
                           style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -818,20 +890,116 @@ export default function EventDetail() {
 
                   {/* Donation CTA */}
                   <div className="space-y-3">
+                    {!joined ? (
+                      <button
+                        onClick={() => setShowJoinModal(true)}
+                        disabled={joiningEvent}
+                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-4 px-6 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {joiningEvent ? 'Joining...' : '✓ Join Event'}
+                      </button>
+                    ) : (
+                      <div className="w-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-center py-4 px-6 rounded-xl font-bold text-lg border-2 border-green-300 flex items-center justify-center gap-2">
+                        <CheckCircle size={20} />
+                        Already a supporter!
+                      </div>
+                    )}
                     <Link
                         href={`/donate/${event.id}`}
-                        className="block w-full bg-gradient-to-r from-primary-500 to-emerald-500 text-white text-center py-4 px-6 rounded-xl font-bold text-lg hover:from-primary-600 hover:to-emerald-600 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                        className="block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-4 px-6 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
                     >
                       Donate now
                     </Link>
+                  </div>
+
+                  {/* Share Section */}
+                  <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-gray-900 font-medium">
+                      <Share2 size={18} className="text-orange-600" />
+                      <span>Share this fundraiser</span>
+                    </div>
+
                     <button
-                        onClick={handleShare}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-6 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={openShareModal}
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-lg font-medium text-gray-800 hover:border-orange-200 hover:text-orange-700 transition-colors"
                     >
-                      <Share2 size={18} />
-                      Share fundraiser
+                      <Share2 size={16} />
+                      Quick share
                     </button>
                   </div>
+
+                  {showShareModal && (
+                    <div
+                        className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 px-4"
+                        onClick={closeShareModal}
+                    >
+                      <div
+                          className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 space-y-4"
+                          onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-gray-900 font-semibold">
+                            <Share2 size={18} className="text-orange-600" />
+                            <span>Share this fundraiser</span>
+                          </div>
+                          <button
+                              onClick={closeShareModal}
+                              className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                              aria-label="Close share dialog"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-gray-700 bg-gray-50 rounded-lg border border-gray-200 px-3 py-2">
+                          <Link2 size={16} className="text-orange-600" />
+                          <span className="truncate">{shareUrl || 'Link will appear here once loaded'}</span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                              onClick={handleShare}
+                              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors"
+                          >
+                            <Share2 size={16} />
+                            Native share
+                          </button>
+                          <button
+                              onClick={handleCopyLink}
+                              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-white border border-gray-200 rounded-lg font-medium text-gray-800 hover:border-orange-200 hover:text-orange-700 transition-colors"
+                          >
+                            <Copy size={16} />
+                            {copyState === 'copied' ? 'Copied' : 'Copy link'}
+                          </button>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+                          <a
+                              href={encodedShareUrl ? `https://www.facebook.com/sharer/sharer.php?u=${encodedShareUrl}` : '#'}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3 py-1.5 rounded-full bg-white border border-gray-200 hover:border-orange-200 hover:text-orange-700 transition-colors"
+                          >
+                            Share on Facebook
+                          </a>
+                          <a
+                              href={encodedShareUrl ? `https://wa.me/?text=${encodedShareUrl}` : '#'}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-3 py-1.5 rounded-full bg-white border border-gray-200 hover:border-orange-200 hover:text-orange-700 transition-colors"
+                          >
+                            Share on WhatsApp
+                          </a>
+                          <a
+                              href={shareEmailHref || '#'}
+                              className="px-3 py-1.5 rounded-full bg-white border border-gray-200 hover:border-orange-200 hover:text-orange-700 transition-colors"
+                          >
+                            Share via Email
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Recent Donors */}
                   {recentDonations.length > 0 && (
@@ -857,7 +1025,7 @@ export default function EventDetail() {
                                   )}
                                   <span className="text-sm text-gray-700">{displayName}</span>
                                 </div>
-                                <div className="text-sm font-medium text-primary-600">
+                                <div className="text-sm font-medium text-orange-600">
                                   {formatCurrency(donation.amount)}
                                 </div>
                               </div>
@@ -881,9 +1049,9 @@ export default function EventDetail() {
                       </span>
                       ) : (
                           <button
-                              onClick={handleJoinEvent}
+                              onClick={() => setShowJoinModal(true)}
                               disabled={joiningEvent}
-                              className="text-primary-600 hover:text-primary-700 font-medium text-sm px-3 py-1 border border-primary-200 rounded-lg hover:bg-primary-50 transition-colors disabled:opacity-50"
+                              className="text-orange-600 hover:text-orange-700 font-medium text-sm px-3 py-1 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
                           >
                             {joiningEvent ? 'Joining...' : 'Support fundraiser'}
                           </button>
@@ -923,38 +1091,145 @@ export default function EventDetail() {
         </div>
 
         {/* Related Fundraisers (Bottom) */}
-        {event.relatedEvents && event.relatedEvents.length > 0 && (
+        {(loadingRelated || relatedEvents.length > 0) && (
             <div className="bg-gray-50 border-t border-gray-200 py-12 px-4 md:px-8">
               <div className="max-w-6xl mx-auto">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">Other ways to help</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {event.relatedEvents.slice(0, 3).map((related) => (
-                      <Link
-                          key={related.id}
-                          href={`/events/${related.id}`}
-                          className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-200 hover:shadow-lg group"
-                      >
-                        <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 group-hover:opacity-90 transition-opacity"></div>
-                        <div className="p-5">
-                          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-primary-600">
-                            {related.title}
-                          </h3>
-                          <div className="flex justify-between text-sm text-gray-600 mb-3">
-                            <span>Goal: {formatCurrency(related.goalAmount)}</span>
-                            <span>{calculateProgress(related.currentAmount, related.goalAmount)}%</span>
-                          </div>
-                          <div className="w-full bg-gray-100 rounded-full h-1.5">
-                            <div
-                                className="bg-primary-400 h-1.5 rounded-full"
-                                style={{ width: `${calculateProgress(related.currentAmount, related.goalAmount)}%` }}
-                            />
-                          </div>
-                        </div>
-                      </Link>
-                  ))}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900">Other ways to help</h2>
+                  <Link href="/events" className="text-orange-600 hover:text-orange-700 text-sm font-medium">
+                    View all fundraisers →
+                  </Link>
                 </div>
+
+                {loadingRelated ? (
+                    <div className="flex items-center justify-center py-10 text-gray-500">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                    </div>
+                ) : relatedEvents.length === 0 ? (
+                    <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+                      No related fundraisers yet.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {relatedEvents.slice(0, 3).map((related) => (
+                          <Link
+                              key={related.id}
+                              href={`/events/${related.id}`}
+                              className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-orange-200 transition-all duration-200 hover:shadow-lg group"
+                          >
+                            <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 group-hover:opacity-90 transition-opacity"></div>
+                            <div className="p-5">
+                              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-orange-600">
+                                {related.title}
+                              </h3>
+                              <div className="flex justify-between text-sm text-gray-600 mb-3">
+                                <span>Goal: {formatCurrency(related.goalAmount)}</span>
+                                <span>{calculateProgress(related.currentAmount, related.goalAmount)}%</span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-1.5">
+                                <div
+                                    className="bg-orange-400 h-1.5 rounded-full"
+                                    style={{ width: `${calculateProgress(related.currentAmount, related.goalAmount)}%` }}
+                                />
+                              </div>
+                            </div>
+                          </Link>
+                      ))}
+                    </div>
+                )}
               </div>
             </div>
+        )}
+
+        {/* Join Modal */}
+        {showJoinModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+            onClick={() => setShowJoinModal(false)}
+          >
+            <div
+              className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">How would you like to join?</h3>
+                <button
+                  onClick={() => setShowJoinModal(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <p className="text-gray-600 mb-6">Choose how you'd like to support this fundraiser:</p>
+
+              <div className="space-y-3">
+                {/* Free Join Option */}
+                <button
+                  onClick={() => handleJoinEvent('free')}
+                  disabled={joiningEvent}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-green-100">
+                        <CheckCircle className="h-6 w-6 text-green-600" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">Free Join</h4>
+                      <p className="text-sm text-gray-600">Support the cause without any cost</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Donation Join Option */}
+                <button
+                  onClick={() => handleJoinEvent('donation')}
+                  disabled={joiningEvent}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100">
+                        <Heart className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">Join with Donation</h4>
+                      <p className="text-sm text-gray-600">Make a donation to join and support</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Paid Join Option */}
+                <button
+                  onClick={() => handleJoinEvent('paid')}
+                  disabled={joiningEvent}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 hover:bg-orange-50 transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100">
+                        <span className="text-lg font-bold text-purple-600">$</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900">Pay to Join</h4>
+                      <p className="text-sm text-gray-600">Pay an entry fee to join the event</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                onClick={() => setShowJoinModal(false)}
+                className="w-full mt-6 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         )}
       </div>
   );

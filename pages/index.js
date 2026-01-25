@@ -8,10 +8,12 @@ import { postsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
 export default function Home() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
+
+  const tr = (en, km) => (language === 'km' ? km : en);
 
   const floatingItems = [
     {
@@ -258,8 +260,8 @@ export default function Home() {
                     transition={{ duration: 0.8, delay: 0.1 }}
                     className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight tracking-tight"
                 >
-                  When you need help,<br />
-                  <span className="text-orange-600">we're here</span>
+                  {tr('When you need help,', 'នៅពេលអ្នកត្រូវការជំនួយ,')}<br />
+                  <span className="text-orange-600">{tr("we're here", 'យើងនៅទីនេះ')}</span>
                 </motion.h1>
 
                 {/* Subheading */}
@@ -269,7 +271,7 @@ export default function Home() {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed"
                 >
-                  Join millions who've raised over $20 billion for medical bills, emergencies, dreams, and everything in between.
+                  {tr("Join millions who've raised over $20 billion for medical bills, emergencies, dreams, and everything in between.", 'ចូលរួមជាមួយអ្នករាប់លាននាក់ដែលបាន筹 $20 ពាន់លាន ដើម្បីថ្លៃពេទ្យ ការបន្ទាន់ សុបិន និងគ្រប់យ៉ាងចន្លោះមក។')}
                 </motion.p>
 
                 {/* Primary CTA */}
@@ -283,7 +285,7 @@ export default function Home() {
                       href="/events"
                       className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white px-8 py-4 rounded-2xl text-lg font-semibold transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                   >
-                    <span>Start your fundraiser</span>
+                    <span>{tr('Start your fundraiser', 'ចាប់ផ្តើមយុទ្ធនាការរបស់អ្នក')}</span>
                   </Link>
                 </motion.div>
 
@@ -294,7 +296,7 @@ export default function Home() {
                     transition={{ duration: 0.6, delay: 0.4 }}
                     className="text-sm text-gray-500 mt-6"
                 >
-                  Free to start • No obligation • Secure platform
+                  {tr('Free to start • No obligation • Secure platform', 'ចាប់ផ្តើមឥតគិតថ្លៃ • គ្មានការបង្ខិតបង្ខំ • វេទិកាសុវត្ថិភាព')}
                 </motion.p>
               </div>
             </div>
@@ -309,7 +311,7 @@ export default function Home() {
         <section className="py-20 px-4 bg-gray-50">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
-              Fundraising on SangkumFund is easy, powerful, and trusted
+              {tr('Fundraising on SangkumFund is easy, powerful, and trusted', 'ការប្រមូលថវិកាលើ SangkumFund គឺស្រួល មានប្រសិទ្ធភាព និងទុកចិត្តបាន')}
             </h2>
 
             <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -347,9 +349,9 @@ export default function Home() {
               {/* Steps */}
               <div className="space-y-8">
                 {[
-                  { number: '1', title: 'Set your starting goal', desc: 'Tell your story and set a realistic fundraising goal' },
-                  { number: '2', title: 'Reach donors by sharing', desc: 'Share your fundraiser with friends, family, and social networks' },
-                  { number: '3', title: 'Securely receive funds', desc: 'Withdraw funds directly to your bank account as donations come in' },
+                  { number: '1', title: tr('Set your starting goal', 'កំណត់គោលដៅចាប់ផ្តើម'), desc: tr('Tell your story and set a realistic fundraising goal', 'ប្រាប់រឿងរបស់អ្នក ហើយកំណត់គោលដៅប្រមូលថវិកាដែលមានភាពពិតប្រាកដ') },
+                  { number: '2', title: tr('Reach donors by sharing', 'ឈានដល់អ្នកបរិច្ចាគតាមការចែករំលែក'), desc: tr('Share your fundraiser with friends, family, and social networks', 'ចែករំលែកយុទ្ធនាការរបស់អ្នកជាមួយមិត្តភក្ដិ គ្រួសារ និងបណ្ដាញសង្គម') },
+                  { number: '3', title: tr('Securely receive funds', 'ទទួលប្រាក់ដោយសុវត្ថិភាព'), desc: tr('Withdraw funds directly to your bank account as donations come in', 'ដកប្រាក់ដោយផ្ទាល់ទៅគណនីធនាគាររបស់អ្នកពេលមានការបរិច្ចាគ') },
                 ].map((step, index) => (
                     <div key={index} className="flex items-start gap-6 group cursor-pointer">
                       <div className="flex-shrink-0 w-14 h-14 bg-orange-100 group-hover:bg-orange-200 rounded-full flex items-center justify-center transition-colors">
@@ -380,7 +382,7 @@ export default function Home() {
         <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
-              Featured topics
+              {tr('Featured topics', 'ប្រធានបទពិសេស')}
             </h2>
 
             <div className="grid lg:grid-cols-3 gap-8">
@@ -415,10 +417,10 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
               <div className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                More than {formatCurrency(50000000)} raised every week
+                {tr('More than', 'លើសពី')} {formatCurrency(50000000)} {tr('raised every week', 'ត្រូវបានប្រមូលប្រាក់រៀងរាល់សប្តាហ៍')}
               </div>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Get started in minutes, receive donations quickly, and withdraw funds easily.
+                {tr('Get started in minutes, receive donations quickly, and withdraw funds easily.', 'ចាប់ផ្តើមក្នុងពេលប៉ុន្មាននាទី ទទួលបានការបរិច្ចាគរហ័ស និងដកប្រាក់បានងាយស្រួល។')}
               </p>
             </div>
 
@@ -455,15 +457,15 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
               <div>
-                <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">Real impact</p>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Stories fueled by the crowd</h2>
-                <p className="text-gray-600 max-w-2xl mt-3">Every contribution moves a story forward. See how organizers turned urgent needs into funded realities.</p>
+                <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">{tr('Real impact', 'ផលប៉ះពាល់ពិតប្រាកដ')}</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">{tr('Stories fueled by the crowd', 'រឿងរ៉ាវដែលបានគាំទ្រដោយសហគមន៍')}</h2>
+                <p className="text-gray-600 max-w-2xl mt-3">{tr('Every contribution moves a story forward. See how organizers turned urgent needs into funded realities.', 'ការរួមចំណែករាល់មួយ បង្កើនរឿងរ៉ាវទៅមុខ។ មើលថាតើអ្នករៀបចំបានបម្លែងតម្រូវការបន្ទាន់ទៅជាការគាំទ្រប្រាក់ដូចម្តេច។')}</p>
               </div>
               <Link
                   href="/blog"
                   className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-orange-200 text-orange-700 hover:bg-orange-50 transition-all"
               >
-                Explore community stories
+                {tr('Explore community stories', 'ស្វែងយល់ពីរឿងសហគមន៍')}
                 <ArrowUpRight className="w-4 h-4" />
               </Link>
             </div>
@@ -495,7 +497,7 @@ export default function Home() {
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-12">
-              How SangkumFund works
+              {tr('How SangkumFund works', 'របៀបដែល SangkumFund ដំណើរការ')}
             </h2>
 
             <div className="relative bg-gradient-to-br from-orange-100 to-amber-100 rounded-3xl p-12">
@@ -519,7 +521,7 @@ export default function Home() {
                 <div className="w-24 h-24 bg-orange-600 rounded-full flex items-center justify-center mx-auto shadow-2xl cursor-pointer hover:scale-110 transition-transform">
                   <Play className="w-12 h-12 text-white fill-white" />
                 </div>
-                <div className="text-sm text-gray-600 mt-4">Watch video explainer</div>
+                <div className="text-sm text-gray-600 mt-4">{tr('Watch video explainer', 'មើលវីដេអូពន្យល់')}</div>
               </div>
             </div>
           </div>
@@ -529,12 +531,11 @@ export default function Home() {
         <section className="py-20 px-4 bg-orange-900">
           <div className="max-w-5xl mx-auto text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold mb-8">
-              We've got you covered.
+              {tr("We've got you covered.", 'យើងគាំទ្រអ្នក។')}
             </h2>
 
             <p className="text-xl text-orange-100 mb-12 max-w-2xl mx-auto">
-              With SangkumFund, you can fundraise with confidence. Our dedicated Trust & Safety team,
-              simple pricing, and secure platform give you peace of mind.
+              {tr('With SangkumFund, you can fundraise with confidence. Our dedicated Trust & Safety team, simple pricing, and secure platform give you peace of mind.', 'ជាមួយ SangkumFund អ្នកអាចប្រមូលថវិកាដោយទំនុកចិត្ត។ ក្រុម Trust & Safety របស់យើង តម្លៃសាមញ្ញ និងវេទិកាសុវត្ថិភាព នឹងផ្តល់សេចក្តីស្ងប់ចិត្ត។')}
             </p>
 
             <div className="grid md:grid-cols-3 gap-8 text-left mb-12">
@@ -569,7 +570,7 @@ export default function Home() {
         <section className="py-20 px-4">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
-              Top crowdfunding tips
+              {tr('Top crowdfunding tips', 'គន្លឹះប្រមូលថវិកាដ៏ល្អបំផុត')}
             </h2>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -599,9 +600,9 @@ export default function Home() {
         <section className="py-20 px-4 bg-white">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">Testimonials</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What our donors and organizers say</h2>
-              <p className="text-gray-600 max-w-3xl mx-auto">Built for trust, speed, and clarity—so every fundraiser can focus on impact, not paperwork.</p>
+              <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">{tr('Testimonials', 'មតិយោបល់')}</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{tr('What our donors and organizers say', 'អ្វីដែលអ្នកបរិច្ចាគ និងអ្នករៀបចំបាននិយាយ')}</h2>
+              <p className="text-gray-600 max-w-3xl mx-auto">{tr('Built for trust, speed, and clarity—so every fundraiser can focus on impact, not paperwork.', 'បង្កើតឡើងសម្រាប់ការទុកចិត្ត ល្បឿន និងភាពច្បាស់លាស់—ដូច្នេះអ្នករៀបចំអាចផ្តោតលើផលប៉ះពាល់ មិនមែនលើការងារឯកសារ')}</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
@@ -627,10 +628,10 @@ export default function Home() {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                Fundraise with confidence
+                {tr('Fundraise with confidence', 'ប្រមូលថវិកាដោយទំនុកចិត្ត')}
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Everything you need to feel secure and supported
+                {tr('Everything you need to feel secure and supported', 'គ្រប់យ៉ាងដែលអ្នកត្រូវការដើម្បីមានសុវត្ថិភាព និងទទួលការគាំទ្រ')}
               </p>
             </div>
 
@@ -670,12 +671,12 @@ export default function Home() {
         <section className="py-20 px-4 bg-white">
           <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 items-start">
             <div>
-              <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">We’re here</p>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Questions, answered fast</h2>
-              <p className="text-gray-600 mb-6">From onboarding to payouts, our support team and help center keep you moving without friction.</p>
+              <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">{tr('We’re here', 'យើងនៅទីនេះ')}</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{tr('Questions, answered fast', 'សំណួរទទួលបានចម្លើយរហ័ស')}</h2>
+              <p className="text-gray-600 mb-6">{tr('From onboarding to payouts, our support team and help center keep you moving without friction.', 'ចាប់ពីការចុះឈ្មោះដល់ការទូទាត់ ក្រុមគាំទ្រ និងមជ្ឈមណ្ឌលជំនួយរបស់យើង រក្សាឱ្យអ្នកដំណើរការដោយគ្មានឧបសគ្គ។')}</p>
               <div className="space-y-3">
                 <Link href="/help-center" className="inline-flex items-center gap-2 text-orange-600 font-semibold">
-                  Visit help center
+                  {tr('Visit help center', 'ចូលទស្សនាមជ្ឈមណ្ឌលជំនួយ')}
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
                 <div className="flex items-center gap-3 text-gray-700">
@@ -716,10 +717,10 @@ export default function Home() {
                       viewport={{ once: true }}
                   >
                     <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                      Inspiring Stories from Our Community
+                      {tr('Inspiring Stories from Our Community', 'រឿងរ៉ាវលើកទឹកចិត្តពីសហគមន៍របស់យើង')}
                     </h2>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                      Read how individuals and communities are making a difference
+                      {tr('Read how individuals and communities are making a difference', 'អានពីរបៀបដែលបុគ្គល និងសហគមន៍កំពុងបង្កើតភាពខុសគ្នា')}
                     </p>
                   </motion.div>
                 </div>
@@ -781,7 +782,7 @@ export default function Home() {
                       href="/blog"
                       className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg"
                   >
-                    Read All Stories
+                    {tr('Read All Stories', 'អានរឿងទាំងអស់')}
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -800,10 +801,10 @@ export default function Home() {
             >
               <Sparkles className="w-20 h-20 mx-auto mb-6" />
               <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Your story matters
+                {tr('Your story matters', 'រឿងរបស់អ្នកសំខាន់')}
               </h2>
               <p className="text-xl text-orange-100 mb-10 max-w-2xl mx-auto leading-relaxed">
-                Whether it's a medical need, a dream project, or helping someone you love—your community is ready to support you.
+                {tr('Whether it\'s a medical need, a dream project, or helping someone you love—your community is ready to support you.', 'មិនថាជាការទាមទារពេទ្យ គម្រោងសុបិន ឬជួយមនុស្សដែលអ្នកស្រឡាញ់—សហគមន៍របស់អ្នកត្រៀមខ្លួនរួចរាល់ដើម្បីគាំទ្រអ្នក។')}
               </p>
 
               <div className="space-y-6">
@@ -811,25 +812,25 @@ export default function Home() {
                     href="/events"
                     className="inline-block w-full sm:w-auto bg-white text-orange-700 hover:bg-gray-50 px-10 py-5 rounded-2xl text-lg font-semibold transition-all shadow-2xl hover:shadow-3xl hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Start your fundraiser — it's free
+                  {tr('Start your fundraiser — it\'s free', 'ចាប់ផ្តើមយុទ្ធនាការរបស់អ្នក — ឥតគិតថ្លៃ')}
                 </Link>
 
                 <div className="text-orange-100/80 text-sm space-y-2">
-                  <p>No setup fees • Secure platform • Withdraw anytime</p>
-                  <p className="text-orange-100/60">Over 2 million fundraisers started last year</p>
+                  <p>{tr('No setup fees • Secure platform • Withdraw anytime', 'គ្មានថ្លៃដើម • វេទិកាសុវត្ថិភាព • ដកប្រាក់បានគ្រប់ពេល')}</p>
+                  <p className="text-orange-100/60">{tr('Over 2 million fundraisers started last year', 'ជាង 2 លានយុទ្ធនាការបានចាប់ផ្តើមនៅឆ្នាំមុន')}</p>
                 </div>
               </div>
 
               {/* Gentle Closing */}
               <div className="mt-16 pt-8 border-t border-orange-500/30">
                 <p className="text-orange-100/70">
-                  Still wondering if this is right for you?
+                  {tr('Still wondering if this is right for you?', 'នៅតែសង្ស័យថាវាសមស្របសម្រាប់អ្នកទេ?')}
                 </p>
                 <Link
                     href="/guide"
                     className="inline-flex items-center text-orange-100 hover:text-white font-medium mt-4"
                 >
-                  Read our beginner's guide →
+                  {tr("Read our beginner's guide", 'អានមគ្គុទ្ទេសក៍សម្រាប់អ្នកដំបូង')} →
                 </Link>
               </div>
             </motion.div>

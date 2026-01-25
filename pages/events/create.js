@@ -140,30 +140,30 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8 animate-fadeIn">
-          <Link href="/events" className="inline-flex items-center text-primary-600 hover:text-primary-700 font-semibold mb-4 group">
+          <Link href="/events" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold mb-4 group">
             <span className="mr-2 transform group-hover:-translate-x-1 transition-transform">←</span>
             {t('common.back')}
           </Link>
           <h1 className="text-5xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent">
               {t('createEvent.title')}
             </span>
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-700">
             {t('createEvent.subtitle')}
           </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 animate-fadeIn border border-orange-100" style={{ animationDelay: '0.1s' }}>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 text-red-800 p-4 rounded-xl border border-red-200 flex items-center animate-slideInRight">
-                <span className="text-2xl mr-3">⚠️</span>
+              <div className="bg-red-50 text-red-800 p-4 rounded-xl border-2 border-red-200 flex items-center animate-slideInRight shadow-sm">
+                <AlertCircle className="w-6 h-6 mr-3 flex-shrink-0" />
                 <div className="font-medium">{error}</div>
               </div>
             )}
@@ -179,7 +179,7 @@ export default function CreateEvent() {
                 required
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
                 placeholder={t('createEvent.eventTitlePlaceholder')}
               />
               <p className="mt-2 text-sm text-gray-500">Make it compelling and descriptive</p>
@@ -196,7 +196,7 @@ export default function CreateEvent() {
                 rows="6"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
                 placeholder={t('createEvent.descriptionPlaceholder')}
               />
               <p className="mt-2 text-sm text-gray-500">Share the story behind your cause</p>
@@ -212,7 +212,7 @@ export default function CreateEvent() {
                 required
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
               >
                 <option value="">{t('createEvent.selectCategory')}</option>
                 <option value="Education">{t('categories.Education')}</option>
@@ -245,7 +245,7 @@ export default function CreateEvent() {
                   step="0.01"
                   value={formData.targetAmount}
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all text-lg"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
                   placeholder="10000.00"
                 />
               </div>
@@ -265,7 +265,7 @@ export default function CreateEvent() {
                   value={formData.startDate}
                   onChange={handleChange}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 />
               </div>
               <div>
@@ -279,7 +279,7 @@ export default function CreateEvent() {
                   value={formData.endDate}
                   onChange={handleChange}
                   min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 />
               </div>
             </div>
@@ -294,7 +294,7 @@ export default function CreateEvent() {
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                 placeholder={t('createEvent.locationPlaceholder')}
               />
               <p className="mt-2 text-sm text-gray-500">Where will this event take place?</p>
@@ -309,7 +309,7 @@ export default function CreateEvent() {
                 <button
                   type="button"
                   onClick={() => setShowMapPicker(true)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all flex items-center gap-2"
+                  className="px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-amber-700 transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -329,7 +329,7 @@ export default function CreateEvent() {
                     step="any"
                     value={formData.latitude}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                     placeholder="11.5564"
                   />
                 </div>
@@ -343,7 +343,7 @@ export default function CreateEvent() {
                     step="any"
                     value={formData.longitude}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                     placeholder="104.9282"
                   />
                 </div>
@@ -363,7 +363,7 @@ export default function CreateEvent() {
               
               <div className="space-y-4">
                 {/* File Upload */}
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-primary-500 transition-all">
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-500 transition-all">
                   <input
                     type="file"
                     id="image-upload"
@@ -403,7 +403,7 @@ export default function CreateEvent() {
                           </svg>
                         </button>
                         {index === 0 && (
-                          <div className="absolute bottom-2 left-2 bg-primary-500 text-white text-xs px-2 py-1 rounded">
+                          <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
                             Primary
                           </div>
                         )}
@@ -420,7 +420,7 @@ export default function CreateEvent() {
                     name="imageUrl"
                     value={formData.imageUrl}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                     placeholder="https://example.com/your-image.jpg"
                   />
                 </div>
@@ -449,12 +449,12 @@ export default function CreateEvent() {
             )}
 
             {/* Info Box */}
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 mb-4">
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-6 mb-4 shadow-sm">
               <div className="flex items-start">
-                <div className="text-3xl mr-4">⏳</div>
+                <Calendar className="w-8 h-8 mr-4 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-yellow-900 mb-2">Admin Verification Required</h4>
-                  <p className="text-sm text-yellow-800">
+                  <h4 className="font-bold text-amber-900 mb-2">Admin Verification Required</h4>
+                  <p className="text-sm text-amber-800">
                     Your event will be submitted for admin approval before it becomes visible to the public. 
                     This helps ensure quality and compliance with our community guidelines.
                   </p>
@@ -463,12 +463,12 @@ export default function CreateEvent() {
             </div>
 
             {/* Info Box */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl p-6 shadow-sm">
               <div className="flex items-start">
-                <Lightbulb className="w-12 h-12 mr-4 text-blue-600" />
+                <Lightbulb className="w-8 h-8 mr-4 text-orange-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-bold text-blue-900 mb-2">Tips for Success</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
+                  <h4 className="font-bold text-orange-900 mb-2">Tips for Success</h4>
+                  <ul className="text-sm text-orange-800 space-y-1">
                     <li>✓ Be specific about how funds will be used</li>
                     <li>✓ Include a compelling image or video</li>
                     <li>✓ Set a realistic and achievable goal</li>
@@ -484,14 +484,14 @@ export default function CreateEvent() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition-all text-lg"
+                className="flex-1 px-8 py-4 border-2 border-orange-300 text-orange-700 bg-white rounded-xl font-bold hover:bg-orange-50 transition-all text-lg hover:border-orange-400"
               >
                 {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-8 py-4 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl font-bold hover:from-primary-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg btn-ripple"
+                className="flex-1 px-8 py-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-bold hover:from-orange-700 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg btn-ripple"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -513,7 +513,7 @@ export default function CreateEvent() {
         <div className="mt-8 text-center text-gray-600 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
           <p className="text-sm">
             Need help? Check out our{' '}
-            <a href="#" className="text-primary-600 hover:text-primary-700 font-semibold">
+            <a href="#" className="text-orange-600 hover:text-orange-700 font-semibold">
               Campaign Creation Guide
             </a>
           </p>
