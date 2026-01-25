@@ -1,5 +1,19 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import {
+  Handshake,
+  Building2,
+  FileText,
+  BarChart3,
+  Search,
+  Plus,
+  ShieldCheck,
+  Clock3,
+  MapPin,
+  Globe2,
+  ArrowRight,
+  Loader2,
+} from 'lucide-react';
 import { charitiesAPI } from '@/lib/api';
 import Pagination from '@/components/Pagination';
 
@@ -65,7 +79,9 @@ export default function CharitiesPage() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50 to-white">
           <div className="text-center">
-            <div className="text-6xl mb-4 animate-pulse">🏛️</div>
+            <div className="flex items-center justify-center mb-4">
+              <Loader2 className="w-12 h-12 text-orange-600 animate-spin" />
+            </div>
             <p className="text-gray-600">Loading charities...</p>
           </div>
         </div>
@@ -78,8 +94,8 @@ export default function CharitiesPage() {
           {/* Header */}
           <div className="text-center mb-12 animate-fadeIn">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-amber-100 rounded-full mb-4">
-              <span className="text-lg">🤝</span>
-              <span className="text-sm font-medium text-orange-800">Trusted Partners</span>
+                <Handshake className="w-4 h-4 text-orange-700" />
+                <span className="text-sm font-medium text-orange-800">Trusted Partners</span>
             </div>
             <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
               Partner Charities
@@ -94,7 +110,9 @@ export default function CharitiesPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl">🤝</div>
+                    <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-orange-600" />
+                    </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-900">{totalElements}</div>
                     <div className="text-sm text-gray-600">
@@ -106,7 +124,9 @@ export default function CharitiesPage() {
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl">📄</div>
+                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-blue-600" />
+                    </div>
                   <div>
                     <div className="text-2xl font-bold text-blue-600">{charities.length}</div>
                     <div className="text-sm text-gray-600">On This Page</div>
@@ -115,7 +135,9 @@ export default function CharitiesPage() {
               </div>
               <div className="bg-white rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="text-4xl">📊</div>
+                    <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-purple-600" />
+                    </div>
                   <div>
                     <div className="text-2xl font-bold text-purple-600">{totalPages}</div>
                     <div className="text-sm text-gray-600">Total Pages</div>
@@ -129,19 +151,20 @@ export default function CharitiesPage() {
           <div className="max-w-6xl mx-auto mb-12 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1 relative">
+                <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                     type="text"
-                    placeholder="🔍 Search by name or description..."
+                    placeholder="Search by name or description..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-6 py-4 rounded-2xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none text-lg shadow-md bg-white"
+                    className="w-full pl-12 pr-6 py-4 rounded-2xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none text-lg shadow-md bg-white"
                 />
               </div>
               <Link
                   href="/charities/create"
                   className="bg-gradient-to-r from-orange-600 to-amber-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-orange-700 hover:to-amber-700 transition-all shadow-lg hover:shadow-xl text-center whitespace-nowrap flex items-center justify-center gap-2"
               >
-                <span>➕</span>
+                <Plus className="w-5 h-5" />
                 <span>Register Your Organization</span>
               </Link>
             </div>
@@ -203,19 +226,19 @@ export default function CharitiesPage() {
                                 />
                               </div>
                           ) : (
-                              <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl flex items-center justify-center text-4xl group-hover:from-orange-200 group-hover:to-amber-200 transition-all">
-                                🤝
-                              </div>
+                            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl flex items-center justify-center group-hover:from-orange-200 group-hover:to-amber-200 transition-all">
+                              <Handshake className="w-8 h-8 text-orange-700" />
+                            </div>
                           )}
                           <div className="absolute top-0 right-0">
                             {charity.status === 'VERIFIED' ? (
                                 <div className="flex items-center gap-1 bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">
-                                  <span className="text-sm">✓</span>
+                                  <ShieldCheck className="w-4 h-4" />
                                   <span>Verified</span>
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-full">
-                                  <span className="text-sm">⏳</span>
+                                  <Clock3 className="w-4 h-4" />
                                   <span>Pending</span>
                                 </div>
                             )}
@@ -244,7 +267,7 @@ export default function CharitiesPage() {
                         {/* Location */}
                         {charity.location && (
                             <div className="flex items-center gap-2 text-gray-500 text-sm mb-4">
-                              <span>📍</span>
+                              <MapPin className="w-4 h-4" />
                               <span>{charity.location}</span>
                             </div>
                         )}
@@ -269,7 +292,7 @@ export default function CharitiesPage() {
                         <div className="flex items-center justify-between pt-4 border-t border-gray-100 group-hover:border-orange-100">
                           <div className="flex items-center text-orange-600 font-semibold group-hover:text-orange-700">
                             <span>View Profile</span>
-                            <span className="ml-2 transform group-hover:translate-x-1 transition-transform">→</span>
+                            <ArrowRight className="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform" />
                           </div>
                           {charity.website && (
                               <a
@@ -280,7 +303,7 @@ export default function CharitiesPage() {
                                   className="text-gray-500 hover:text-orange-600"
                                   title="Visit website"
                               >
-                                🌐
+                                <Globe2 className="w-4 h-4" />
                               </a>
                           )}
                         </div>
@@ -292,7 +315,9 @@ export default function CharitiesPage() {
                 {activeFilter === 'all' && (
                     <div className="mt-8 p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-200">
                       <div className="flex items-start gap-4">
-                        <div className="text-2xl">🔒</div>
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-orange-600">
+                          <ShieldCheck className="w-5 h-5" />
+                        </div>
                         <div>
                           <h3 className="font-bold text-gray-900 mb-2">Verification Process</h3>
                           <p className="text-gray-700 text-sm mb-3">
@@ -322,7 +347,9 @@ export default function CharitiesPage() {
               /* Empty State */
               <div className="text-center py-16 animate-fadeIn max-w-2xl mx-auto">
                 <div className="relative inline-block mb-6">
-                  <div className="text-8xl">🔍</div>
+                    <div className="p-6 rounded-full bg-orange-50 inline-flex">
+                      <Search className="w-12 h-12 text-orange-600" />
+                    </div>
                   <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm px-3 py-1 rounded-full">
                     No results
                   </div>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
-import { Hospital, AlertCircle, Briefcase, Bird, GraduationCap, HandshakeIcon, Rocket, Megaphone, RefreshCw, BarChart3, Smartphone, DollarSign, Sparkles, Zap, Banknote, Shield, Users, Heart, Building2, Star, Play, Smile, Loader2, Calendar, User, Tag, ChevronRight } from 'lucide-react';
+import { Hospital, AlertCircle, Briefcase, Bird, GraduationCap, HandshakeIcon, Rocket, Megaphone, RefreshCw, BarChart3, Smartphone, DollarSign, Sparkles, Zap, Banknote, Shield, Users, Heart, Building2, Star, Play, Smile, Loader2, Calendar, User, Tag, ChevronRight, Quote, ArrowUpRight, CheckCircle2, Globe2, PhoneCall, Mail } from 'lucide-react';
 import { postsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
@@ -122,6 +122,63 @@ export default function Home() {
     { Icon: Banknote, label: "Lowest fees", description: "One simple fee, no hidden costs" },
     { Icon: Zap, label: "Fast access", description: "Withdraw funds in 2-3 business days" },
     { Icon: HandshakeIcon, label: "24/7 support", description: "Real help when you need it" }
+  ];
+
+  const successStories = [
+    {
+      title: 'Community Health Drive',
+      category: 'Medical Relief',
+      amount: '$82,400 raised',
+      image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      title: 'School Library Rebuild',
+      category: 'Education',
+      amount: '$46,200 raised',
+      image: 'https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&fit=crop&w=1200&q=80'
+    },
+    {
+      title: 'Local Flood Relief',
+      category: 'Disaster Response',
+      amount: '$103,000 raised',
+      image: 'https://images.unsplash.com/photo-1509099836639-18ba02e2e1ba?auto=format&fit=crop&w=1200&q=80'
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: 'Sophea K.',
+      role: 'Campaign Organizer',
+      quote: 'We reached our goal in days. The donor updates and withdrawals were seamless.',
+      avatar: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      name: 'Daniel R.',
+      role: 'Repeat Donor',
+      quote: 'I trust the verification badges and love how transparent every fundraiser is.',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      name: 'Chanthou M.',
+      role: 'Community Volunteer',
+      quote: 'The map view and local causes make it easy to help neighbors first.',
+      avatar: 'https://images.unsplash.com/photo-1504595403659-9088ce801e29?auto=format&fit=crop&w=400&q=80'
+    }
+  ];
+
+  const faqs = [
+    {
+      question: 'How fast can I withdraw funds?',
+      answer: 'Most withdrawals arrive in 2-3 business days once your identity and destination are verified.'
+    },
+    {
+      question: 'Do donors pay extra fees?',
+      answer: 'No hidden fees. Donors can optionally add a small tip to keep the platform running.'
+    },
+    {
+      question: 'Can I fundraise from overseas?',
+      answer: 'Yes. International card donations are supported, and payouts go to your verified local account.'
+    }
   ];
 
   const formatCurrency = (amount) => {
@@ -393,6 +450,47 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Impact Snapshots */}
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
+              <div>
+                <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">Real impact</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Stories fueled by the crowd</h2>
+                <p className="text-gray-600 max-w-2xl mt-3">Every contribution moves a story forward. See how organizers turned urgent needs into funded realities.</p>
+              </div>
+              <Link
+                  href="/blog"
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-orange-200 text-orange-700 hover:bg-orange-50 transition-all"
+              >
+                Explore community stories
+                <ArrowUpRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {successStories.map((story) => (
+                  <div key={story.title} className="group relative overflow-hidden rounded-3xl shadow-lg bg-gray-900">
+                    <img
+                        src={story.image}
+                        alt={story.title}
+                        className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white flex flex-col gap-2">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span className="text-sm font-medium">{story.category}</span>
+                      </div>
+                      <h3 className="text-xl font-bold leading-snug">{story.title}</h3>
+                      <p className="text-orange-200 font-semibold">{story.amount}</p>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* How It Works Illustration */}
         <section className="py-20 px-4">
           <div className="max-w-5xl mx-auto text-center">
@@ -497,6 +595,33 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Voices from the community */}
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">Testimonials</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What our donors and organizers say</h2>
+              <p className="text-gray-600 max-w-3xl mx-auto">Built for trust, speed, and clarity—so every fundraiser can focus on impact, not paperwork.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {testimonials.map((person) => (
+                  <div key={person.name} className="relative bg-white rounded-3xl shadow-lg border border-gray-100 p-6 flex flex-col gap-4 hover:shadow-xl transition-shadow">
+                    <Quote className="w-8 h-8 text-orange-500" />
+                    <p className="text-gray-700 leading-relaxed">“{person.quote}”</p>
+                    <div className="flex items-center gap-3 mt-auto">
+                      <img src={person.avatar} alt={person.name} className="w-12 h-12 rounded-full object-cover" />
+                      <div>
+                        <div className="font-semibold text-gray-900">{person.name}</div>
+                        <div className="text-sm text-gray-500">{person.role}</div>
+                      </div>
+                    </div>
+                  </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Trust & Safety - Reassurance */}
         <section className="py-20 px-4 bg-gradient-to-b from-gray-50 to-white">
           <div className="max-w-5xl mx-auto">
@@ -537,6 +662,44 @@ export default function Home() {
               >
                 Meet our support team →
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQs & Support */}
+        <section className="py-20 px-4 bg-white">
+          <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 items-start">
+            <div>
+              <p className="text-sm uppercase tracking-[0.25em] text-orange-500 font-semibold mb-3">We’re here</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Questions, answered fast</h2>
+              <p className="text-gray-600 mb-6">From onboarding to payouts, our support team and help center keep you moving without friction.</p>
+              <div className="space-y-3">
+                <Link href="/help-center" className="inline-flex items-center gap-2 text-orange-600 font-semibold">
+                  Visit help center
+                  <ArrowUpRight className="w-4 h-4" />
+                </Link>
+                <div className="flex items-center gap-3 text-gray-700">
+                  <PhoneCall className="w-4 h-4 text-orange-600" />
+                  <span>24/7 hotline: +855 92 000 000</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-700">
+                  <Mail className="w-4 h-4 text-orange-600" />
+                  <span>support@sangkumfund.com</span>
+                </div>
+              </div>
+            </div>
+            <div className="md:col-span-2 space-y-4">
+              {faqs.map((item) => (
+                  <div key={item.question} className="border border-gray-200 rounded-2xl p-4 hover:border-orange-200 transition-colors bg-white shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <Globe2 className="w-5 h-5 text-orange-600 mt-1" />
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{item.question}</h3>
+                        <p className="text-gray-600 mt-1">{item.answer}</p>
+                      </div>
+                    </div>
+                  </div>
+              ))}
             </div>
           </div>
         </section>
