@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { businessCardsAPI } from '@/lib/api';
 import QRCode from 'qrcode.react';
+import { Briefcase, AlertCircle } from 'lucide-react';
 
 export default function BusinessCardView() {
   const router = useRouter();
@@ -130,7 +131,9 @@ END:VCARD`;
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">💼</div>
+          <div className="flex justify-center mb-4">
+            <Briefcase className="w-16 h-16 text-blue-400 animate-bounce" />
+          </div>
           <p className="text-white text-xl">Loading business card...</p>
         </div>
       </div>
@@ -141,7 +144,9 @@ END:VCARD`;
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4">❌</div>
+          <div className="flex justify-center mb-4">
+            <AlertCircle className="w-16 h-16 text-red-500" />
+          </div>
           <h2 className="text-2xl font-bold text-white mb-2">Card Not Found</h2>
           <p className="text-gray-300 mb-6">{error || 'This business card does not exist'}</p>
           <a

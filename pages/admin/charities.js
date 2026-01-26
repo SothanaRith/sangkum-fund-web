@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { adminAPI } from '@/lib/admin-api';
 import { formatDate } from '@/lib/utils';
+import { Building2 } from 'lucide-react';
 
 export default function AdminCharitiesPage() {
   const router = useRouter();
@@ -62,7 +63,9 @@ export default function AdminCharitiesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">🏛️</div>
+          <div className="flex justify-center mb-4">
+            <Building2 className="w-16 h-16 text-blue-600 animate-bounce" />
+          </div>
           <p className="text-gray-600">Loading charities...</p>
         </div>
       </div>
@@ -75,9 +78,10 @@ export default function AdminCharitiesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8 animate-fadeIn">
           <div>
-            <h1 className="text-4xl font-bold mb-2 gradient-text">
-              🏛️ Charity Verification
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <Building2 className="w-8 h-8 text-blue-600" />
+              <h1 className="text-4xl font-bold gradient-text">Charity Verification</h1>
+            </div>
             <p className="text-gray-600">
               {pendingCount > 0
                 ? `${pendingCount} charities pending verification`

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { eventVerificationAPI } from '@/lib/admin-event-api';
+import { CheckCircle } from 'lucide-react';
 
 export default function EventVerification() {
   const router = useRouter();
@@ -119,7 +120,9 @@ export default function EventVerification() {
         {/* Events List */}
         {events.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow">
-            <div className="text-6xl mb-4">✅</div>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="w-16 h-16 text-green-600" />
+            </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">All caught up!</h3>
             <p className="text-gray-600">No events waiting for approval</p>
           </div>

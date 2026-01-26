@@ -10,7 +10,7 @@ import {
   TopEventsChart,
   EventsPerformanceChart
 } from '@/components/DashboardCharts';
-import { CheckCircle, Clock, XCircle, HelpCircle, BarChart3 } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, HelpCircle, BarChart3, Mail } from 'lucide-react';
 
 export default function UserDashboard() {
   const router = useRouter();
@@ -290,7 +290,9 @@ export default function UserDashboard() {
                   ))}
                   {donations.length === 0 && (
                       <div className="text-center py-8">
-                        <div className="text-6xl mb-4">📭</div>
+                        <div className="flex justify-center mb-4">
+                          <Mail className="w-16 h-16 text-orange-500" />
+                        </div>
                         <p className="text-gray-500">No recent activity</p>
                         <Link
                             href="/events"

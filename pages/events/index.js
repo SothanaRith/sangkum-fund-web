@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertTriangle,
+  BarChart3,
   Briefcase,
   Coins,
   Flame,
@@ -68,6 +69,8 @@ export default function Events() {
   const [showFilters, setShowFilters] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState('all');
+  const [selectedEventOnMap, setSelectedEventOnMap] = useState(null);
+  const [imageError, setImageError] = useState(false);
 
   const categories = [
     { id: 'all', label: 'All Causes', icon: Globe, color: 'bg-gradient-to-r from-orange-500 to-amber-500' },
@@ -111,6 +114,13 @@ export default function Events() {
       loadEvents();
     }
   }, [searchTerm, category, selectedLocation]);
+
+  useEffect(() => {
+    // Reset image error when a new event is selected
+    if (selectedEventOnMap) {
+      setImageError(false);
+    }
+  }, [selectedEventOnMap]);
 
   const loadEvents = async () => {
     try {
@@ -505,26 +515,297 @@ export default function Events() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="bg-white rounded-2xl shadow-lg p-4 mb-8"
+                  className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8"
               >
-                <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                    <Map className="w-5 h-5" />
-                    {t('events.campaignMap')}
-                  </h3>
-                  <div className="text-sm text-gray-600">
-                    {filteredEvents.filter(e => e.latitude && e.longitude).length} {t('events.campaignsWithLocation')}
+                {/* Map Container */}
+                <div className="lg:col-span-3">
+                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <div className="mb-4 p-4 border-b border-gray-100 flex items-center justify-between">
+                      <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <Map className="w-5 h-5 text-orange-600" />
+                        Campaigns Map
+                      </h3>
+                      <div className="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">
+                        {filteredEvents.filter(e => e.latitude && e.longitude).length} campaigns with location
+                      </div>
+                    </div>
+
+                    {/* Map */}
+                    <div className="h-[600px] lg:h-[700px] rounded-xl overflow-hidden relative">
+                      <EventsMap
+                          events={filteredEvents}
+                          selectedEvent={selectedEventOnMap}
+                          onEventSelect={(event) => {
+                            setSelectedEventOnMap(event);
+                          }}
+                      />
+                      
+                      {/* Map Legend */}
+                      <div className="absolute bottom-4 left-4 bg-white rounded-xl shadow-lg p-4 max-w-xs">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <Target className="w-4 h-4 text-orange-600" />
+                          Legend
+                        </h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div>
+                            <span className="text-gray-700">Urgent (0-7 days)</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-orange-500 rounded-full shadow-sm"></div>
+                            <span className="text-gray-700">Active (8-30 days)</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                            <span className="text-gray-700">Long-term (30+ days)</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Map Controls */}
+                      <div className="absolute top-4 right-4 flex flex-col gap-2">
+                        <button
+                            className="bg-white rounded-lg p-3 shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all"
+                            title="Zoom in"
+                        >
+                          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+                        <button
+                            className="bg-white rounded-lg p-3 shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all"
+                            title="Zoom out"
+                        >
+                          <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                          </svg>
+                        </button>
+                        <button
+                            className="bg-white rounded-lg p-3 shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all"
+                            title="Reset view"
+                        >
+                          <MapPin className="w-5 h-5 text-gray-700" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="h-[600px] rounded-xl overflow-hidden">
-                  <EventsMap
-                      events={filteredEvents}
-                      selectedEvent={null}
-                      onEventSelect={(event) => {
-                        // Optionally handle event selection
-                        console.log('Selected event:', event);
-                      }}
-                  />
+
+                {/* Sidebar - Selected Event or Quick Stats */}
+                <div className="lg:col-span-1 space-y-4">
+                  {selectedEventOnMap ? (
+                      <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white rounded-2xl shadow-lg overflow-hidden sticky top-4"
+                      >
+                        {/* Event Image */}
+                        <div className="relative h-48 bg-gradient-to-br from-orange-100 to-amber-100">
+                          {(selectedEventOnMap.primaryImage?.url || selectedEventOnMap.imageUrl) && !imageError ? (
+                              <img
+                                  src={selectedEventOnMap.primaryImage?.url || selectedEventOnMap.imageUrl}
+                                  alt={selectedEventOnMap.title}
+                                  className="w-full h-full object-cover"
+                                  onError={() => setImageError(true)}
+                              />
+                          ) : (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="text-center">
+                                  <ImageIcon className="w-16 h-16 text-orange-400 mx-auto mb-2" />
+                                  <p className="text-sm text-orange-600 font-medium">{selectedEventOnMap.category || 'Campaign'}</p>
+                                </div>
+                              </div>
+                          )}
+                          
+                          {/* Category Badge */}
+                          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-semibold text-gray-900 shadow-md">
+                            {selectedEventOnMap.category || 'General'}
+                          </div>
+                          
+                          {/* Close Button */}
+                          <button
+                              onClick={() => {
+                                setSelectedEventOnMap(null);
+                                setImageError(false);
+                              }}
+                              className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-md hover:bg-white transition-all"
+                          >
+                            <X className="w-4 h-4 text-gray-700" />
+                          </button>
+                        </div>
+
+                        {/* Event Details */}
+                        <div className="p-4 space-y-4">
+                          {/* Title & Location */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <h3 className="font-bold text-gray-900 line-clamp-2 text-base mb-2">
+                                {selectedEventOnMap.title}
+                              </h3>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 text-gray-600 text-xs">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  <span>{selectedEventOnMap.location || 'Cambodia'}</span>
+                                </div>
+                                {selectedEventOnMap.status === 'VERIFIED' && (
+                                    <div className="flex items-center gap-1 text-green-600 text-xs">
+                                      <ShieldCheck className="w-3.5 h-3.5" />
+                                      <span className="font-medium">Verified</span>
+                                    </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Progress Bar */}
+                          <div>
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-semibold text-gray-900">
+                                {formatCurrency(selectedEventOnMap.currentAmount)}
+                              </span>
+                              <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">
+                                {Math.round((selectedEventOnMap.currentAmount / selectedEventOnMap.goalAmount) * 100)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                              <div
+                                  className="bg-gradient-to-r from-orange-500 to-amber-500 h-2.5 rounded-full transition-all duration-500"
+                                  style={{
+                                    width: `${Math.min(
+                                        (selectedEventOnMap.currentAmount / selectedEventOnMap.goalAmount) * 100,
+                                        100
+                                    )}%`
+                                  }}
+                              />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1.5">
+                              Goal: {formatCurrency(selectedEventOnMap.goalAmount)}
+                            </p>
+                          </div>
+
+                          {/* Supporters & Days Left */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3 border border-orange-200">
+                              <div className="flex items-center gap-1 mb-1">
+                                <Users className="w-3.5 h-3.5 text-orange-600" />
+                                <p className="text-xs text-gray-600">Supporters</p>
+                              </div>
+                              <p className="font-bold text-orange-600 text-lg">{selectedEventOnMap.donors || 0}</p>
+                            </div>
+                            <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">
+                              <div className="flex items-center gap-1 mb-1">
+                                <Timer className="w-3.5 h-3.5 text-amber-600" />
+                                <p className="text-xs text-gray-600">Days Left</p>
+                              </div>
+                              <p className="font-bold text-amber-600 text-lg">{getDaysLeft(selectedEventOnMap.endDate)}</p>
+                            </div>
+                          </div>
+
+                          {/* View Button */}
+                          <Link
+                              href={`/events/${selectedEventOnMap.id}`}
+                              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                          >
+                            View Full Details
+                            <ArrowRight className="w-4 h-4" />
+                          </Link>
+                        </div>
+                      </motion.div>
+                  ) : (
+                      <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white rounded-2xl shadow-lg p-6 sticky top-4 space-y-4"
+                      >
+                        {/* Header with Icon */}
+                        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+                          <div className="p-3 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl">
+                            <BarChart3 className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-gray-900">Map Overview</h3>
+                            <p className="text-xs text-gray-500">Campaign statistics</p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border border-orange-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm text-gray-700 font-medium">Total Campaigns</p>
+                              <Target className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <p className="text-3xl font-bold text-orange-600">
+                              {filteredEvents.filter(e => e.latitude && e.longitude).length}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">with location data</p>
+                          </div>
+
+                          <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm text-gray-700 font-medium">Total Raised</p>
+                              <Coins className="w-5 h-5 text-green-600" />
+                            </div>
+                            <p className="text-3xl font-bold text-green-600">
+                              {formatCurrency(
+                                  filteredEvents
+                                      .filter(e => e.latitude && e.longitude)
+                                      .reduce((sum, e) => sum + e.currentAmount, 0)
+                              )}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">from all campaigns</p>
+                          </div>
+
+                          <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border border-blue-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm text-gray-700 font-medium">Avg Progress</p>
+                              <Flame className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <p className="text-3xl font-bold text-blue-600">
+                              {Math.round(
+                                  filteredEvents
+                                      .filter(e => e.latitude && e.longitude)
+                                      .reduce(
+                                          (sum, e) =>
+                                              sum + (e.currentAmount / e.goalAmount) * 100,
+                                          0
+                                      ) /
+                                      (filteredEvents.filter(e => e.latitude && e.longitude).length || 1)
+                              )}%
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">completion rate</p>
+                          </div>
+
+                          <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-sm text-gray-700 font-medium">Total Supporters</p>
+                              <Users className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <p className="text-3xl font-bold text-purple-600">
+                              {filteredEvents
+                                  .filter(e => e.latitude && e.longitude)
+                                  .reduce((sum, e) => sum + (e.donors || 0), 0)
+                                  .toLocaleString()}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-1">helping communities</p>
+                          </div>
+                        </div>
+
+                        {/* Helpful Instruction */}
+                        <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 bg-white rounded-lg shadow-sm">
+                              <MapPin className="w-5 h-5 text-gray-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900 mb-1">How to use</p>
+                              <p className="text-xs text-gray-600 leading-relaxed">
+                                Click on any campaign marker on the map to view detailed information and support the cause.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                  )}
                 </div>
               </motion.div>
           ) : (

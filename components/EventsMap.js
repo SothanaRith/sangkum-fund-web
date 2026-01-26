@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { formatCurrency, calculateProgress } from '@/lib/utils';
@@ -15,10 +15,10 @@ L.Icon.Default.mergeOptions({
 });
 
 // Custom marker icons for different categories
-const createCategoryIcon = (category, color) => {
+const createCategoryIcon = (category, color, title) => {
   return L.divIcon({
     html: `
-      <div style="
+      <div title="${title}" style="
         background: ${color};
         width: 40px;
         height: 40px;
@@ -129,13 +129,14 @@ export default function EventsMap({ events, selectedEvent, onEventSelect }) {
         {eventsWithCoordinates.map((event) => {
           const position = [parseFloat(event.latitude), parseFloat(event.longitude)];
           const progress = calculateProgress(event.currentAmount, event.targetAmount);
-          const icon = createCategoryIcon(event.category, getCategoryColor(event.category));
+          const icon = createCategoryIcon(event.category, getCategoryColor(event.category), event.title);
 
           return (
             <Marker
               key={event.id}
               position={position}
               icon={icon}
+              title={event.title}
               eventHandlers={{
                 click: () => {
                   if (onEventSelect) {
@@ -144,6 +145,16 @@ export default function EventsMap({ events, selectedEvent, onEventSelect }) {
                 },
               }}
             >
+              <Tooltip 
+                direction="top" 
+                offset={[0, -35]} 
+                opacity={0.95}
+                className="custom-tooltip"
+              >
+                <div className="font-semibold text-sm">
+                  {event.title}
+                </div>
+              </Tooltip>
               <Popup className="custom-popup" maxWidth={320}>
                 <div className="p-2">
                   {/* Event Image */}
@@ -263,6 +274,19 @@ export default function EventsMap({ events, selectedEvent, onEventSelect }) {
         }
         .leaflet-popup-tip {
           background: white;
+        }
+        .custom-tooltip .leaflet-tooltip {
+          background: rgba(0, 0, 0, 0.85);
+          border: none;
+          border-radius: 8px;
+          padding: 8px 12px;
+          color: white;
+          font-weight: 600;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          max-width: 250px;
+        }
+        .custom-tooltip .leaflet-tooltip-top:before {
+          border-top-color: rgba(0, 0, 0, 0.85);
         }
       `}</style>
     </div>

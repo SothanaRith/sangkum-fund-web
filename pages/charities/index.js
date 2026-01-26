@@ -264,6 +264,41 @@ export default function CharitiesPage() {
                           {charity.description || 'No description provided'}
                         </p>
 
+                        {/* Impact Metrics */}
+                        <div className="grid grid-cols-3 gap-2 mb-4 p-3 bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl">
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-orange-600">
+                              {charity.beneficiariesCount || 0}
+                            </div>
+                            <div className="text-xs text-gray-600">Beneficiaries</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-amber-600">
+                              {charity.volunteersCount || 0}
+                            </div>
+                            <div className="text-xs text-gray-600">Volunteers</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-orange-500">
+                              {charity.yearsActive || 0}
+                            </div>
+                            <div className="text-xs text-gray-600">Years Active</div>
+                          </div>
+                        </div>
+
+                        {/* Rating and Reviews */}
+                        {charity.ratingScore && charity.ratingScore > 0 && (
+                            <div className="flex items-center gap-3 mb-4 p-2 bg-yellow-50 rounded-lg">
+                              <div className="flex text-yellow-400 text-sm">
+                                {'★'.repeat(Math.floor(charity.ratingScore))}
+                                {'☆'.repeat(5 - Math.floor(charity.ratingScore))}
+                              </div>
+                              <span className="text-sm font-semibold text-gray-700">
+                                {charity.ratingScore.toFixed(1)} ({charity.reviewCount || 0})
+                              </span>
+                            </div>
+                        )}
+
                         {/* Location */}
                         {charity.location && (
                             <div className="flex items-center gap-2 text-gray-500 text-sm mb-4">
@@ -284,6 +319,30 @@ export default function CharitiesPage() {
                                   <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-lg">
                           +{charity.tags.length - 3} more
                         </span>
+                              )}
+                            </div>
+                        )}
+
+                        {/* Social Links */}
+                        {(charity.facebookUrl || charity.instagramUrl || charity.twitterUrl) && (
+                            <div className="flex gap-3 mb-4 pb-4 border-b border-gray-100">
+                              {charity.facebookUrl && (
+                                  <a href={charity.facebookUrl} target="_blank" rel="noopener noreferrer" 
+                                     className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
+                                    <span className="text-xs font-bold">f</span>
+                                  </a>
+                              )}
+                              {charity.instagramUrl && (
+                                  <a href={charity.instagramUrl} target="_blank" rel="noopener noreferrer" 
+                                     className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors">
+                                    <span className="text-xs font-bold">@</span>
+                                  </a>
+                              )}
+                              {charity.twitterUrl && (
+                                  <a href={charity.twitterUrl} target="_blank" rel="noopener noreferrer" 
+                                     className="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 hover:bg-sky-100 transition-colors">
+                                    <span className="text-xs font-bold">𝕏</span>
+                                  </a>
                               )}
                             </div>
                         )}
