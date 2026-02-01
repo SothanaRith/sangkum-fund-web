@@ -2,12 +2,16 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { eventsAPI, eventTimelineAPI, announcementsAPI, eventCommentsAPI, donationsAPI, userAPI } from '@/lib/api';
-import { formatCurrency, formatDate, calculateProgress, timeAgo } from '@/lib/utils';
+import { adminAnnouncementsAPI } from '@/lib/admin-api';
+import { formatCurrency, formatDate, calculateProgress, formatTimeAgo } from '@/lib/utils';
+import { encryptId, decryptId } from '@/lib/encryption';
 import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown, PartyPopper, Camera, Image as ImageIcon, Sparkles, MessageCircle, Megaphone, Clock, User, Edit, Copy, Link2, X } from 'lucide-react';
+import EventChatBox from '@/components/EventChatBox';
 
 export default function EventDetail() {
   const router = useRouter();
   const { id } = router.query;
+  const [plainId, setPlainId] = useState(null);
   const [event, setEvent] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [timeline, setTimeline] = useState([]);
@@ -34,12 +38,21 @@ export default function EventDetail() {
   const [copyState, setCopyState] = useState('idle');
   const [showShareModal, setShowShareModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+  const [announcementForm, setAnnouncementForm] = useState({
+    title: '',
+    content: '',
+  });
+  const [submittingAnnouncement, setSubmittingAnnouncement] = useState(false);
   const storyRef = useRef(null);
   const donationCardRef = useRef(null);
 
   useEffect(() => {
     if (id) {
-      loadEvent();
+      // Decrypt ID if it's encrypted
+      const decrypted = decryptId(id);
+      const actualId = decrypted || id;
+      setPlainId(actualId);
     }
     const handleScroll = () => {
       if (storyRef.current && donationCardRef.current) {
@@ -53,10 +66,20 @@ export default function EventDetail() {
   }, [id]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setShareUrl(window.location.href);
+    if (plainId) {
+      loadEvent();
     }
-  }, [id]);
+  }, [plainId]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && plainId && event) {
+      // Create share URL with encrypted ID
+      const encryptedId = encryptId(plainId);
+      const baseUrl = window.location.origin;
+      const shareUrlWithEncryption = `${baseUrl}/events/${encryptedId}`;
+      setShareUrl(shareUrlWithEncryption);
+    }
+  }, [plainId, event]);
 
   useEffect(() => {
     const loadCurrentUser = async () => {
@@ -73,15 +96,17 @@ export default function EventDetail() {
   }, []);
 
   const loadEvent = async () => {
+    if (!plainId) return;
+    
     setRelatedEvents([]);
     try {
       const [eventData, timelineData, announcementsData, commentsData, donationsData, imagesData] = await Promise.all([
-        eventsAPI.getById(id),
-        eventTimelineAPI.getByEvent(id).catch(() => []),
-        announcementsAPI.getByEvent(id).catch(() => []),
-        eventCommentsAPI.getByEvent(id).catch(() => []),
-        donationsAPI.getRecentByEvent(id).catch(() => []),
-        eventsAPI.getImages(id).catch(() => []),
+        eventsAPI.getById(plainId),
+        eventTimelineAPI.getByEvent(plainId).catch(() => []),
+        announcementsAPI.getByEvent(plainId).catch(() => []),
+        eventCommentsAPI.getByEvent(plainId).catch(() => []),
+        donationsAPI.getRecentByEvent(plainId).catch(() => []),
+        eventsAPI.getImages(plainId).catch(() => []),
       ]);
       setEvent(eventData);
       setTimeline(timelineData);
@@ -90,6 +115,9 @@ export default function EventDetail() {
       setRecentDonations(donationsData.slice(0, 5));
       setEventImages(imagesData);
       loadRelatedEvents(eventData);
+      
+      // Record view
+      eventsAPI.recordView(plainId).catch(err => console.error('Failed to record view:', err));
       
       if (imagesData.length > 0) {
         const primary = imagesData.find(img => img.isPrimary);
@@ -168,6 +196,32 @@ export default function EventDetail() {
       alert('Failed to add comment. Please try again.');
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  const handleCreateAnnouncement = async (e) => {
+    e.preventDefault();
+    if (!announcementForm.title.trim() || !announcementForm.content.trim()) {
+      alert('Please fill in all announcement fields');
+      return;
+    }
+
+    try {
+      setSubmittingAnnouncement(true);
+      await adminAnnouncementsAPI.create({
+        title: announcementForm.title,
+        content: announcementForm.content,
+        eventId: event.id,
+      });
+      alert('Announcement created successfully!');
+      setAnnouncementForm({ title: '', content: '' });
+      setShowAnnouncementModal(false);
+      await loadEvent();
+    } catch (err) {
+      console.error('Failed to create announcement:', err);
+      alert('Failed to create announcement: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmittingAnnouncement(false);
     }
   };
 
@@ -461,12 +515,21 @@ export default function EventDetail() {
                   </div>
                   <div className="flex gap-2">
                     {isOwner && (
-                      <Link
-                        href={`/events/edit/${event.id}`}
-                        className="text-orange-600 hover:text-orange-700 font-medium text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors"
-                      >
-                        ✏️ Edit Event
-                      </Link>
+                      <>
+                        <Link
+                          href={`/events/edit/${encryptId(event.id)}`}
+                          className="text-orange-600 hover:text-orange-700 font-medium text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors"
+                        >
+                          ✏️ Edit Event
+                        </Link>
+                        <button
+                          onClick={() => setShowAnnouncementModal(true)}
+                          className="text-purple-600 hover:text-purple-700 font-medium text-sm px-4 py-2 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors flex items-center gap-1"
+                        >
+                          <Megaphone className="w-4 h-4" />
+                          Announce
+                        </button>
+                      </>
                     )}
                     <button className="text-orange-600 hover:text-orange-700 font-medium text-sm px-4 py-2 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors">
                       Contact
@@ -478,7 +541,7 @@ export default function EventDetail() {
               {/* Tabs Navigation */}
               <div className="border-b border-gray-200">
                 <nav className="flex space-x-8" aria-label="Tabs">
-                  {['story', 'updates', 'support', 'participants'].map((tab) => (
+                  {['story', 'updates', 'support', 'chat', 'participants'].map((tab) => (
                       <button
                           key={tab}
                           onClick={() => {
@@ -496,6 +559,7 @@ export default function EventDetail() {
                         {tab === 'story' && 'The Story'}
                         {tab === 'updates' && `Updates (${announcements.length})`}
                         {tab === 'support' && `Words of Support (${comments.length})`}
+                        {tab === 'chat' && '💬 Community Chat'}
                         {tab === 'participants' && `Participants (${event.participantCount || 0})`}
                       </button>
                   ))}
@@ -690,7 +754,7 @@ export default function EventDetail() {
                                       <div className="flex items-center gap-2 mb-2">
                                         <span className="font-semibold text-gray-900">{event.ownerName}</span>
                                         <span className="text-xs text-gray-500">•</span>
-                                        <span className="text-sm text-gray-500">{timeAgo(update.createdAt)}</span>
+                                        <span className="text-sm text-gray-500">{formatTimeAgo(update.createdAt)}</span>
                                       </div>
                                       <h4 className="text-lg font-semibold text-gray-900 mb-2">{update.title}</h4>
                                       <div className="prose text-gray-700 whitespace-pre-wrap mb-3">
@@ -794,6 +858,17 @@ export default function EventDetail() {
                 )}
               </div>
 
+              {/* Community Chat Tab */}
+              {activeTab === 'chat' && (
+                <div className="animate-fadeIn">
+                  <EventChatBox 
+                    eventId={plainId} 
+                    currentUser={currentUser}
+                    isEventOwner={isOwner}
+                  />
+                </div>
+              )}
+
               {/* Participants Tab */}
               {activeTab === 'participants' && (
                   <div className="space-y-4 animate-fadeIn">
@@ -843,7 +918,7 @@ export default function EventDetail() {
                                       )}
                                     </div>
                                     <div className="flex items-center gap-3 text-sm text-gray-600">
-                                      <span>Joined {timeAgo(participant.joinedAt)}</span>
+                                      <span>Joined {formatTimeAgo(participant.joinedAt)}</span>
                                       {participant.totalDonated > 0 && (
                                           <>
                                             <span>•</span>
@@ -896,6 +971,18 @@ export default function EventDetail() {
                     </div>
                   </div>
 
+                  {/* Stats Row */}
+                  <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-100">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{event.viewsCount || 0}</div>
+                      <div className="text-xs text-gray-500">Views</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{event.participantCount || 0}</div>
+                      <div className="text-xs text-gray-500">Supporters</div>
+                    </div>
+                  </div>
+
                   {/* Urgency Indicator */}
                   {daysRemaining > 0 && (
                       <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
@@ -911,7 +998,7 @@ export default function EventDetail() {
 
                   {/* Donation CTA */}
                   <div className="space-y-3">
-                    {!joined ? (
+                    {!isOwner && !joined ? (
                       <button
                         onClick={() => setShowJoinModal(true)}
                         disabled={joiningEvent}
@@ -919,18 +1006,20 @@ export default function EventDetail() {
                       >
                         {joiningEvent ? 'Joining...' : '✓ Join Event'}
                       </button>
-                    ) : (
+                    ) : joined && !isOwner ? (
                       <div className="w-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-center py-4 px-6 rounded-xl font-bold text-lg border-2 border-green-300 flex items-center justify-center gap-2">
                         <CheckCircle size={20} />
                         Already a supporter!
                       </div>
+                    ) : null}
+                    {!isOwner && (
+                      <Link
+                          href={`/donate/${encryptId(event.id)}`}
+                          className="block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-4 px-6 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                      >
+                        Donate now
+                      </Link>
                     )}
-                    <Link
-                        href={`/donate/${event.id}`}
-                        className="block w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center py-4 px-6 rounded-xl font-bold text-lg hover:from-orange-600 hover:to-amber-600 transition-all duration-200 transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
-                    >
-                      Donate now
-                    </Link>
                   </div>
 
                   {/* Share Section */}
@@ -1263,6 +1352,73 @@ export default function EventDetail() {
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Announcement Modal */}
+        {showAnnouncementModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-4 flex items-center justify-between">
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  <Megaphone className="w-6 h-6" />
+                  Create Announcement
+                </h2>
+                <button onClick={() => setShowAnnouncementModal(false)} className="hover:bg-white hover:bg-opacity-20 p-1 rounded-lg">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateAnnouncement} className="p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Announcement Title *</label>
+                  <input
+                    type="text"
+                    value={announcementForm.title}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, title: e.target.value })}
+                    placeholder="Enter announcement title..."
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Message *</label>
+                  <textarea
+                    value={announcementForm.content}
+                    onChange={(e) => setAnnouncementForm({ ...announcementForm, content: e.target.value })}
+                    placeholder="Write your announcement message..."
+                    rows="6"
+                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none resize-vertical"
+                    required
+                  />
+                </div>
+
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <p className="text-sm text-purple-800">
+                    <strong>Note:</strong> This announcement will be visible to all supporters of this fundraiser in the Updates section.
+                  </p>
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAnnouncementModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingAnnouncement}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {submittingAnnouncement && <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>}
+                    Post Announcement
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}

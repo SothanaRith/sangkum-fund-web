@@ -26,9 +26,12 @@ export default function AdminEvents() {
   const loadEvents = async () => {
     try {
       const data = await adminEventsAPI.getAll();
-      setEvents(data);
+      // Handle both array and paginated response formats
+      const eventsArray = Array.isArray(data) ? data : (data?.content || []);
+      setEvents(eventsArray);
     } catch (err) {
       console.error('Failed to load events:', err);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -57,7 +60,7 @@ export default function AdminEvents() {
     }
   };
 
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = (Array.isArray(events) ? events : []).filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filter === 'all' ||

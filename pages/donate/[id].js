@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { eventsAPI, donationsAPI } from '@/lib/api';
+import { decryptId } from '@/lib/encryption';
 import { PAYMENT_METHODS } from '@/lib/utils';
 import QRCode from 'qrcode.react';
 
 export default function Donate() {
   const router = useRouter();
   const { id } = router.query;
+  const [plainId, setPlainId] = useState(null);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -27,13 +29,24 @@ export default function Donate() {
 
   useEffect(() => {
     if (id) {
-      loadEvent();
+      // Decrypt ID if it's encrypted
+      const decrypted = decryptId(id);
+      const actualId = decrypted || id;
+      setPlainId(actualId);
     }
   }, [id]);
 
+  useEffect(() => {
+    if (plainId) {
+      loadEvent();
+    }
+  }, [plainId]);
+
   const loadEvent = async () => {
+    if (!plainId) return;
+    
     try {
-      const data = await eventsAPI.getById(id);
+      const data = await eventsAPI.getById(plainId);
       setEvent(data);
     } catch (err) {
       setError('Failed to load event');

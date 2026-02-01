@@ -33,16 +33,19 @@ export default function AdminDonations() {
   const loadDonations = async () => {
     try {
       const data = await adminDonationsAPI.getAll();
-      setDonations(data);
+      // Handle both array and paginated response formats
+      const donationsArray = Array.isArray(data) ? data : (data?.content || []);
+      setDonations(donationsArray);
     } catch (err) {
       console.error('Failed to load donations:', err);
+      setDonations([]);
     } finally {
       setLoading(false);
     }
   };
 
   const filterDonations = () => {
-    let filtered = donations;
+    let filtered = Array.isArray(donations) ? donations : [];
 
     // Filter by status
     if (filter !== 'all') {
@@ -117,10 +120,10 @@ export default function AdminDonations() {
   }
 
   const stats = {
-    total: donations.length,
-    pending: donations.filter(d => d.status === 'PENDING').length,
-    success: donations.filter(d => d.status === 'SUCCESS').length,
-    failed: donations.filter(d => d.status === 'FAILED').length,
+    total: (Array.isArray(donations) ? donations : []).length,
+    pending: (Array.isArray(donations) ? donations : []).filter(d => d.status === 'PENDING').length,
+    success: (Array.isArray(donations) ? donations : []).filter(d => d.status === 'SUCCESS').length,
+    failed: (Array.isArray(donations) ? donations : []).filter(d => d.status === 'FAILED').length,
   };
 
   return (

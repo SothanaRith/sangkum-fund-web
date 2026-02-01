@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { eventsAPI } from '@/lib/api';
+import { decryptId } from '@/lib/encryption';
 import MapPicker from '@/components/MapPicker';
 import { FileText, Calendar, DollarSign, MapPin, Image as ImageIcon, Camera, Lightbulb, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function EditEvent() {
   const router = useRouter();
   const { id } = router.query;
+  const [plainId, setPlainId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,14 +33,25 @@ export default function EditEvent() {
 
   useEffect(() => {
     if (id) {
-      fetchEvent();
+      // Decrypt ID if it's encrypted
+      const decrypted = decryptId(id);
+      const actualId = decrypted || id;
+      setPlainId(actualId);
     }
   }, [id]);
 
+  useEffect(() => {
+    if (plainId) {
+      fetchEvent();
+    }
+  }, [plainId]);
+
   const fetchEvent = async () => {
+    if (!plainId) return;
+    
     try {
       setFetchLoading(true);
-      const event = await eventsAPI.getById(id);
+      const event = await eventsAPI.getById(plainId);
       setFormData({
         title: event.title || '',
         description: event.description || '',
@@ -148,11 +161,11 @@ export default function EditEvent() {
         targetAmount: parseFloat(formData.targetAmount),
       };
 
-      await eventsAPI.update(id, eventData);
+      await eventsAPI.update(plainId, eventData);
 
       if (selectedImages.length > 0) {
         try {
-          await eventsAPI.uploadImages(id, selectedImages);
+          await eventsAPI.uploadImages(plainId, selectedImages);
         } catch (imgErr) {
           console.error('Image upload failed:', imgErr);
         }

@@ -42,15 +42,26 @@ export default function Register() {
 
       // Auto login after registration
       const loginResponse = await authAPI.login(formData.email, formData.password);
+      
+      // Store tokens in localStorage
       localStorage.setItem('accessToken', loginResponse.accessToken);
       localStorage.setItem('refreshToken', loginResponse.refreshToken);
+      
+      // Store tokens in cookies for middleware
+      document.cookie = `accessToken=${loginResponse.accessToken}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `refreshToken=${loginResponse.refreshToken}; path=/; max-age=604800; SameSite=Lax`;
+      
       if (loginResponse.user) {
         localStorage.setItem('user', JSON.stringify(loginResponse.user));
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(loginResponse.user))}; path=/; max-age=86400; SameSite=Lax`;
       }
 
       // Check if there's a redirect path
-      const redirectPath = router.query.redirect || '/';
-      router.push(redirectPath);
+      const redirectPath = router.query.redirect || '/survey';
+      await router.push(redirectPath);
+      
+      // Reload page to refresh all state
+      window.location.reload();
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {

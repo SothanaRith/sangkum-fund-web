@@ -2,7 +2,19 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { businessCardsAPI } from '@/lib/api';
 import QRCode from 'qrcode.react';
-import { Briefcase, AlertCircle } from 'lucide-react';
+import { 
+  Briefcase, 
+  AlertCircle, 
+  Loader2,
+  Download,
+  Share2,
+  Smartphone,
+  Home,
+  Play,
+  Pause,
+  RotateCw,
+  CheckCircle
+} from 'lucide-react';
 
 export default function BusinessCardView() {
   const router = useRouter();
@@ -129,12 +141,12 @@ END:VCARD`;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <Briefcase className="w-16 h-16 text-blue-400 animate-bounce" />
+            <Loader2 className="w-16 h-16 text-orange-400 animate-spin" />
           </div>
-          <p className="text-white text-xl">Loading business card...</p>
+          <p className="text-white text-xl font-semibold">Loading business card...</p>
         </div>
       </div>
     );
@@ -175,41 +187,58 @@ END:VCARD`;
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center mb-12 animate-fadeIn">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-4 border border-white/20">
-            <span className="text-2xl">💼</span>
-            <span className="text-sm font-medium text-white">Digital Business Card</span>
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-full mb-6 border border-white/20 shadow-xl">
+            <Briefcase className="w-5 h-5 text-orange-400" />
+            <span className="text-sm font-semibold text-white">Digital Business Card</span>
           </div>
-          <h1 className="text-5xl font-bold mb-3 text-white">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4 text-white drop-shadow-2xl">
             {card.ownerName}
           </h1>
-          <p className="text-xl text-gray-300">
-            {card.title || 'Professional'}
-          </p>
+          {card.title && (
+            <p className="text-xl md:text-2xl text-gray-200 font-medium">
+              {card.title}
+            </p>
+          )}
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <a
+              href="/"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-xl font-semibold border border-white/20 transition-all"
+            >
+              <Home className="w-4 h-4" />
+              <span className="hidden sm:inline">Home</span>
+            </a>
+          </div>
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center gap-4 mb-8 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+        <div className="flex flex-wrap justify-center gap-3 mb-10 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
           <button
             onClick={toggleAutoRotate}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl ${
               autoRotate
-                ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-lg'
-                : 'bg-white/10 text-white border border-white/20 hover:bg-white/20'
+                ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white'
+                : 'bg-white/10 text-white border border-white/20 hover:bg-white/20 backdrop-blur-sm'
             }`}
           >
-            {autoRotate ? '⏸️ Pause' : '▶️ Auto-Rotate'}
+            {autoRotate ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            <span className="hidden sm:inline">{autoRotate ? 'Pause' : 'Auto-Rotate'}</span>
+            <span className="sm:hidden">{autoRotate ? 'Pause' : 'Rotate'}</span>
           </button>
           <button
             onClick={handleFlip}
-            className="px-6 py-3 bg-white/10 text-white rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition-all"
+            className="flex items-center gap-2 px-5 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition-all shadow-lg hover:shadow-xl"
           >
-            🔄 Flip Card
+            <RotateCw className="w-4 h-4" />
+            <span className="hidden sm:inline">Flip Card</span>
+            <span className="sm:hidden">Flip</span>
           </button>
           <button
             onClick={handleDownloadVCard}
-            className="px-6 py-3 bg-white/10 text-white rounded-xl font-semibold border border-white/20 hover:bg-white/20 transition-all"
+            className="flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
           >
-            📥 Save Contact
+            <Download className="w-4 h-4" />
+            <span className="hidden sm:inline">Save Contact</span>
+            <span className="sm:hidden">Save</span>
           </button>
         </div>
 
@@ -423,30 +452,38 @@ END:VCARD`;
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 animate-fadeIn" style={{ animationDelay: '0.3s' }}>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <div className="text-4xl mb-3">🌐</div>
-            <h3 className="text-white font-bold mb-2">Share Anywhere</h3>
-            <p className="text-gray-300 text-sm">Share this link to connect instantly</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all group">
+            <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Share2 className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-white font-bold mb-2 text-lg">Share Anywhere</h3>
+            <p className="text-gray-300 text-sm leading-relaxed">Share this link to connect instantly with anyone</p>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <div className="text-4xl mb-3">💾</div>
-            <h3 className="text-white font-bold mb-2">Save Contact</h3>
-            <p className="text-gray-300 text-sm">Download to your phone or computer</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all group">
+            <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Download className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-white font-bold mb-2 text-lg">Save Contact</h3>
+            <p className="text-gray-300 text-sm leading-relaxed">Download to your phone or computer in one click</p>
           </div>
-          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-            <div className="text-4xl mb-3">🔄</div>
-            <h3 className="text-white font-bold mb-2">Always Updated</h3>
-            <p className="text-gray-300 text-sm">Changes sync automatically</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all group">
+            <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <CheckCircle className="w-7 h-7 text-white" />
+            </div>
+            <h3 className="text-white font-bold mb-2 text-lg">Always Updated</h3>
+            <p className="text-gray-300 text-sm leading-relaxed">Changes sync automatically in real-time</p>
           </div>
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-12 animate-fadeIn" style={{ animationDelay: '0.4s' }}>
-          <p className="text-gray-300 mb-4">Want your own digital business card?</p>
+        <div className="text-center mt-12 animate-fadeIn bg-white/5 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-white/10" style={{ animationDelay: '0.4s' }}>
+          <h3 className="text-3xl md:text-4xl font-bold text-white mb-3">Want Your Own Card?</h3>
+          <p className="text-lg text-gray-300 mb-6 max-w-2xl mx-auto">Create your professional digital business card in minutes - completely free!</p>
           <a
             href="/business-card"
-            className="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-2xl transform hover:scale-105"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-amber-700 transition-all shadow-lg hover:shadow-2xl transform hover:scale-105"
           >
+            <Briefcase className="w-5 h-5" />
             Create Your Card Free
           </a>
         </div>

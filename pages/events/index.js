@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   BarChart3,
   Briefcase,
+  Clock,
   Coins,
   Flame,
   Globe,
@@ -327,6 +328,35 @@ export default function Events() {
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto py-12 px-4">
+          {/* Quick View Links */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <Link
+              href="/events"
+              className="group bg-white rounded-xl border-2 border-orange-200 hover:border-orange-500 p-6 shadow-md hover:shadow-lg transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-orange-600 transition-colors">All Fundraisers</h3>
+                  <p className="text-sm text-gray-600 mt-1">Browse all active campaigns</p>
+                </div>
+                <ArrowRight className="w-6 h-6 text-orange-600 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+            
+            <Link
+              href="/events/ending"
+              className="group bg-white rounded-xl border-2 border-amber-200 hover:border-amber-500 p-6 shadow-md hover:shadow-lg transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-600 transition-colors">Ending Soon</h3>
+                  <p className="text-sm text-gray-600 mt-1">Events ending within 30 days</p>
+                </div>
+                <Clock className="w-6 h-6 text-amber-600 group-hover:translate-y-[-2px] transition-transform" />
+              </div>
+            </Link>
+          </div>
+
           {/* Filters Bar */}
           <motion.div
               initial={{ opacity: 0, y: -20 }}

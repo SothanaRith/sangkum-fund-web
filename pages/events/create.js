@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import { eventsAPI } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 import MapPicker from '@/components/MapPicker';
@@ -10,22 +9,18 @@ import {
   Rocket,
   Calendar,
   MapPin,
-  Lightbulb,
   Image as ImageIcon,
   Camera,
   Trophy,
-  Hospital,
-  GraduationCap,
-  Heart,
-  Users,
   AlertCircle,
-  Briefcase,
-  Palette,
+  Lightbulb,
 } from 'lucide-react';
 
-export default function CreateEvent() {
+export default function CreateEventNew() {
   const router = useRouter();
   const { t } = useLanguage();
+  const [step, setStep] = useState(1);
+  const totalSteps = 3;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedImages, setSelectedImages] = useState([]);
@@ -56,19 +51,17 @@ export default function CreateEvent() {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // Limit to 10 images
     if (selectedImages.length + files.length > 10) {
       alert('You can upload a maximum of 10 images');
       return;
     }
 
-    // Validate file types and sizes
     const validFiles = files.filter(file => {
       if (!file.type.startsWith('image/')) {
         alert(`${file.name} is not an image file`);
         return false;
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         alert(`${file.name} is too large. Maximum size is 5MB`);
         return false;
       }
@@ -77,7 +70,6 @@ export default function CreateEvent() {
 
     setSelectedImages([...selectedImages, ...validFiles]);
 
-    // Create previews
     validFiles.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -100,12 +92,37 @@ export default function CreateEvent() {
     });
   };
 
+  const handleNext = () => {
+    setError('');
+    if (step === 1) {
+      if (!formData.title || !formData.description || !formData.category) {
+        setError('Please fill in all required fields.');
+        return;
+      }
+      setStep(2);
+    } else if (step === 2) {
+      if (!formData.targetAmount || !formData.startDate || !formData.endDate) {
+        setError('Please fill in all required fields.');
+        return;
+      }
+      if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+        setError('End date must be after start date.');
+        return;
+      }
+      setStep(3);
+    }
+  };
+
+  const handleBack = () => {
+    setError('');
+    setStep(step - 1);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Check if user is logged in
     const token = localStorage.getItem('accessToken');
     if (!token) {
       router.push('/auth/login');
@@ -120,13 +137,11 @@ export default function CreateEvent() {
 
       const createdEvent = await eventsAPI.create(eventData);
       
-      // Upload images if any selected
       if (selectedImages.length > 0) {
         try {
           await eventsAPI.uploadImages(createdEvent.id, selectedImages);
         } catch (imgErr) {
           console.error('Failed to upload images:', imgErr);
-          // Event created but images failed, still show success
         }
       }
       
@@ -140,392 +155,383 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 animate-fadeIn">
-          <Link href="/events" className="inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold mb-4 group">
-            <span className="mr-2 transform group-hover:-translate-x-1 transition-transform">←</span>
-            {t('common.back')}
-          </Link>
-          <h1 className="text-5xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 bg-clip-text text-transparent">
-              {t('createEvent.title')}
-            </span>
-          </h1>
-          <p className="text-xl text-gray-700">
-            {t('createEvent.subtitle')}
-          </p>
-        </div>
+    <div className="min-h-screen bg-white">
+      <div className="grid min-h-screen lg:grid-cols-[360px_1fr]">
+        <aside className="hidden lg:flex flex-col justify-between bg-orange-50 border-r border-orange-100 p-10">
+          <div>
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-600 to-amber-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xl">E</span>
+            </div>
+            <div className="mt-10">
+              <div className="text-sm text-gray-500">{step} of {totalSteps}</div>
+              <h1 className="mt-4 text-3xl font-semibold text-gray-900">
+                {step === 1 ? 'Create Your Event' : step === 2 ? 'Set Details' : 'Add Media'}
+              </h1>
+              <p className="mt-4 text-gray-600">
+                {step === 1
+                  ? 'Tell your story and describe your cause'
+                  : step === 2
+                  ? 'Set fundraising goals and timeline'
+                  : 'Upload images and finalize'}
+              </p>
+            </div>
+          </div>
+          <div className="text-xs text-gray-400">SangKumFund</div>
+        </aside>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 animate-fadeIn border border-orange-100" style={{ animationDelay: '0.1s' }}>
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <main className="flex flex-col">
+          <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+            <div className="lg:hidden flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-600 to-amber-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">E</span>
+              </div>
+              <span className="text-sm text-gray-600">{step} of {totalSteps}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/events')}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="flex-1 px-6 py-10 sm:px-10">
             {error && (
-              <div className="bg-red-50 text-red-800 p-4 rounded-xl border-2 border-red-200 flex items-center animate-slideInRight shadow-sm">
-                <AlertCircle className="w-6 h-6 mr-3 flex-shrink-0" />
-                <div className="font-medium">{error}</div>
+              <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-200">
+                <div className="flex items-center">
+                  <span className="text-2xl mr-2">⚠️</span>
+                  <div className="text-sm text-red-800 font-medium">{error}</div>
+                </div>
               </div>
             )}
 
-            {/* Event Title */}
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <FileText className="w-5 h-5" /> {t('createEvent.eventTitle')} *
-              </label>
-              <input
-                type="text"
-                name="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
-                placeholder={t('createEvent.eventTitlePlaceholder')}
-              />
-              <p className="mt-2 text-sm text-gray-500">Make it compelling and descriptive</p>
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <FileText className="w-5 h-5" /> {t('createEvent.description')} *
-              </label>
-              <textarea
-                name="description"
-                required
-                rows="6"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
-                placeholder={t('createEvent.descriptionPlaceholder')}
-              />
-              <p className="mt-2 text-sm text-gray-500">Share the story behind your cause</p>
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <Trophy className="w-5 h-5" /> {t('createEvent.category')} *
-              </label>
-              <select
-                name="category"
-                required
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
-              >
-                <option value="">{t('createEvent.selectCategory')}</option>
-                <option value="Education">{t('categories.Education')}</option>
-                <option value="Healthcare">{t('categories.Healthcare')}</option>
-                <option value="Environment">{t('categories.Environment')}</option>
-                <option value="Animal Welfare">{t('categories.Animal Welfare')}</option>
-                <option value="Community Development">{t('categories.Community Development')}</option>
-                <option value="Disaster Relief">{t('categories.Disaster Relief')}</option>
-                <option value="Arts & Culture">{t('categories.Arts & Culture')}</option>
-                <option value="Sports">{t('categories.Sports')}</option>
-                <option value="Technology">{t('categories.Technology')}</option>
-                <option value="Human Rights">{t('categories.Human Rights')}</option>
-                <option value="Other">{t('categories.Other')}</option>
-              </select>
-              <p className="mt-2 text-sm text-gray-500">Choose the category that best fits your event</p>
-            </div>
-
-            {/* Target Amount */}
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <DollarSign className="w-5 h-5" /> {t('createEvent.targetAmount')} *
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl text-gray-400">$</span>
-                <input
-                  type="number"
-                  name="targetAmount"
-                  required
-                  min="1"
-                  step="0.01"
-                  value={formData.targetAmount}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-lg"
-                  placeholder="10000.00"
-                />
-              </div>
-              <p className="mt-2 text-sm text-gray-500">Set a realistic target amount</p>
-            </div>
-
-            {/* Campaign Duration */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <Rocket className="w-5 h-5" /> {t('createEvent.startDate')} *
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  required
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                  <Calendar className="w-5 h-5" /> {t('createEvent.endDate')} *
-                </label>
-                <input
-                  type="date"
-                  name="endDate"
-                  required
-                  value={formData.endDate}
-                  onChange={handleChange}
-                  min={formData.startDate || new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <MapPin className="w-5 h-5" /> {t('createEvent.location')}
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                placeholder={t('createEvent.locationPlaceholder')}
-              />
-              <p className="mt-2 text-sm text-gray-500">Where will this event take place?</p>
-            </div>
-
-            {/* Coordinates (Optional) */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" /> {t('createEvent.latitude')} / {t('createEvent.longitude')}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowMapPicker(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-amber-700 transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  Pick on Map
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {step === 1 && (
+              <div className="max-w-2xl space-y-6">
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2">
-                    {t('createEvent.latitude')}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <FileText className="w-5 h-5" /> Event Title <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="number"
-                    name="latitude"
-                    step="any"
-                    value={formData.latitude}
+                    type="text"
+                    name="title"
+                    required
+                    value={formData.title}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                    placeholder="11.5564"
+                    placeholder="E.g., Build a School in Rural Cambodia"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                   />
+                  <p className="text-sm text-gray-500 mt-2">Make it compelling and descriptive</p>
                 </div>
+
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2">
-                    {t('createEvent.longitude')}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <FileText className="w-5 h-5" /> Description <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
-                    name="longitude"
-                    step="any"
-                    value={formData.longitude}
+                  <textarea
+                    name="description"
+                    required
+                    rows="6"
+                    value={formData.description}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
-                    placeholder="104.9282"
+                    placeholder="Share the story behind your cause. Why is this important? How will the funds help?"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 resize-none"
                   />
+                  <p className="text-sm text-gray-500 mt-2">{formData.description.length} characters</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <Trophy className="w-5 h-5" /> Category <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="category"
+                    required
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  >
+                    <option value="">Select a category...</option>
+                    <option value="Education">📚 Education</option>
+                    <option value="Healthcare">🏥 Healthcare</option>
+                    <option value="Environment">🌱 Environment</option>
+                    <option value="Animal Welfare">🐾 Animal Welfare</option>
+                    <option value="Community Development">🏘️ Community Development</option>
+                    <option value="Disaster Relief">🚨 Disaster Relief</option>
+                    <option value="Arts & Culture">🎨 Arts & Culture</option>
+                    <option value="Sports">⚽ Sports</option>
+                    <option value="Technology">💻 Technology</option>
+                    <option value="Human Rights">⚖️ Human Rights</option>
+                    <option value="Other">📋 Other</option>
+                  </select>
                 </div>
               </div>
-              {(formData.latitude || formData.longitude) && (
-                <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-                  <Lightbulb className="w-4 h-4" /> Tip: You can get coordinates from Google Maps by right-clicking on a location
-                </p>
-              )}
-            </div>
+            )}
 
-            {/* Image URL */}
-            <div>
-              <label className="block text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <ImageIcon className="w-5 h-5" /> {t('createEvent.images')}
-              </label>
-              
-              <div className="space-y-4">
-                {/* File Upload */}
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-500 transition-all">
-                  <input
-                    type="file"
-                    id="image-upload"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="hidden"
-                  />
-                  <label htmlFor="image-upload" className="cursor-pointer">
-                    <Camera className="w-16 h-16 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm font-semibold text-gray-700 mb-1">
-                      {t('createEvent.uploadImages')}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {t('createEvent.maxImages')}
-                    </p>
+            {step === 2 && (
+              <div className="max-w-2xl space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <DollarSign className="w-5 h-5" /> Target Amount <span className="text-red-500">*</span>
                   </label>
-                </div>
-
-                {/* Image Previews */}
-                {imagePreviews.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {imagePreviews.map((preview, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                        {index === 0 && (
-                          <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
-                            Primary
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-2xl text-gray-400">$</span>
+                    <input
+                      type="number"
+                      name="targetAmount"
+                      required
+                      min="1"
+                      step="0.01"
+                      value={formData.targetAmount}
+                      onChange={handleChange}
+                      placeholder="10000.00"
+                      className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    />
                   </div>
-                )}
+                  <p className="text-sm text-gray-500 mt-2">Set a realistic and achievable goal</p>
+                </div>
 
-                {/* Or URL Input */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <Rocket className="w-5 h-5" /> Start Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="startDate"
+                      required
+                      value={formData.startDate}
+                      onChange={handleChange}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                      <Calendar className="w-5 h-5" /> End Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="endDate"
+                      required
+                      value={formData.endDate}
+                      onChange={handleChange}
+                      min={formData.startDate || new Date().toISOString().split('T')[0]}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <p className="text-sm text-gray-500 mb-2 text-center">or provide an image URL</p>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <MapPin className="w-5 h-5" /> Location
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="City, Country or venue name"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <MapPin className="w-5 h-5" /> Coordinates (Optional)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowMapPicker(true)}
+                      className="px-4 py-2 bg-orange-600 text-white rounded-lg text-sm font-semibold hover:bg-orange-700"
+                    >
+                      Pick on Map
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input
+                      type="number"
+                      name="latitude"
+                      step="any"
+                      value={formData.latitude}
+                      onChange={handleChange}
+                      placeholder="Latitude (11.5564)"
+                      className="px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    />
+                    <input
+                      type="number"
+                      name="longitude"
+                      step="any"
+                      value={formData.longitude}
+                      onChange={handleChange}
+                      placeholder="Longitude (104.9282)"
+                      className="px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="max-w-2xl space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5" /> Images
+                  </label>
+
+                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-orange-500 transition-all">
+                    <input
+                      type="file"
+                      id="image-upload"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    <label htmlFor="image-upload" className="cursor-pointer">
+                      <Camera className="w-16 h-16 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm font-semibold text-gray-700 mb-1">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, GIF up to 5MB. Max 10 images.
+                      </p>
+                    </label>
+                  </div>
+
+                  {imagePreviews.length > 0 && (
+                    <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={preview}
+                            alt={`Preview ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                          {index === 0 && (
+                            <div className="absolute bottom-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
+                              Primary
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="mt-4 text-sm text-gray-500">
+                    {selectedImages.length > 0 
+                      ? `${selectedImages.length} image(s) selected` 
+                      : 'Add compelling images to attract more donors'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Or provide image URL</label>
                   <input
                     type="url"
                     name="imageUrl"
                     value={formData.imageUrl}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all"
                     placeholder="https://example.com/your-image.jpg"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
                   />
                 </div>
-              </div>
 
-              <p className="mt-2 text-sm text-gray-500">
-                {selectedImages.length > 0 
-                  ? `${selectedImages.length} image(s) selected` 
-                  : 'Add compelling images to attract donors'}
-              </p>
-            </div>
+                {formData.imageUrl && selectedImages.length === 0 && (
+                  <div className="rounded-xl overflow-hidden border-2 border-gray-200">
+                    <img
+                      src={formData.imageUrl}
+                      alt="Preview"
+                      className="w-full h-64 object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
 
-            {/* Preview of URL image if provided and no files selected */}
-            {formData.imageUrl && selectedImages.length === 0 && (
-              <div className="rounded-xl overflow-hidden border-2 border-gray-200">
-                <p className="text-sm font-semibold text-gray-700 px-4 pt-4 pb-2">Image Preview:</p>
-                <img
-                  src={formData.imageUrl}
-                  alt="Preview"
-                  className="w-full h-64 object-cover"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Info Box */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-6 mb-4 shadow-sm">
-              <div className="flex items-start">
-                <Calendar className="w-8 h-8 mr-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-amber-900 mb-2">Admin Verification Required</h4>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                   <p className="text-sm text-amber-800">
-                    Your event will be submitted for admin approval before it becomes visible to the public. 
-                    This helps ensure quality and compliance with our community guidelines.
+                    <strong>ℹ️ Admin Verification:</strong> Your event will be reviewed by our admin team before it becomes visible to the public.
                   </p>
                 </div>
               </div>
+            )}
+          </div>
+
+          <div className="border-t border-gray-100 px-6 py-4 sm:px-10 flex items-center justify-between">
+            <div>
+              {step > 1 ? (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
+                >
+                  ← Back
+                </button>
+              ) : (
+                <span className="text-sm text-gray-400">&nbsp;</span>
+              )}
             </div>
 
-            {/* Info Box */}
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 rounded-xl p-6 shadow-sm">
-              <div className="flex items-start">
-                <Lightbulb className="w-8 h-8 mr-4 text-orange-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-bold text-orange-900 mb-2">Tips for Success</h4>
-                  <ul className="text-sm text-orange-800 space-y-1">
-                    <li>✓ Be specific about how funds will be used</li>
-                    <li>✓ Include a compelling image or video</li>
-                    <li>✓ Set a realistic and achievable goal</li>
-                    <li>✓ Share your campaign on social media</li>
-                    <li>✓ Update donors regularly on progress</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            {step < totalSteps ? (
               <button
                 type="button"
-                onClick={() => router.back()}
-                className="flex-1 px-8 py-4 border-2 border-orange-300 text-orange-700 bg-white rounded-xl font-bold hover:bg-orange-50 transition-all text-lg hover:border-orange-400"
+                onClick={handleNext}
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-800"
               >
-                {t('common.cancel')}
+                Continue
               </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 px-8 py-4 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-bold hover:from-orange-700 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg btn-ripple"
-              >
-                {loading ? (
-                  <span className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    {t('common.loading')}
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Rocket className="w-5 h-5" />
-                    {t('common.submit')}
-                  </span>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Help Section */}
-        <div className="mt-8 text-center text-gray-600 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-          <p className="text-sm">
-            Need help? Check out our{' '}
-            <a href="#" className="text-orange-600 hover:text-orange-700 font-semibold">
-              Campaign Creation Guide
-            </a>
-          </p>
-        </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => router.push('/events')}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-full bg-emerald-700 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Rocket className="w-4 h-4" />
+                      <span>Create Event</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        </main>
       </div>
-      {/* Map Picker Modal */}
+
       <MapPicker
         isOpen={showMapPicker}
         onClose={() => setShowMapPicker(false)}
         onSelectLocation={handleMapSelect}
         initialLat={parseFloat(formData.latitude) || null}
         initialLng={parseFloat(formData.longitude) || null}
-      />    </div>
+      />
+    </div>
   );
 }

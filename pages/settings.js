@@ -16,8 +16,10 @@ import {
   Save,
   Settings as SettingsIcon,
   Shield,
+  ShieldCheck,
   Smartphone,
   User,
+  ArrowRight,
 } from 'lucide-react';
 import { settingsAPI, userAPI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -78,6 +80,7 @@ export default function SettingsPage() {
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'privacy', label: 'Privacy', icon: Lock },
     { id: 'security', label: 'Security', icon: Shield },
+    { id: 'verification', label: 'Verification', icon: ShieldCheck },
     { id: 'integrations', label: 'Integrations', icon: Link2 },
     { id: 'danger', label: 'Danger Zone', icon: AlertTriangle },
   ];
@@ -901,6 +904,101 @@ export default function SettingsPage() {
                               </button>
                             </div>
                           </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                )}
+
+                {/* Verification Tab */}
+                {activeTab === 'verification' && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn"
+                    >
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2">Identity Verification</h2>
+                      <p className="text-gray-600 mb-8">Verify your identity to unlock premium features and build trust in the community</p>
+
+                      {/* OCR Verification Card */}
+                      <div className="border-2 border-gray-200 rounded-xl p-6 bg-gradient-to-br from-blue-50 to-cyan-50">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                              <ShieldCheck className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-900">OCR Document Verification</h3>
+                              <p className="text-sm text-gray-600 mt-1">
+                                Verify your identity using a government-issued ID or passport
+                              </p>
+                            </div>
+                          </div>
+                          {user?.isOcrVerified && (
+                              <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full">
+                                <Check className="w-4 h-4" />
+                                <span className="text-sm font-semibold">Verified</span>
+                              </div>
+                          )}
+                        </div>
+
+                        {user?.isOcrVerified ? (
+                            <div className="space-y-3">
+                              <div className="p-3 bg-white rounded-lg">
+                                <p className="text-sm text-gray-600">Verified on</p>
+                                <p className="font-semibold text-gray-900">
+                                  {user.ocrVerifiedAt ? new Date(user.ocrVerifiedAt).toLocaleDateString() : 'N/A'}
+                                </p>
+                              </div>
+                              <div className="p-3 bg-white rounded-lg">
+                                <p className="text-sm text-gray-600">Extracted Name</p>
+                                <p className="font-semibold text-gray-900">{user.ocrExtractedName || 'N/A'}</p>
+                              </div>
+                              <p className="text-sm text-green-700 bg-green-50 p-3 rounded-lg">
+                                ✓ Your identity has been verified and confirmed
+                              </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                              <ul className="space-y-2">
+                                <li className="flex items-center gap-2 text-sm text-gray-700">
+                                  <Check className="w-4 h-4 text-green-600" />
+                                  <span>Upload a clear government-issued ID</span>
+                                </li>
+                                <li className="flex items-center gap-2 text-sm text-gray-700">
+                                  <Check className="w-4 h-4 text-green-600" />
+                                  <span>Automatic OCR extraction and verification</span>
+                                </li>
+                                <li className="flex items-center gap-2 text-sm text-gray-700">
+                                  <Check className="w-4 h-4 text-green-600" />
+                                  <span>Secure and encrypted processing</span>
+                                </li>
+                              </ul>
+                              <button
+                                  onClick={() => router.push('/auth/ocr-verify')}
+                                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all flex items-center justify-center gap-2"
+                              >
+                                <ShieldCheck className="w-5 h-5" />
+                                Start Verification
+                                <ArrowRight className="w-5 h-5" />
+                              </button>
+                            </div>
+                        )}
+                      </div>
+
+                      {/* Benefits */}
+                      <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <h4 className="font-semibold text-gray-900 mb-2">Build Trust</h4>
+                          <p className="text-sm text-gray-600">Show verified badge on your profile</p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <h4 className="font-semibold text-gray-900 mb-2">Premium Access</h4>
+                          <p className="text-sm text-gray-600">Unlock exclusive features and benefits</p>
+                        </div>
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <h4 className="font-semibold text-gray-900 mb-2">Enhanced Security</h4>
+                          <p className="text-sm text-gray-600">Additional protection for your account</p>
                         </div>
                       </div>
                     </motion.div>

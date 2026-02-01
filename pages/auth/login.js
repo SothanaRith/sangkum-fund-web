@@ -59,16 +59,25 @@ export default function Login() {
     try {
       const response = await authAPI.loginWithOtp(formData.email, formData.password, formData.otp);
 
-      // Store tokens
+      // Store tokens in localStorage
       localStorage.setItem('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
+      
+      // Store tokens in cookies for middleware
+      document.cookie = `accessToken=${response.accessToken}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `refreshToken=${response.refreshToken}; path=/; max-age=604800; SameSite=Lax`;
+      
       if (response.user) {
         localStorage.setItem('user', JSON.stringify(response.user));
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(response.user))}; path=/; max-age=86400; SameSite=Lax`;
       }
 
       // Check if there's a redirect path
       const redirectPath = router.query.redirect || '/';
-      router.push(redirectPath);
+      await router.push(redirectPath);
+      
+      // Reload page to refresh all state
+      window.location.reload();
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials and try again.';
       setError(errorMessage);

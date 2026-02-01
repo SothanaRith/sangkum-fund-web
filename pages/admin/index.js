@@ -3,9 +3,11 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import apiClient from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const { isLoading, isAuthorized, user } = useProtectedRoute('admin');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalEvents: 0,
@@ -19,18 +21,22 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    checkAuth();
-    loadDashboardData();
-  }, []);
-
-  const checkAuth = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      router.push('/auth/login');
-      return;
+    if (!isLoading && isAuthorized) {
+      loadDashboardData();
     }
-    // In production, check if user is admin
-  };
+  }, [isLoading, isAuthorized]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600 mb-4"></div>
+          <div className="text-lg text-gray-600">Verifying admin access...</div>
+        </div>
+      </div>
+    );
+  }
 
   const loadDashboardData = async () => {
     try {
@@ -205,6 +211,22 @@ export default function AdminDashboard() {
                   Manage Users
                 </h3>
                 <p className="text-sm text-gray-600">View and manage user accounts</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/announcements"
+            className="bg-white rounded-2xl shadow-lg p-6 card-hover animate-fadeIn group"
+            style={{ animationDelay: '0.8s' }}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl">📢</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                  Manage Announcements
+                </h3>
+                <p className="text-sm text-gray-600">Create and manage announcements</p>
               </div>
             </div>
           </Link>

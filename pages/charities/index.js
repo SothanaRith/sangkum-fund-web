@@ -13,14 +13,36 @@ import {
   Globe2,
   ArrowRight,
   Loader2,
+  HeartPulse,
+  Leaf,
+  GraduationCap,
+  Users,
+  Target,
+  Briefcase,
+  PawPrint,
+  AlertTriangle,
+  X,
+  ChevronDown,
 } from 'lucide-react';
 import { charitiesAPI } from '@/lib/api';
 import Pagination from '@/components/Pagination';
+
+const categories = [
+  { id: 'all', label: 'All Categories', icon: Building2, color: 'bg-gradient-to-r from-orange-600 to-amber-600' },
+  { id: 'HEALTH', label: 'Healthcare', icon: HeartPulse, color: 'bg-red-500' },
+  { id: 'EDUCATION', label: 'Education', icon: GraduationCap, color: 'bg-blue-500' },
+  { id: 'ENVIRONMENT', label: 'Environment', icon: Leaf, color: 'bg-green-500' },
+  { id: 'SOCIAL', label: 'Social', icon: Users, color: 'bg-purple-500' },
+  { id: 'DISASTER', label: 'Disaster Relief', icon: AlertTriangle, color: 'bg-yellow-600' },
+  { id: 'COMMUNITY', label: 'Community', icon: Building2, color: 'bg-indigo-500' },
+  { id: 'ANIMALS', label: 'Animal Welfare', icon: PawPrint, color: 'bg-amber-600' },
+];
 
 export default function CharitiesPage() {
   const [charities, setCharities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('all');
   const [activeFilter, setActiveFilter] = useState('all'); // all, verified, pending
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -31,7 +53,7 @@ export default function CharitiesPage() {
 
   useEffect(() => {
     loadCharities();
-  }, [currentPage, activeFilter]);
+  }, [currentPage, activeFilter, category]);
 
   useEffect(() => {
     // When search changes, reset to page 0
@@ -48,7 +70,9 @@ export default function CharitiesPage() {
       const status = activeFilter === 'verified' ? 'verified' : 
                      activeFilter === 'pending' ? 'pending' : null;
       
-      const response = await charitiesAPI.getAll(currentPage, pageSize, 'createdAt', 'desc', status);
+      const categoryParam = category !== 'all' ? category : null;
+      
+      const response = await charitiesAPI.getAll(currentPage, pageSize, 'createdAt', 'desc', status, categoryParam);
       
       // Handle pagination response
       const content = response.content || [];
@@ -170,7 +194,7 @@ export default function CharitiesPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex gap-2 bg-white rounded-2xl shadow-lg p-2 max-w-md">
+            <div className="flex gap-2 bg-white rounded-2xl shadow-lg p-2 max-w-md mb-6">
               <button
                   onClick={() => { setActiveFilter('all'); setCurrentPage(0); }}
                   className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all ${
@@ -201,6 +225,33 @@ export default function CharitiesPage() {
               >
                 Pending
               </button>
+            </div>
+
+            {/* Category Filter */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <h3 className="font-semibold text-gray-700">Filter by Category:</h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {categories.map((cat) => {
+                  const IconComponent = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setCategory(cat.id)}
+                      className={`px-4 py-3 rounded-xl transition-all duration-200 font-medium flex items-center gap-2 text-sm ${
+                        cat.id === category
+                          ? `${cat.color} text-white shadow-lg scale-105`
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      }`}
+                    >
+                      <IconComponent className="w-4 h-4" />
+                      <span className="hidden sm:inline">{cat.label}</span>
+                      <span className="sm:hidden">{cat.label.split(' ')[0]}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -417,6 +468,8 @@ export default function CharitiesPage() {
                 <p className="text-gray-600 mb-8 max-w-md mx-auto">
                   {search
                       ? `No organizations match "${search}". Try a different search term.`
+                      : category !== 'all'
+                      ? `No organizations found in this category. Try a different category.`
                       : 'No organizations are currently registered. Be the first to register!'}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
