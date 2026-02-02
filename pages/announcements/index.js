@@ -7,6 +7,12 @@ import {
   MessageCircle,
   Plus,
   ThumbsUp,
+  Send,
+  Smile,
+  Sparkles,
+  TrendingUp,
+  Reply,
+  X,
   User,
 } from 'lucide-react';
 import { announcementsAPI } from '@/lib/api';
@@ -21,6 +27,8 @@ export default function AnnouncementsPage() {
   const [newAnnouncement, setNewAnnouncement] = useState({ title: '', content: '' });
   const [activeAnnouncement, setActiveAnnouncement] = useState(null);
   const [newComment, setNewComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
 
   useEffect(() => {
     if (eventId || charityId) {
@@ -61,8 +69,12 @@ export default function AnnouncementsPage() {
     if (!newComment.trim()) return;
     
     try {
-      await announcementsAPI.addComment(announcementId, newComment);
+      await announcementsAPI.addComment(announcementId, {
+        content: newComment,
+        parentId: replyingTo,
+      });
       setNewComment('');
+      setReplyingTo(null);
       loadAnnouncements();
     } catch (err) {
       alert('Failed to add comment');
@@ -72,11 +84,20 @@ export default function AnnouncementsPage() {
   const handleReaction = async (announcementId, reactionType) => {
     try {
       await announcementsAPI.addReaction(announcementId, reactionType);
+      setShowReactionPicker(null);
       loadAnnouncements();
     } catch (err) {
       alert('Failed to add reaction');
     }
   };
+
+  const reactions = [
+    { type: 'LIKE', icon: Heart, label: 'Like', color: 'text-red-500' },
+    { type: 'LOVE', icon: Heart, label: 'Love', color: 'text-pink-500' },
+    { type: 'SUPPORT', icon: ThumbsUp, label: 'Support', color: 'text-blue-500' },
+    { type: 'CELEBRATE', icon: Sparkles, label: 'Celebrate', color: 'text-yellow-500' },
+    { type: 'INSIGHTFUL', icon: TrendingUp, label: 'Insightful', color: 'text-purple-500' },
+  ];
 
   if (loading) {
     return (
@@ -199,31 +220,56 @@ export default function AnnouncementsPage() {
 
                 {/* Reactions & Comments Bar */}
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => handleReaction(announcement.id, 'LIKE')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-red-50 transition-colors group"
-                  >
-                    <Heart className="w-5 h-5 text-red-500 group-hover:scale-125 transition-transform" />
-                    <span className="text-gray-700 font-semibold">
-                      {announcement.reactions?.filter(r => r.type === 'LIKE').length || 0}
-                    </span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleReaction(announcement.id, 'SUPPORT')}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-yellow-50 transition-colors group"
-                  >
-                    <ThumbsUp className="w-5 h-5 text-yellow-500 group-hover:scale-125 transition-transform" />
-                    <span className="text-gray-700 font-semibold">
-                      {announcement.reactions?.filter(r => r.type === 'SUPPORT').length || 0}
-                    </span>
-                  </button>
+                  {/* Reaction Button with Picker */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowReactionPicker(
+                        showReactionPicker === announcement.id ? null : announcement.id
+                      )}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
+                    >
+                      <Smile className="w-5 h-5 text-gray-500 group-hover:scale-110 transition-transform" />
+                      <span className="text-gray-700 font-semibold">React</span>
+                    </button>
+
+                    {/* Reaction Picker */}
+                    {showReactionPicker === announcement.id && (
+                      <div className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-3 flex gap-2 z-10 animate-fadeIn">
+                        {reactions.map((reaction) => (
+                          <button
+                            key={reaction.type}
+                            onClick={() => handleReaction(announcement.id, reaction.type)}
+                            className="p-2 rounded-lg hover:bg-gray-100 transition-all hover:scale-125 group"
+                            title={reaction.label}
+                          >
+                            <reaction.icon className={`w-6 h-6 ${reaction.color}`} />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Reaction Counts */}
+                  {announcement.reactions && announcement.reactions.length > 0 && (
+                    <div className="flex gap-2">
+                      {reactions.map((reaction) => {
+                        const count = announcement.reactions?.filter(r => r.type === reaction.type).length || 0;
+                        if (count === 0) return null;
+                        return (
+                          <span key={reaction.type} className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
+                            <reaction.icon className={`w-4 h-4 ${reaction.color}`} />
+                            <span className="text-sm font-semibold text-gray-700">{count}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                   
                   <button
                     onClick={() => setActiveAnnouncement(
                       activeAnnouncement === announcement.id ? null : announcement.id
                     )}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors ml-auto"
                   >
                     <MessageCircle className="w-5 h-5 text-blue-500" />
                     <span className="text-gray-700 font-semibold">
@@ -238,19 +284,67 @@ export default function AnnouncementsPage() {
                     {/* Comments List */}
                     {announcement.comments && announcement.comments.length > 0 && (
                       <div className="space-y-4 mb-4">
-                        {announcement.comments.map((comment) => (
-                          <div key={comment.id} className="bg-gray-50 rounded-lg p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="text-sm font-semibold text-gray-900">
-                                {comment.authorName || 'Anonymous'}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {formatDate(comment.createdAt)}
-                              </span>
+                        {announcement.comments
+                          .filter(comment => !comment.parentId)
+                          .map((comment) => (
+                          <div key={comment.id} className="space-y-3">
+                            {/* Main Comment */}
+                            <div className="bg-gray-50 rounded-lg p-4">
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-gray-900">
+                                    {comment.authorName || 'Anonymous'}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {formatDate(comment.createdAt)}
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => setReplyingTo(comment.id)}
+                                  className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1"
+                                >
+                                  <Reply className="w-3 h-3" />
+                                  Reply
+                                </button>
+                              </div>
+                              <p className="text-gray-700">{comment.content}</p>
                             </div>
-                            <p className="text-gray-700">{comment.content}</p>
+
+                            {/* Replies */}
+                            {comment.replies && comment.replies.length > 0 && (
+                              <div className="ml-8 space-y-3">
+                                {comment.replies.map((reply) => (
+                                  <div key={reply.id} className="bg-blue-50 rounded-lg p-4 border-l-4 border-primary-500">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Reply className="w-3 h-3 text-primary-600" />
+                                      <span className="text-sm font-semibold text-gray-900">
+                                        {reply.authorName || 'Anonymous'}
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {formatDate(reply.createdAt)}
+                                      </span>
+                                    </div>
+                                    <p className="text-gray-700">{reply.content}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Reply Indicator */}
+                    {replyingTo && (
+                      <div className="mb-3 flex items-center gap-2 text-sm text-primary-600 bg-primary-50 rounded-lg px-3 py-2">
+                        <Reply className="w-4 h-4" />
+                        <span>Replying to comment</span>
+                        <button
+                          onClick={() => setReplyingTo(null)}
+                          className="ml-auto hover:text-primary-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     )}
 
@@ -260,7 +354,7 @@ export default function AnnouncementsPage() {
                         type="text"
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Write a comment..."
+                        placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
                         className="flex-1 px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:outline-none"
                         onKeyPress={(e) => {
                           if (e.key === 'Enter') {
@@ -270,8 +364,9 @@ export default function AnnouncementsPage() {
                       />
                       <button
                         onClick={() => handleAddComment(announcement.id)}
-                        className="px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors"
+                        className="px-6 py-2 bg-primary-600 text-white rounded-lg font-semibold hover:bg-primary-700 transition-colors flex items-center gap-2"
                       >
+                        <Send className="w-4 h-4" />
                         Post
                       </button>
                     </div>

@@ -5,7 +5,7 @@ import { eventsAPI, eventTimelineAPI, announcementsAPI, eventCommentsAPI, donati
 import { adminAnnouncementsAPI } from '@/lib/admin-api';
 import { formatCurrency, formatDate, calculateProgress, formatTimeAgo } from '@/lib/utils';
 import { encryptId, decryptId } from '@/lib/encryption';
-import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown, PartyPopper, Camera, Image as ImageIcon, Sparkles, MessageCircle, Megaphone, Clock, User, Edit, Copy, Link2, X } from 'lucide-react';
+import { Heart, Share2, Shield, CheckCircle, Calendar, Users, MapPin, ChevronDown, PartyPopper, Camera, Image as ImageIcon, Sparkles, MessageCircle, Megaphone, Clock, User, Edit, Copy, Link2, X, ThumbsUp, Smile, TrendingUp, Reply, Send } from 'lucide-react';
 import EventChatBox from '@/components/EventChatBox';
 
 export default function EventDetail() {
@@ -44,15 +44,26 @@ export default function EventDetail() {
     content: '',
   });
   const [submittingAnnouncement, setSubmittingAnnouncement] = useState(false);
+  const [activeAnnouncement, setActiveAnnouncement] = useState(null);
+  const [announcementComment, setAnnouncementComment] = useState('');
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [showReactionPicker, setShowReactionPicker] = useState(null);
   const storyRef = useRef(null);
   const donationCardRef = useRef(null);
 
   useEffect(() => {
     if (id) {
-      // Decrypt ID if it's encrypted
-      const decrypted = decryptId(id);
-      const actualId = decrypted || id;
-      setPlainId(actualId);
+      
+      // Decrypt ID if it's encrypted, otherwise use plain ID
+      try {
+        const decrypted = decryptId(id);
+        const actualId = decrypted || id;
+        setPlainId(actualId);
+      } catch (err) {
+        // If decryption fails, assume it's already a plain ID
+        console.log('Using plain ID:', id);
+        setPlainId(id);
+      }
     }
     const handleScroll = () => {
       if (storyRef.current && donationCardRef.current) {
@@ -100,7 +111,7 @@ export default function EventDetail() {
     
     setRelatedEvents([]);
     try {
-      const [eventData, timelineData, announcementsData, commentsData, donationsData, imagesData] = await Promise.all([
+      const [eventData, timelineData, announcementsResponse, commentsData, donationsData, imagesData] = await Promise.all([
         eventsAPI.getById(plainId),
         eventTimelineAPI.getByEvent(plainId).catch(() => []),
         announcementsAPI.getByEvent(plainId).catch(() => []),
@@ -110,6 +121,8 @@ export default function EventDetail() {
       ]);
       setEvent(eventData);
       setTimeline(timelineData);
+      // Handle both array response and wrapped response
+      const announcementsData = Array.isArray(announcementsResponse) ? announcementsResponse : (announcementsResponse?.data || []);
       setAnnouncements(announcementsData);
       setComments(commentsData);
       setRecentDonations(donationsData.slice(0, 5));
@@ -224,6 +237,53 @@ export default function EventDetail() {
       setSubmittingAnnouncement(false);
     }
   };
+
+  const handleAnnouncementReaction = async (announcementId, reactionType) => {
+    try {
+      await announcementsAPI.addReaction(announcementId, reactionType);
+      setShowReactionPicker(null);
+      await loadEvent();
+    } catch (err) {
+      console.error('Failed to add reaction:', err);
+      alert('Failed to add reaction');
+    }
+  };
+
+  const handleAddAnnouncementComment = async (announcementId) => {
+    if (!announcementComment.trim()) return;
+    
+    try {
+      await announcementsAPI.addComment(announcementId, {
+        content: announcementComment,
+        parentId: replyingTo,
+      });
+      setAnnouncementComment('');
+      setReplyingTo(null);
+      await loadEvent();
+    } catch (err) {
+      console.error('Failed to add comment:', err);
+      alert('Failed to add comment');
+    }
+  };
+
+  const handleCommentReaction = async (announcementId, commentId, reactionType) => {
+    try {
+      await announcementsAPI.addCommentReaction(announcementId, commentId, reactionType);
+      setShowReactionPicker(null);
+      await loadEvent();
+    } catch (err) {
+      console.error('Failed to add comment reaction:', err);
+      alert('Failed to add reaction');
+    }
+  };
+
+  const reactions = [
+    { type: 'LIKE', icon: Heart, label: 'Like', color: 'text-red-500' },
+    { type: 'LOVE', icon: Heart, label: 'Love', color: 'text-pink-500' },
+    { type: 'SUPPORT', icon: ThumbsUp, label: 'Support', color: 'text-blue-500' },
+    { type: 'CELEBRATE', icon: Sparkles, label: 'Celebrate', color: 'text-yellow-500' },
+    { type: 'INSIGHTFUL', icon: TrendingUp, label: 'Insightful', color: 'text-purple-500' },
+  ];
 
   const handleJoinEvent = async (joinType = 'free') => {
     try {
@@ -743,8 +803,8 @@ export default function EventDetail() {
                       ) : (
                           <div className="space-y-6">
                             {announcements.map((update) => (
-                                <div key={update.id} className="pb-6 border-b border-gray-100 last:border-0">
-                                  <div className="flex items-start gap-4">
+                                <div key={update.id} className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+                                  <div className="flex items-start gap-4 mb-4">
                                     <div className="flex-shrink-0">
                                       <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                                         <Megaphone className="w-5 h-5 text-orange-600" />
@@ -757,19 +817,211 @@ export default function EventDetail() {
                                         <span className="text-sm text-gray-500">{formatTimeAgo(update.createdAt)}</span>
                                       </div>
                                       <h4 className="text-lg font-semibold text-gray-900 mb-2">{update.title}</h4>
-                                      <div className="prose text-gray-700 whitespace-pre-wrap mb-3">
+                                      <div className="prose text-gray-700 whitespace-pre-wrap mb-4">
                                         {update.content}
                                       </div>
-                                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                                        <button className="flex items-center gap-1 hover:text-orange-600">
-                                          <Heart size={14} />
-                                          <span>{update.reactionCount || 0}</span>
-                                        </button>
-                                        <button className="flex items-center gap-1 hover:text-orange-600">
-                                          <MessageCircle size={14} />
-                                          <span>{update.commentCount || 0}</span>
+                                      
+                                      {/* Reactions Bar */}
+                                      <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+                                        {/* Reaction Button with Picker */}
+                                        <div className="relative">
+                                          <button
+                                            onClick={() => setShowReactionPicker(
+                                              showReactionPicker === update.id ? null : update.id
+                                            )}
+                                            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors group"
+                                          >
+                                            <Smile className="w-5 h-5 text-gray-500 group-hover:scale-110 transition-transform" />
+                                            <span className="text-gray-700 font-semibold text-sm">React</span>
+                                          </button>
+
+                                          {/* Reaction Picker */}
+                                          {showReactionPicker === update.id && (
+                                            <div className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-3 flex gap-2 z-10 animate-fadeIn">
+                                              {reactions.map((reaction) => (
+                                                <button
+                                                  key={reaction.type}
+                                                  onClick={() => handleAnnouncementReaction(update.id, reaction.type)}
+                                                  className="p-2 rounded-lg hover:bg-gray-100 transition-all hover:scale-125 group"
+                                                  title={reaction.label}
+                                                >
+                                                  <reaction.icon className={`w-6 h-6 ${reaction.color}`} />
+                                                </button>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Reaction Counts */}
+                                        {update.reactions && update.reactions.length > 0 && (
+                                          <div className="flex gap-2">
+                                            {reactions.map((reaction) => {
+                                              const count = update.reactions?.filter(r => r.type === reaction.type).length || 0;
+                                              if (count === 0) return null;
+                                              return (
+                                                <span key={reaction.type} className="flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
+                                                  <reaction.icon className={`w-4 h-4 ${reaction.color}`} />
+                                                  <span className="text-sm font-semibold text-gray-700">{count}</span>
+                                                </span>
+                                              );
+                                            })}
+                                          </div>
+                                        )}
+                                        
+                                        <button
+                                          onClick={() => setActiveAnnouncement(
+                                            activeAnnouncement === update.id ? null : update.id
+                                          )}
+                                          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors ml-auto"
+                                        >
+                                          <MessageCircle className="w-5 h-5 text-blue-500" />
+                                          <span className="text-gray-700 font-semibold text-sm">
+                                            {update.comments?.length || 0} Comments
+                                          </span>
                                         </button>
                                       </div>
+
+                                      {/* Comments Section */}
+                                      {activeAnnouncement === update.id && (
+                                        <div className="mt-6 pt-6 border-t border-gray-200 animate-fadeIn">
+                                          {/* Comments List */}
+                                          {update.comments && update.comments.length > 0 && (
+                                            <div className="space-y-4 mb-4">
+                                              {update.comments
+                                                .filter(comment => !comment.parentId)
+                                                .map((comment) => (
+                                                <div key={comment.id} className="space-y-3">
+                                                  {/* Main Comment */}
+                                                  <div className="bg-gray-50 rounded-lg p-4">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-semibold text-gray-900">
+                                                          {comment.authorName || 'Anonymous'}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500">
+                                                          {formatDate(comment.createdAt)}
+                                                        </span>
+                                                      </div>
+                                                      <button
+                                                        onClick={() => setReplyingTo(comment.id)}
+                                                        className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1"
+                                                      >
+                                                        <Reply className="w-3 h-3" />
+                                                        Reply
+                                                      </button>
+                                                    </div>
+                                                    <p className="text-gray-700 mb-3">{comment.content}</p>
+                                                    
+                                                    {/* Comment Reactions */}
+                                                    <div className="flex items-center gap-3 pt-2 border-t border-gray-200">
+                                                      <div className="relative">
+                                                        <button
+                                                          onClick={() => setShowReactionPicker(
+                                                            showReactionPicker === `comment-${comment.id}` ? null : `comment-${comment.id}`
+                                                          )}
+                                                          className="flex items-center gap-1 px-2 py-1 rounded hover:bg-gray-200 transition-colors text-xs"
+                                                        >
+                                                          <Smile className="w-3 h-3 text-gray-500" />
+                                                          React
+                                                        </button>
+                                                        
+                                                        {showReactionPicker === `comment-${comment.id}` && (
+                                                          <div className="absolute bottom-full left-0 mb-1 bg-white rounded-lg shadow-xl border border-gray-200 p-2 flex gap-1 z-10">
+                                                            {reactions.map((reaction) => (
+                                                              <button
+                                                                key={reaction.type}
+                                                                onClick={() => {
+                                                                  handleCommentReaction(update.id, comment.id, reaction.type);
+                                                                }}
+                                                                className="p-1 rounded hover:bg-gray-100"
+                                                                title={reaction.label}
+                                                              >
+                                                                <reaction.icon className={`w-4 h-4 ${reaction.color}`} />
+                                                              </button>
+                                                            ))}
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                      
+                                                      {comment.reactions && comment.reactions.length > 0 && (
+                                                        <div className="flex gap-1">
+                                                          {reactions.map((reaction) => {
+                                                            const count = comment.reactions?.filter(r => r.type === reaction.type).length || 0;
+                                                            if (count === 0) return null;
+                                                            return (
+                                                              <span key={reaction.type} className="flex items-center gap-1 px-2 py-0.5 bg-gray-200 rounded text-xs">
+                                                                <reaction.icon className={`w-3 h-3 ${reaction.color}`} />
+                                                                {count}
+                                                              </span>
+                                                            );
+                                                          })}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                  </div>
+
+                                                  {/* Replies */}
+                                                  {comment.replies && comment.replies.length > 0 && (
+                                                    <div className="ml-8 space-y-3">
+                                                      {comment.replies.map((reply) => (
+                                                        <div key={reply.id} className="bg-blue-50 rounded-lg p-4 border-l-4 border-primary-500">
+                                                          <div className="flex items-center gap-2 mb-2">
+                                                            <Reply className="w-3 h-3 text-primary-600" />
+                                                            <span className="text-sm font-semibold text-gray-900">
+                                                              {reply.authorName || 'Anonymous'}
+                                                            </span>
+                                                            <span className="text-xs text-gray-500">
+                                                              {formatDate(reply.createdAt)}
+                                                            </span>
+                                                          </div>
+                                                          <p className="text-gray-700">{reply.content}</p>
+                                                        </div>
+                                                      ))}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+
+                                          {/* Reply Indicator */}
+                                          {replyingTo && (
+                                            <div className="mb-3 flex items-center gap-2 text-sm text-primary-600 bg-primary-50 rounded-lg px-3 py-2">
+                                              <Reply className="w-4 h-4" />
+                                              <span>Replying to comment</span>
+                                              <button
+                                                onClick={() => setReplyingTo(null)}
+                                                className="ml-auto hover:text-primary-700"
+                                              >
+                                                <X className="w-4 h-4" />
+                                              </button>
+                                            </div>
+                                          )}
+
+                                          {/* Add Comment */}
+                                          <div className="flex gap-3">
+                                            <input
+                                              type="text"
+                                              value={announcementComment}
+                                              onChange={(e) => setAnnouncementComment(e.target.value)}
+                                              placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
+                                              className="flex-1 px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-primary-500 focus:outline-none"
+                                              onKeyPress={(e) => {
+                                                if (e.key === 'Enter') {
+                                                  handleAddAnnouncementComment(update.id);
+                                                }
+                                              }}
+                                            />
+                                            <button
+                                              onClick={() => handleAddAnnouncementComment(update.id)}
+                                              className="px-6 py-2 bg-orange-600 text-white rounded-lg font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
+                                            >
+                                              <Send className="w-4 h-4" />
+                                              Post
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>

@@ -378,20 +378,32 @@ export default function CharitiesPage() {
                         {(charity.facebookUrl || charity.instagramUrl || charity.twitterUrl) && (
                             <div className="flex gap-3 mb-4 pb-4 border-b border-gray-100">
                               {charity.facebookUrl && (
-                                  <a href={charity.facebookUrl} target="_blank" rel="noopener noreferrer" 
-                                     className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
+                                  <a 
+                                    href={charity.facebookUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
                                     <span className="text-xs font-bold">f</span>
                                   </a>
                               )}
                               {charity.instagramUrl && (
-                                  <a href={charity.instagramUrl} target="_blank" rel="noopener noreferrer" 
-                                     className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors">
+                                  <a 
+                                    href={charity.instagramUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-8 h-8 rounded-full bg-pink-50 flex items-center justify-center text-pink-600 hover:bg-pink-100 transition-colors">
                                     <span className="text-xs font-bold">@</span>
                                   </a>
                               )}
                               {charity.twitterUrl && (
-                                  <a href={charity.twitterUrl} target="_blank" rel="noopener noreferrer" 
-                                     className="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 hover:bg-sky-100 transition-colors">
+                                  <a 
+                                    href={charity.twitterUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-600 hover:bg-sky-100 transition-colors">
                                     <span className="text-xs font-bold">𝕏</span>
                                   </a>
                               )}

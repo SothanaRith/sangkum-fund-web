@@ -23,7 +23,7 @@ import {
   Twitter,
   X,
 } from 'lucide-react';
-import { authAPI } from '@/lib/api';
+import { authAPI, notificationsAPI, userAPI } from '@/lib/api';
 import { useLanguage } from '@/lib/LanguageContext';
 
 export default function Layout({ children }) {
@@ -39,6 +39,7 @@ export default function Layout({ children }) {
   useEffect(() => {
     setMounted(true);
     checkAuth();
+    loadUnreadNotifications();
 
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -48,7 +49,23 @@ export default function Layout({ children }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const checkAuth = () => {
+  const loadUnreadNotifications = async () => {
+    try {
+      if (typeof window === 'undefined') return;
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      const notifications = await notificationsAPI.getAll();
+      const unreadCount = Array.isArray(notifications) 
+        ? notifications.filter(n => !n.read).length 
+        : 0;
+      setNotificationCount(unreadCount);
+    } catch (error) {
+      console.error('Failed to load unread notifications:', error);
+    }
+  };
+
+  const checkAuth = async () => {
     if (typeof window === 'undefined') return;
     
     const token = localStorage.getItem('accessToken');
@@ -59,6 +76,14 @@ export default function Layout({ children }) {
         setUser(JSON.parse(userData));
       } catch (e) {
         console.error('Failed to parse user data');
+      }
+    } else if (token) {
+      try {
+        const profile = await userAPI.getProfile();
+        setUser(profile);
+        localStorage.setItem('user', JSON.stringify(profile));
+      } catch (e) {
+        console.error('Failed to load user profile');
       }
     }
   };
@@ -205,13 +230,13 @@ export default function Layout({ children }) {
                       )}
                       <Link
                           href="/notifications"
-                          className="relative p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
+                          className="relative p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors group"
                       >
                         <Bell className="w-5 h-5" />
                         {notificationCount > 0 && (
-                            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-                        {notificationCount}
-                      </span>
+                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-5 h-5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-lg group-hover:shadow-red-500/50 animation pulse">
+                              {notificationCount > 99 ? '99+' : notificationCount}
+                            </span>
                         )}
                       </Link>
                       <Link
@@ -293,6 +318,18 @@ export default function Layout({ children }) {
                   </Link>
                   {isLoggedIn && (
                       <>
+                        <Link
+                            href="/notifications"
+                            className="block relative px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                        >
+                          <Bell className="inline-block w-4 h-4 mr-2" />
+                          {t('nav.notifications')}
+                          {notificationCount > 0 && (
+                              <span className="inline-block ml-2 min-w-5 px-2 py-0.5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-full">
+                                {notificationCount > 99 ? '99+' : notificationCount}
+                              </span>
+                          )}
+                        </Link>
                         <Link
                             href="/dashboard"
                             className="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600"
