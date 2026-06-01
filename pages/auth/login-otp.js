@@ -15,6 +15,8 @@ export default function LoginOtp() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [isAccountLocked, setIsAccountLocked] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Check for error from OAuth redirect
   useEffect(() => {
@@ -34,6 +36,18 @@ export default function LoginOtp() {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setError('');
+    setIsAccountLocked(false);
+
+    const emailErr = !formData.email ? 'Email is required'
+      : !/\S+@\S+\.\S+/.test(formData.email) ? 'Enter a valid email' : '';
+    const passwordErr = !formData.password ? 'Password is required'
+      : formData.password.length < 6 ? 'Password must be at least 6 characters' : '';
+
+    if (emailErr || passwordErr) {
+      setFieldErrors({ email: emailErr, password: passwordErr });
+      return;
+    }
+    setFieldErrors({});
     setLoading(true);
 
     try {
@@ -44,8 +58,6 @@ export default function LoginOtp() {
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to send OTP. Please try again.';
       setError(errorMessage);
-      
-      // Check if account is locked
       if (errorMessage.includes('locked') || errorMessage.includes('too many')) {
         setIsAccountLocked(true);
       }
@@ -62,13 +74,18 @@ export default function LoginOtp() {
     try {
       const response = await authAPI.loginWithOtp(formData.email, formData.password, formData.otp);
 
-      // Store tokens
       localStorage.setItem('accessToken', response.accessToken);
       localStorage.setItem('refreshToken', response.refreshToken);
+      if (response.user) localStorage.setItem('user', JSON.stringify(response.user));
 
-      // Check if there's a redirect path
+      document.cookie = `accessToken=${response.accessToken}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `refreshToken=${response.refreshToken}; path=/; max-age=604800; SameSite=Lax`;
+      if (response.user) {
+        document.cookie = `user=${encodeURIComponent(JSON.stringify(response.user))}; path=/; max-age=86400; SameSite=Lax`;
+      }
+
       const redirectPath = router.query.redirect || '/';
-      router.push(redirectPath);
+      window.location.href = redirectPath;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Login failed. Please check your OTP and try again.';
       setError(errorMessage);
@@ -108,7 +125,6 @@ export default function LoginOtp() {
       window.location.href = `${API_URL}/api/auth/oauth2/authorize/google`;
     } catch (err) {
       setError('Google login failed. Please try again.');
-      console.error('Google login error:', err);
       setGoogleLoading(false);
     }
   };
@@ -323,6 +339,9 @@ export default function LoginOtp() {
                     onClick={() => {
                       setStep(1);
                       setFormData({ ...formData, otp: '' });
+                      setError('');
+                      setFieldErrors({});
+                      setIsAccountLocked(false);
                     }}
                     className="text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
                 >

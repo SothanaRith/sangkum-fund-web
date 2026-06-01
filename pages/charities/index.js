@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useMotionVariants } from '@/lib/animations';
 import Link from 'next/link';
 import {
   Handshake,
@@ -12,7 +14,6 @@ import {
   MapPin,
   Globe2,
   ArrowRight,
-  Loader2,
   HeartPulse,
   Leaf,
   GraduationCap,
@@ -26,6 +27,7 @@ import {
 } from 'lucide-react';
 import { charitiesAPI } from '@/lib/api';
 import Pagination from '@/components/Pagination';
+import { CharityCardSkeleton, DashboardStatSkeleton } from '@/components/Skeleton';
 
 const categories = [
   { id: 'all', label: 'All Categories', icon: Building2, color: 'bg-gradient-to-r from-orange-600 to-amber-600' },
@@ -39,6 +41,7 @@ const categories = [
 ];
 
 export default function CharitiesPage() {
+  const mv = useMotionVariants();
   const [charities, setCharities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -50,6 +53,7 @@ export default function CharitiesPage() {
   const [hasNext, setHasNext] = useState(false);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [pageSize] = useState(9);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadCharities();
@@ -67,13 +71,14 @@ export default function CharitiesPage() {
   const loadCharities = async () => {
     try {
       setLoading(true);
-      const status = activeFilter === 'verified' ? 'verified' : 
+      setError('');
+      const status = activeFilter === 'verified' ? 'verified' :
                      activeFilter === 'pending' ? 'pending' : null;
-      
+
       const categoryParam = category !== 'all' ? category : null;
-      
+
       const response = await charitiesAPI.getAll(currentPage, pageSize, 'createdAt', 'desc', status, categoryParam);
-      
+
       // Handle pagination response
       const content = response.content || [];
       setCharities(content);
@@ -83,6 +88,7 @@ export default function CharitiesPage() {
       setHasPrevious(response.hasPrevious || false);
     } catch (err) {
       console.error('Failed to load charities:', err);
+      setError('Failed to load charities. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -99,14 +105,19 @@ export default function CharitiesPage() {
     return matchesSearch;
   });
 
-  if (loading) {
+  if (error && charities.length === 0) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50 to-white">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <Loader2 className="w-12 h-12 text-orange-600 animate-spin" />
-            </div>
-            <p className="text-gray-600">Loading charities...</p>
+          <div className="text-center max-w-md mx-auto px-4">
+            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Something went wrong</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
+                onClick={loadCharities}
+                className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-xl font-semibold hover:from-orange-700 hover:to-amber-700 transition-all shadow-lg"
+            >
+              Try Again
+            </button>
           </div>
         </div>
     );
@@ -116,63 +127,82 @@ export default function CharitiesPage() {
       <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-12">
         <div className="container mx-auto px-4">
           {/* Header */}
-          <div className="text-center mb-12 animate-fadeIn">
+          <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-100 to-amber-100 rounded-full mb-4">
                 <Handshake className="w-4 h-4 text-orange-700" />
                 <span className="text-sm font-medium text-orange-800">Trusted Partners</span>
             </div>
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-5xl font-bold mb-4 bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
               Partner Charities
             </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-gray-600 max-w-2xl mx-auto">
               Support verified organizations making real impact in Cambodia
             </p>
           </div>
 
+          {/* Inline error banner for subsequent failures */}
+          {error && charities.length > 0 && (
+              <div className="max-w-6xl mx-auto mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-5 py-4 rounded-xl">
+                <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                <span className="flex-1 text-sm font-medium">{error}</span>
+                <button onClick={loadCharities} className="text-sm font-semibold underline hover:no-underline">Retry</button>
+              </div>
+          )}
+
           {/* Stats */}
           <div className="max-w-6xl mx-auto mb-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center">
-                      <Building2 className="w-6 h-6 text-orange-600" />
-                    </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">{totalElements}</div>
-                    <div className="text-sm text-gray-600">
-                      {activeFilter === 'all' ? 'Total Organizations' : 
-                       activeFilter === 'verified' ? 'Verified Partners' : 'Pending Review'}
+              {loading && charities.length === 0 ? (
+                <>
+                  <DashboardStatSkeleton />
+                  <DashboardStatSkeleton />
+                  <DashboardStatSkeleton />
+                </>
+              ) : (
+                <>
+                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-orange-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-gray-900">{totalElements}</div>
+                        <div className="text-sm text-gray-600">
+                          {activeFilter === 'all' ? 'Total Organizations' :
+                           activeFilter === 'verified' ? 'Verified Partners' : 'Pending Review'}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-blue-600" />
+                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-blue-600">{charities.length}</div>
+                        <div className="text-sm text-gray-600">On This Page</div>
+                      </div>
                     </div>
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">{charities.length}</div>
-                    <div className="text-sm text-gray-600">On This Page</div>
                   </div>
-                </div>
-              </div>
-              <div className="bg-white rounded-2xl p-6 shadow-lg">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-purple-600" />
+                  <div className="bg-white rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
+                        <BarChart3 className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-purple-600">{totalPages}</div>
+                        <div className="text-sm text-gray-600">Total Pages</div>
+                      </div>
                     </div>
-                  <div>
-                    <div className="text-2xl font-bold text-purple-600">{totalPages}</div>
-                    <div className="text-sm text-gray-600">Total Pages</div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* Search and Filters */}
-          <div className="max-w-6xl mx-auto mb-12 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+          <div className="max-w-6xl mx-auto mb-12">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -256,15 +286,28 @@ export default function CharitiesPage() {
           </div>
 
           {/* Charities Grid */}
-          {filteredCharities.length > 0 ? (
+          {loading && charities.length === 0 ? (
               <div className="max-w-6xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredCharities.map((charity, index) => (
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <CharityCardSkeleton key={i} />
+                  ))}
+                </div>
+              </div>
+          ) : filteredCharities.length > 0 ? (
+              <div className="max-w-6xl mx-auto">
+                <motion.div
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  variants={mv.listContainer}
+                  initial="hidden"
+                  animate="visible"
+                  key={`${category}-${activeFilter}-${currentPage}`}
+                >
+                  {filteredCharities.map((charity) => (
+                    <motion.div key={charity.id} variants={mv.listItem} whileHover={mv.cardHover} whileTap={mv.cardTap}>
                       <Link
-                          key={charity.id}
                           href={`/charities/${charity.id}`}
-                          className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all card-hover animate-fadeIn border border-gray-100 hover:border-orange-200 group"
-                          style={{ animationDelay: `${index * 0.05}s` }}
+                          className="block bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-shadow border border-gray-100 hover:border-orange-200 group"
                       >
                         {/* Logo */}
                         <div className="mb-4 relative">
@@ -430,8 +473,9 @@ export default function CharitiesPage() {
                           )}
                         </div>
                       </Link>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
 
                 {/* Verification Info */}
                 {activeFilter === 'all' && (
@@ -467,7 +511,7 @@ export default function CharitiesPage() {
               </div>
           ) : (
               /* Empty State */
-              <div className="text-center py-16 animate-fadeIn max-w-2xl mx-auto">
+              <div className="text-center py-16 max-w-2xl mx-auto">
                 <div className="relative inline-block mb-6">
                     <div className="p-6 rounded-full bg-orange-50 inline-flex">
                       <Search className="w-12 h-12 text-orange-600" />

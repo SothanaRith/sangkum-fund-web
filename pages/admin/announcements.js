@@ -159,12 +159,12 @@ export default function AdminAnnouncements() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center animate-fadeIn">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
           <div>
             <Link href="/admin" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-block">
               ← Back to Dashboard
             </Link>
-            <h1 className="text-4xl font-bold flex items-center gap-3">
+            <h1 className="text-2xl sm:text-4xl font-bold flex items-center gap-3">
               <Megaphone className="w-9 h-9 text-primary-600" />
               <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
                 Announcement Management
@@ -173,7 +173,7 @@ export default function AdminAnnouncements() {
           </div>
           <button
             onClick={() => handleOpenModal()}
-            className="bg-gradient-to-r from-primary-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2"
+            className="bg-gradient-to-r from-primary-600 to-purple-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg flex items-center gap-2 whitespace-nowrap"
           >
             <Plus className="w-5 h-5" />
             Create Announcement
@@ -197,7 +197,27 @@ export default function AdminAnnouncements() {
         {/* Announcements Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden animate-fadeIn">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <div className="md:hidden space-y-3 p-4">
+              {announcements.filter(a => a.title?.toLowerCase().includes(searchTerm.toLowerCase()) || a.content?.toLowerCase().includes(searchTerm.toLowerCase())).map((announcement) => (
+                <div key={`mobile-${announcement.id}`} className="bg-gray-50 rounded-xl p-4 space-y-2 border border-gray-100">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold text-gray-900 text-sm flex-1">{announcement.title}</p>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={() => handleOpenModal(announcement)} className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"><Edit2 className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => handleDelete(announcement.id)} disabled={actionLoading[announcement.id]} className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50">{actionLoading[announcement.id] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}</button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 line-clamp-2">{announcement.content}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      {announcement.event ? <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">Event: {announcement.event.title}</span> : announcement.charity ? <span className="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs font-medium">Charity: {announcement.charity.name}</span> : <span className="text-gray-500 text-xs">General</span>}
+                    </div>
+                    <span className="text-xs text-gray-500">{formatDate(announcement.createdAt)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <table className="w-full hidden md:table">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Title</th>
@@ -315,7 +335,7 @@ export default function AdminAnnouncements() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white shadow-2xl w-full h-full sm:h-auto sm:rounded-2xl sm:max-w-2xl sm:max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-gradient-to-r from-primary-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Megaphone className="w-6 h-6" />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { authAPI } from '@/lib/api';
@@ -15,23 +15,41 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    nameRef.current?.focus();
+  }, []);
+
+  const getPasswordStrength = (password) => {
+    if (!password) return null;
+    if (password.length < 6) return { label: 'Too short', barColor: 'bg-red-500', textColor: 'text-red-500', width: '25%' };
+    const hasUpper = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const score = [hasUpper, hasNumber, hasSpecial].filter(Boolean).length;
+    if (score >= 2 && password.length >= 8) return { label: 'Strong', barColor: 'bg-green-500', textColor: 'text-green-600', width: '100%' };
+    if (score >= 1 || password.length >= 8) return { label: 'Medium', barColor: 'bg-amber-500', textColor: 'text-amber-600', width: '60%' };
+    return { label: 'Weak', barColor: 'bg-red-400', textColor: 'text-red-500', width: '35%' };
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!formData.agreeToTerms) {
-      setError('You must agree to the Terms of Service and Privacy Policy');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = 'Full name is required';
+    else if (formData.name.trim().length < 2) newErrors.name = 'Name must be at least 2 characters';
+    if (!formData.email) newErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
+    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.agreeToTerms) newErrors.terms = 'You must agree to the Terms of Service and Privacy Policy';
+    if (Object.keys(newErrors).length > 0) {
+      setFieldErrors(newErrors);
       return;
     }
 
@@ -56,12 +74,8 @@ export default function Register() {
         document.cookie = `user=${encodeURIComponent(JSON.stringify(loginResponse.user))}; path=/; max-age=86400; SameSite=Lax`;
       }
 
-      // Check if there's a redirect path
       const redirectPath = router.query.redirect || '/survey';
-      await router.push(redirectPath);
-      
-      // Reload page to refresh all state
-      window.location.reload();
+      window.location.href = redirectPath;
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -79,17 +93,33 @@ export default function Register() {
       window.location.href = `${API_URL}/api/auth/oauth2/authorize/google`;
     } catch (err) {
       setError('Google sign-up failed. Please try again.');
-      console.error('Google sign-up error:', err);
       setGoogleLoading(false);
     }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    });
+    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let error = '';
+    if (name === 'name') {
+      if (!value.trim()) error = 'Full name is required';
+      else if (value.trim().length < 2) error = 'Name must be at least 2 characters';
+    } else if (name === 'email') {
+      if (!value) error = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Please enter a valid email address';
+    } else if (name === 'password') {
+      if (!value) error = 'Password is required';
+      else if (value.length < 6) error = 'Password must be at least 6 characters';
+    } else if (name === 'confirmPassword') {
+      if (!value) error = 'Please confirm your password';
+      else if (value !== formData.password) error = 'Passwords do not match';
+    }
+    if (error) setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   return (
@@ -159,15 +189,22 @@ export default function Register() {
                   👤 Full Name
                 </label>
                 <input
+                    ref={nameRef}
                     id="name"
                     name="name"
                     type="text"
+                    autoComplete="name"
                     required
-                    className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all bg-white"
+                    className={`appearance-none relative block w-full px-4 py-3 border-2 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 transition-all bg-white ${fieldErrors.name ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-orange-500 focus:ring-orange-100'}`}
                     placeholder="Enter your full name"
                     value={formData.name}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    aria-describedby={fieldErrors.name ? 'name-error' : undefined}
                 />
+                {fieldErrors.name && (
+                  <p id="name-error" className="mt-1 text-sm text-red-600">{fieldErrors.name}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -179,11 +216,16 @@ export default function Register() {
                     type="email"
                     autoComplete="email"
                     required
-                    className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all bg-white"
+                    className={`appearance-none relative block w-full px-4 py-3 border-2 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 transition-all bg-white ${fieldErrors.email ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-orange-500 focus:ring-orange-100'}`}
                     placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    aria-describedby={fieldErrors.email ? 'reg-email-error' : undefined}
                 />
+                {fieldErrors.email && (
+                  <p id="reg-email-error" className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -193,13 +235,30 @@ export default function Register() {
                     id="password"
                     name="password"
                     type="password"
+                    autoComplete="new-password"
                     required
                     minLength="6"
-                    className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all bg-white"
+                    className={`appearance-none relative block w-full px-4 py-3 border-2 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 transition-all bg-white ${fieldErrors.password ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-orange-500 focus:ring-orange-100'}`}
                     placeholder="Create a password (min. 6 characters)"
                     value={formData.password}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    aria-describedby="password-strength"
                 />
+                {formData.password && (() => {
+                  const s = getPasswordStrength(formData.password);
+                  return s ? (
+                    <div id="password-strength" className="mt-2">
+                      <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${s.barColor}`} style={{ width: s.width }} />
+                      </div>
+                      <p className="text-xs mt-1 text-gray-500">Strength: <span className={`font-medium ${s.textColor}`}>{s.label}</span></p>
+                    </div>
+                  ) : null;
+                })()}
+                {fieldErrors.password && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
@@ -209,35 +268,49 @@ export default function Register() {
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
+                    autoComplete="new-password"
                     required
-                    className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all bg-white"
+                    className={`appearance-none relative block w-full px-4 py-3 border-2 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 transition-all bg-white ${fieldErrors.confirmPassword ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : formData.confirmPassword && formData.confirmPassword === formData.password ? 'border-green-400 focus:border-green-500 focus:ring-green-100' : 'border-gray-200 focus:border-orange-500 focus:ring-orange-100'}`}
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    onBlur={handleBlur}
+                    aria-describedby={fieldErrors.confirmPassword ? 'confirm-error' : undefined}
                 />
+                {fieldErrors.confirmPassword && (
+                  <p id="confirm-error" className="mt-1 text-sm text-red-600">{fieldErrors.confirmPassword}</p>
+                )}
+                {!fieldErrors.confirmPassword && formData.confirmPassword && formData.confirmPassword === formData.password && (
+                  <p className="mt-1 text-sm text-green-600">Passwords match</p>
+                )}
               </div>
 
               {/* Terms Checkbox */}
-              <div className="flex items-start gap-3 pt-2">
-                <input
-                    id="agreeToTerms"
-                    name="agreeToTerms"
-                    type="checkbox"
-                    required
-                    checked={formData.agreeToTerms}
-                    onChange={handleChange}
-                    className="h-5 w-5 text-orange-600 rounded border-gray-300 focus:ring-orange-500 focus:ring-2 mt-1"
-                />
-                <label htmlFor="agreeToTerms" className="text-sm text-gray-600">
-                  I agree to the{' '}
-                  <Link href="/terms-of-service" className="text-orange-600 hover:text-orange-500 font-medium">
-                    Terms of Service
-                  </Link>
-                  {' '}and{' '}
-                  <Link href="/privacy-policy" className="text-orange-600 hover:text-orange-500 font-medium">
-                    Privacy Policy
-                  </Link>
-                </label>
+              <div className="pt-2">
+                <div className="flex items-start gap-3">
+                  <input
+                      id="agreeToTerms"
+                      name="agreeToTerms"
+                      type="checkbox"
+                      required
+                      checked={formData.agreeToTerms}
+                      onChange={handleChange}
+                      className="h-5 w-5 text-orange-600 rounded border-gray-300 focus:ring-orange-500 focus:ring-2 mt-1"
+                  />
+                  <label htmlFor="agreeToTerms" className="text-sm text-gray-600">
+                    I agree to the{' '}
+                    <Link href="/terms-of-service" className="text-orange-600 hover:text-orange-500 font-medium">
+                      Terms of Service
+                    </Link>
+                    {' '}and{' '}
+                    <Link href="/privacy-policy" className="text-orange-600 hover:text-orange-500 font-medium">
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+                {fieldErrors.terms && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.terms}</p>
+                )}
               </div>
             </div>
 

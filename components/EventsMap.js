@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { formatCurrency, calculateProgress } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Map, MapPin, Tag, User } from 'lucide-react';
 
 // Fix for default marker icons in Next.js
@@ -116,7 +117,7 @@ export default function EventsMap({ events, selectedEvent, onEventSelect }) {
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
-        style={{ height: '100%', width: '100%', minHeight: '600px' }}
+        style={{ height: '100%', width: '100%', minHeight: '350px' }}
         className="z-0"
       >
         <TileLayer
@@ -160,9 +161,11 @@ export default function EventsMap({ events, selectedEvent, onEventSelect }) {
                   {/* Event Image */}
                   {event.imageUrl && (
                     <div className="mb-3 -mx-2 -mt-2">
-                      <img
+                      <Image
                         src={event.imageUrl}
-                        alt={event.title}
+                        alt={event.title || 'Event image'}
+                        width={320}
+                        height={128}
                         className="w-full h-32 object-cover rounded-t"
                       />
                     </div>
@@ -237,9 +240,9 @@ export default function EventsMap({ events, selectedEvent, onEventSelect }) {
       </MapContainer>
 
       {/* Map Legend */}
-      <div className="absolute bottom-4 right-4 bg-white rounded-lg shadow-lg p-3 z-[1000] max-w-xs">
+      <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-white rounded-lg shadow-lg p-2 sm:p-3 z-[1000] max-w-[200px] sm:max-w-xs">
         <h4 className="text-xs font-bold text-gray-700 mb-2">Categories</h4>
-        <div className="grid grid-cols-2 gap-2 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
           {[
             { name: 'Healthcare', color: '#ef4444' },
             { name: 'Education', color: '#3b82f6' },

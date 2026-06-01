@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { contactAPI } from '../lib/api';
+import Toast from '../components/Toast';
 import {
     BadgeCheck,
     Briefcase,
@@ -33,6 +35,7 @@ import {
 
 export default function AboutUs() {
     const [activeSection, setActiveSection] = useState('story');
+    const [toast, setToast] = useState(null);
     const [contactFormData, setContactFormData] = useState({
         firstName: '',
         lastName: '',
@@ -48,7 +51,7 @@ export default function AboutUs() {
         try {
             const fullName = `${contactFormData.firstName} ${contactFormData.lastName}`;
             await contactAPI.sendMessage(fullName, contactFormData.email, 'General Inquiry', contactFormData.message);
-            alert('Message sent! Our team will respond within 24 hours.');
+            setToast({ type: 'success', message: 'Message sent! Our team will respond within 24 hours.' });
             setContactFormData({
                 firstName: '',
                 lastName: '',
@@ -58,7 +61,7 @@ export default function AboutUs() {
             });
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please try again later.');
+            setToast({ type: 'error', message: 'Failed to send message. Please try again later.' });
         } finally {
             setContactFormSubmitting(false);
         }
@@ -396,9 +399,11 @@ export default function AboutUs() {
                                         <div className="p-6">
                                             <div className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center text-white text-4xl font-bold">
                                                 {member.image ? (
-                                                    <img
+                                                    <Image
                                                         src={member.image}
-                                                        alt={member.name}
+                                                        alt={member.name || 'Team member'}
+                                                        width={128}
+                                                        height={128}
                                                         className="w-full h-full rounded-full object-cover"
                                                     />
                                                 ) : (
@@ -666,60 +671,65 @@ export default function AboutUs() {
                                 <form className="space-y-6" onSubmit={handleContactSubmit}>
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-gray-700 mb-2">First Name</label>
+                                            <label htmlFor="firstName" className="block text-gray-700 mb-2">First Name</label>
                                             <input
+                                                id="firstName"
                                                 type="text"
                                                 required
                                                 value={contactFormData.firstName}
                                                 onChange={(e) => setContactFormData({ ...contactFormData, firstName: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
+                                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                                                 placeholder="Sokha"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-gray-700 mb-2">Last Name</label>
+                                            <label htmlFor="lastName" className="block text-gray-700 mb-2">Last Name</label>
                                             <input
+                                                id="lastName"
                                                 type="text"
                                                 required
                                                 value={contactFormData.lastName}
                                                 onChange={(e) => setContactFormData({ ...contactFormData, lastName: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
+                                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                                                 placeholder="Chan"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Email</label>
+                                        <label htmlFor="email" className="block text-gray-700 mb-2">Email</label>
                                         <input
+                                            id="email"
                                             type="email"
                                             required
                                             value={contactFormData.email}
                                             onChange={(e) => setContactFormData({ ...contactFormData, email: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                                             placeholder="sokha@example.com"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Phone</label>
+                                        <label htmlFor="phone" className="block text-gray-700 mb-2">Phone</label>
                                         <input
+                                            id="phone"
                                             type="tel"
                                             value={contactFormData.phone}
                                             onChange={(e) => setContactFormData({ ...contactFormData, phone: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                                             placeholder="+855 12 345 678"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-gray-700 mb-2">Message</label>
+                                        <label htmlFor="message" className="block text-gray-700 mb-2">Message</label>
                                         <textarea
+                                            id="message"
                                             rows="4"
                                             required
                                             value={contactFormData.message}
                                             onChange={(e) => setContactFormData({ ...contactFormData, message: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
                                             placeholder="How can we help you?"
                                         ></textarea>
                                     </div>
@@ -761,6 +771,7 @@ export default function AboutUs() {
                     </div>
                 </div>
             </section>
+            <Toast toast={toast} onClose={() => setToast(null)} />
         </div>
     );
 }

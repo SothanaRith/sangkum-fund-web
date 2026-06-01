@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Lock, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -12,6 +12,44 @@ export default function AccessRequestModal({
 }) {
   const [reason, setReason] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key !== 'Tab') return;
+
+      const focusableElements = modalRef.current?.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (!focusableElements || focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      // Auto-focus the modal or first focusable element
+      setTimeout(() => {
+        const focusable = modalRef.current?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+      }, 100);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,18 +78,22 @@ export default function AccessRequestModal({
       className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
     >
       <motion.div
+        ref={modalRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+        className="bg-white shadow-2xl w-full h-full sm:h-auto sm:max-w-md sm:rounded-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 flex items-center justify-between rounded-t-2xl">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 flex items-center justify-between sm:rounded-t-2xl">
           <div className="flex items-center gap-3">
             <Lock className="w-6 h-6" />
-            <h2 className="text-2xl font-bold">Private {itemType === 'event' ? 'Event' : 'Charity'}</h2>
+            <h2 id="modal-title" className="text-2xl font-bold">Private {itemType === 'event' ? 'Event' : 'Charity'}</h2>
           </div>
-          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-lg transition">
+          <button onClick={onClose} className="hover:bg-white/20 p-1 rounded-lg transition" aria-label="Close modal">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -90,10 +132,11 @@ export default function AccessRequestModal({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="reason" className="block text-sm font-semibold text-gray-700 mb-2">
                     Why do you want access? (Optional)
                   </label>
                   <textarea
+                    id="reason"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     placeholder="Let them know why you're interested..."
@@ -105,7 +148,7 @@ export default function AccessRequestModal({
                   </p>
                 </div>
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
                   <button
                     type="button"
                     onClick={onClose}

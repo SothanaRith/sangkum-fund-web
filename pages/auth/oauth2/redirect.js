@@ -7,10 +7,13 @@ export default function OAuth2Redirect() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    const { accessToken, refreshToken, tokenType, expiresIn, error, message } = router.query;
+    if (!router.isReady) return;
+
+    const { accessToken, refreshToken, error, message } = router.query;
 
     if (error) {
-      // Redirect to login with error message
+      // Clear any stale sessionStorage on error
+      sessionStorage.removeItem('oauth_redirect');
       router.push({
         pathname: '/auth/login',
         query: { error: message || 'OAuth2 authentication failed' }
@@ -21,53 +24,35 @@ export default function OAuth2Redirect() {
     if (accessToken && refreshToken) {
       handleOAuthSuccess(accessToken, refreshToken);
     } else {
-      // Missing tokens, redirect to login
+      sessionStorage.removeItem('oauth_redirect');
       router.push({
         pathname: '/auth/login',
         query: { error: 'Authentication failed. Please try again.' }
       });
     }
-  }, [router.query]);
+  }, [router.isReady, router.query]);
 
   const handleOAuthSuccess = async (accessToken, refreshToken) => {
     try {
-      // Store tokens in localStorage
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
-      
-      // Store tokens in cookies for middleware access
       document.cookie = `accessToken=${accessToken}; path=/; max-age=86400; SameSite=Lax`;
       document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800; SameSite=Lax`;
-      
-      // Fetch user data using the access token
+
       const userData = await userAPI.getProfile();
-      
-      // Store user data in localStorage and cookies
       if (userData) {
         localStorage.setItem('user', JSON.stringify(userData));
         document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400; SameSite=Lax`;
       }
-      
-      // Redirect to home or intended destination
+
       const intendedPath = sessionStorage.getItem('oauth_redirect') || '/';
       sessionStorage.removeItem('oauth_redirect');
-      
-      router.push(intendedPath).then(() => {
-        // Reload page to refresh all state
-        window.location.reload();
-      });
+      router.push(intendedPath);
     } catch (err) {
-      console.error('Error fetching user data:', err);
       setErrorMsg('Failed to complete authentication. Redirecting...');
-      
-      // Even if user fetch fails, try to redirect anyway
-      setTimeout(() => {
-        const intendedPath = sessionStorage.getItem('oauth_redirect') || '/';
-        sessionStorage.removeItem('oauth_redirect');
-        router.push(intendedPath).then(() => {
-          window.location.reload();
-        });
-      }, 1500);
+      const intendedPath = sessionStorage.getItem('oauth_redirect') || '/';
+      sessionStorage.removeItem('oauth_redirect');
+      setTimeout(() => router.push(intendedPath), 1500);
     }
   };
 

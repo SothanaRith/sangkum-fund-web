@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { eventVerificationAPI } from '@/lib/admin-event-api';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, ClipboardList, User } from 'lucide-react';
 
 export default function EventVerification() {
   const router = useRouter();
@@ -112,8 +112,8 @@ export default function EventVerification() {
 
         {/* Events Count */}
         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-blue-800 font-medium">
-            📋 {events.length} event(s) pending approval
+          <p className="text-blue-800 font-medium flex items-center">
+            <ClipboardList className="w-5 h-5 inline-block mr-2 align-middle text-blue-800" /> {events.length} event(s) pending approval
           </p>
         </div>
 
@@ -156,7 +156,7 @@ export default function EventVerification() {
                         <h2 className="text-2xl font-bold text-gray-900 mb-2">{event.title}</h2>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
                           <span className="flex items-center gap-1">
-                            👤 {event.owner?.name || 'Unknown'}
+                            <User className="w-4 h-4 inline-block mr-1 align-middle" /> {event.owner?.name || 'Unknown'}
                           </span>
                           <span className="flex items-center gap-1">
                             🏷️ {event.visibility}

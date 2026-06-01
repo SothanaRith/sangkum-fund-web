@@ -3,12 +3,14 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/lib/LanguageContext';
+import { useMotionVariants } from '@/lib/animations';
 import { Hospital, AlertCircle, Briefcase, Bird, GraduationCap, HandshakeIcon, Rocket, Megaphone, RefreshCw, BarChart3, Smartphone, DollarSign, Sparkles, Zap, Banknote, Shield, Users, Heart, Building2, Star, Play, Smile, Loader2, Calendar, User, Tag, ChevronRight, Quote, ArrowUpRight, CheckCircle2, Globe2, PhoneCall, Mail } from 'lucide-react';
 import { postsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 
 export default function Home() {
   const { language } = useLanguage();
+  const mv = useMotionVariants();
   const [mounted, setMounted] = useState(false);
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
@@ -81,23 +83,19 @@ export default function Home() {
     {
       title: "Year in Help 2024",
       description: "See how communities came together",
-      image: "/api/placeholder/600/400",
       large: true
     },
     {
       title: "Giving Funds",
-      description: "Recurring support for causes",
-      image: "/api/placeholder/300/200"
+      description: "Recurring support for causes"
     },
     {
       title: "Disaster Relief",
-      description: "Emergency response worldwide",
-      image: "/api/placeholder/300/200"
+      description: "Emergency response worldwide"
     },
     {
       title: "Local Heroes",
-      description: "Supporting community leaders",
-      image: "/api/placeholder/300/200"
+      description: "Supporting community leaders"
     }
   ];
 
@@ -473,9 +471,11 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-6">
               {successStories.map((story) => (
                   <div key={story.title} className="group relative overflow-hidden rounded-3xl shadow-lg bg-gray-900">
-                    <img
+                    <Image
                         src={story.image}
-                        alt={story.title}
+                        alt={story.title || 'Success story image'}
+                        width={600}
+                        height={400}
                         className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -501,7 +501,7 @@ export default function Home() {
             </h2>
 
             <div className="relative bg-gradient-to-br from-orange-100 to-amber-100 rounded-3xl p-12">
-              <div className="grid grid-cols-4 gap-8 mb-12">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-12">
                 {[
                   { Icon: Users, label: 'Start' },
                   { Icon: Smartphone, label: 'Share' },
@@ -611,7 +611,7 @@ export default function Home() {
                     <Quote className="w-8 h-8 text-orange-500" />
                     <p className="text-gray-700 leading-relaxed">“{person.quote}”</p>
                     <div className="flex items-center gap-3 mt-auto">
-                      <img src={person.avatar} alt={person.name} className="w-12 h-12 rounded-full object-cover" />
+                      <Image src={person.avatar} alt={person.name || 'User avatar'} width={48} height={48} className="w-12 h-12 rounded-full object-cover" />
                       <div>
                         <div className="font-semibold text-gray-900">{person.name}</div>
                         <div className="text-sm text-gray-500">{person.role}</div>
@@ -733,16 +733,19 @@ export default function Home() {
                           whileInView={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.6, delay: index * 0.1 }}
                           viewport={{ once: true }}
+                          whileHover={mv.cardHover}
+                          whileTap={mv.cardTap}
                       >
                         <Link href={`/blog/${post.slug}`}>
                           <div className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full border border-gray-100">
                             {/* Cover Image */}
                             <div className="relative h-40 bg-gradient-to-br from-orange-400 to-amber-500 overflow-hidden">
                               {post.coverImageUrl ? (
-                                  <img
+                                  <Image
                                       src={post.coverImageUrl}
-                                      alt={post.title}
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      alt={post.title || 'Post cover'}
+                                      fill
+                                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
                               ) : (
                                   <div className="w-full h-full flex items-center justify-center">

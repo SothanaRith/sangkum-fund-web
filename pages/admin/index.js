@@ -4,11 +4,13 @@ import Link from 'next/link';
 import apiClient from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import { AlertTriangle, BarChart3, CheckCircle, ClipboardList, CreditCard, DollarSign, Target, Trophy } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
   const { isLoading, isAuthorized, user } = useProtectedRoute('admin');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [stats, setStats] = useState({
     totalEvents: 0,
     activeEvents: 0,
@@ -42,29 +44,30 @@ export default function AdminDashboard() {
     try {
       // Load events
       const eventsRes = await apiClient.get('/api/admin/events');
-      const eventsData = eventsRes.data;
-      setEvents(eventsData.slice(0, 5)); // Top 5 events
+      const eventsList = eventsRes.data?.content || [];
+      setEvents(eventsList.slice(0, 5)); // Top 5 events
 
       // Load donations
       const donationsRes = await apiClient.get('/api/admin/donations');
-      const donationsData = donationsRes.data;
-      setRecentDonations(donationsData.slice(0, 10)); // Recent 10
+      const donationsList = donationsRes.data?.content || [];
+      setRecentDonations(donationsList.slice(0, 10)); // Recent 10
 
       // Calculate stats
-      const totalAmount = donationsData.reduce((sum, d) => sum + parseFloat(d.amount), 0);
-      const pending = donationsData.filter(d => d.status === 'PENDING').length;
-      const successful = donationsData.filter(d => d.status === 'SUCCESS').length;
+      const totalAmount = donationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+      const pending = donationsList.filter(d => d.status === 'PENDING').length;
+      const successful = donationsList.filter(d => d.status === 'SUCCESS').length;
 
       setStats({
-        totalEvents: eventsData.length,
-        activeEvents: eventsData.filter(e => e.isActive).length,
-        totalDonations: donationsData.length,
+        totalEvents: eventsList.length,
+        activeEvents: eventsList.filter(e => e.isActive).length,
+        totalDonations: donationsList.length,
         totalAmount,
         pendingDonations: pending,
         successfulDonations: successful,
       });
     } catch (err) {
       console.error('Failed to load dashboard:', err);
+      setError('Failed to load dashboard data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -81,11 +84,29 @@ export default function AdminDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="text-center max-w-md mx-auto px-4">
+          <AlertTriangle className="w-10 h-10 mx-auto mb-3" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard failed to load</h2>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <button
+            onClick={loadDashboardData}
+            className="px-6 py-3 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center animate-fadeIn">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
           <div>
             <h1 className="text-4xl font-bold mb-2">
               <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
@@ -103,7 +124,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl shadow-lg p-6 card-hover animate-fadeIn">
             <div className="flex items-center justify-between">
               <div>
@@ -111,7 +132,7 @@ export default function AdminDashboard() {
                 <p className="text-4xl font-bold">{stats.totalEvents}</p>
                 <p className="text-blue-100 text-xs mt-1">{stats.activeEvents} active</p>
               </div>
-              <div className="text-5xl opacity-80">🎯</div>
+              <Target className="w-12 h-12 opacity-80" />
             </div>
           </div>
 
@@ -122,7 +143,7 @@ export default function AdminDashboard() {
                 <p className="text-4xl font-bold">{formatCurrency(stats.totalAmount)}</p>
                 <p className="text-green-100 text-xs mt-1">{stats.totalDonations} donations</p>
               </div>
-              <div className="text-5xl opacity-80">💰</div>
+              <DollarSign className="w-12 h-12 opacity-80" />
             </div>
           </div>
 
@@ -133,7 +154,7 @@ export default function AdminDashboard() {
                 <p className="text-4xl font-bold">{stats.successfulDonations}</p>
                 <p className="text-purple-100 text-xs mt-1">Completed donations</p>
               </div>
-              <div className="text-5xl opacity-80">✅</div>
+              <CheckCircle className="w-12 h-12 opacity-80" />
             </div>
           </div>
 
@@ -150,14 +171,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
           <Link
             href="/admin/events"
             className="bg-white rounded-2xl shadow-lg p-6 card-hover animate-fadeIn group"
             style={{ animationDelay: '0.4s' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">📋</div>
+              <ClipboardList className="w-10 h-10" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   Manage Events
@@ -168,12 +189,28 @@ export default function AdminDashboard() {
           </Link>
 
           <Link
+            href="/admin/events/verification"
+            className="bg-white rounded-2xl shadow-lg p-6 card-hover animate-fadeIn group"
+            style={{ animationDelay: '0.45s' }}
+          >
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl">📋</div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                  Verify Events
+                </h3>
+                <p className="text-sm text-gray-600">Review event applications</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
             href="/admin/donations"
             className="bg-white rounded-2xl shadow-lg p-6 card-hover animate-fadeIn group"
             style={{ animationDelay: '0.5s' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">💳</div>
+              <CreditCard className="w-10 h-10" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   Review Donations
@@ -236,7 +273,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-8 animate-fadeIn" style={{ animationDelay: '0.7s' }}>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <span className="mr-2">📊</span>
+              <BarChart3 className="w-5 h-5 inline-block mr-2 align-middle" />
               Recent Donations
             </h2>
             <Link
@@ -251,7 +288,31 @@ export default function AdminDashboard() {
             <div className="text-center py-8 text-gray-500">No donations yet</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <div className="md:hidden space-y-3 p-4">
+                {recentDonations.map((donation) => (
+                  <div key={`mobile-${donation.id}`} className="bg-gray-50 rounded-xl p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-900">
+                        {donation.anonymous ? '🕵️ Anonymous' : donation.userName || 'User'}
+                      </span>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        donation.status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
+                        donation.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {donation.status}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 truncate">{donation.eventTitle || `Event #${donation.eventId}`}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-primary-600">{formatCurrency(donation.amount)}</span>
+                      <span className="text-xs text-gray-500">{formatDate(donation.createdAt)}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">{donation.paymentMethod}</div>
+                  </div>
+                ))}
+              </div>
+              <table className="min-w-full divide-y divide-gray-200 hidden md:table">
                 <thead>
                   <tr className="bg-gray-50">
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Donor</th>
@@ -301,7 +362,7 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 animate-fadeIn" style={{ animationDelay: '0.8s' }}>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-              <span className="mr-2">🏆</span>
+              <Trophy className="w-5 h-5 inline-block mr-2 align-middle" />
               Top Events
             </h2>
             <Link
@@ -321,8 +382,8 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-900">{event.title}</h4>
                     <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
-                      <span>💰 {formatCurrency(event.currentAmount)} raised</span>
-                      <span>🎯 Goal: {formatCurrency(event.targetAmount)}</span>
+                      <span><DollarSign className="w-4 h-4 inline-block mr-1 align-middle" />{formatCurrency(event.currentAmount)} raised</span>
+                      <span><Target className="w-4 h-4 inline-block mr-1 align-middle" />Goal: {formatCurrency(event.targetAmount)}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">

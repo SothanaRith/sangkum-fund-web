@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
+import { Scale, Calendar, ClipboardList, User, AlertTriangle, Target, CheckCircle, Trash2, Heart, Handshake, CreditCard, DollarSign, PauseCircle, Mail, Building2 } from 'lucide-react';
 
 export default function TermsOfService() {
     const [activeSection, setActiveSection] = useState('introduction');
@@ -34,7 +35,7 @@ export default function TermsOfService() {
                 <div className="max-w-7xl mx-auto relative">
                     <div className="text-center text-white">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full mb-6">
-                            <span className="text-lg">⚖️</span>
+                            <span className="text-lg"><Scale className="w-5 h-5 inline-block align-middle" /></span>
                             <span className="text-sm font-medium">Legal Terms</span>
                         </div>
 
@@ -48,10 +49,10 @@ export default function TermsOfService() {
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                             <div className="text-sm text-orange-200 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                                📅 Last Updated: {lastUpdated}
+                                <Calendar className="w-4 h-4 inline-block mr-1 align-middle" /> Last Updated: {lastUpdated}
                             </div>
                             <div className="text-sm text-orange-200 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full">
-                                ⚖️ Effective: {effectiveDate}
+                                <Scale className="w-4 h-4 inline-block mr-1 align-middle" /> Effective: {effectiveDate}
                             </div>
                         </div>
                     </div>
@@ -88,7 +89,7 @@ export default function TermsOfService() {
                             <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to SangKumFund</h2>
 
                             <div className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-2xl border border-orange-200 mb-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-2">📋 Quick Summary</h3>
+                                <h3 className="text-lg font-bold text-gray-900 mb-2"><ClipboardList className="w-5 h-5 inline-block mr-2 align-middle" /> Quick Summary</h3>
                                 <p className="text-gray-700">
                                     SangKumFund is a crowdfunding platform that connects donors with individuals and organizations
                                     seeking funding for various causes in Cambodia. By using our platform, you agree to these Terms.
@@ -104,7 +105,7 @@ export default function TermsOfService() {
 
                             <div className="grid md:grid-cols-2 gap-6 mt-8">
                                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                    <div className="text-3xl mb-3">👤</div>
+                                    <div className="mb-3"><User className="w-10 h-10 mb-3" /></div>
                                     <h4 className="font-bold text-gray-900 mb-2">For Users</h4>
                                     <p className="text-sm text-gray-600">
                                         These terms apply to all users, including donors, campaign creators, and visitors.
@@ -121,7 +122,7 @@ export default function TermsOfService() {
 
                             <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl border border-blue-200">
                                 <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                                    <span>⚠️</span>
+                                    <span><AlertTriangle className="w-5 h-5 inline-block mr-2 align-middle" /></span>
                                     <span>Important Note</span>
                                 </h3>
                                 <p className="text-gray-700">
@@ -216,7 +217,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-orange-200">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xl">💰</span>
+                                            <span className="text-xl"><DollarSign className="w-5 h-5 inline-block align-middle" /></span>
                                             <div>
                                                 <h4 className="font-medium text-gray-900">Fees Policy</h4>
                                                 <p className="text-sm text-gray-600">Information about platform and payment fees</p>
@@ -231,7 +232,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-orange-200">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xl">🎯</span>
+                                            <span className="text-xl"><Target className="w-5 h-5 inline-block align-middle" /></span>
                                             <div>
                                                 <h4 className="font-medium text-gray-900">Campaign Guidelines</h4>
                                                 <p className="text-sm text-gray-600">Rules for creating and running campaigns</p>
@@ -261,7 +262,7 @@ export default function TermsOfService() {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                                        <div className="text-3xl mb-3">👤</div>
+                                        <div className="mb-3"><User className="w-10 h-10 mb-3" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Donors</h4>
                                         <p className="text-gray-600">
                                             Must be at least <strong>18 years old</strong> to make donations.
@@ -269,7 +270,7 @@ export default function TermsOfService() {
                                         </p>
                                     </div>
                                     <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                                        <div className="text-3xl mb-3">🎯</div>
+                                        <div className="mb-3"><Target className="w-10 h-10 mb-3" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Campaign Creators</h4>
                                         <p className="text-gray-600">
                                             Must be at least <strong>18 years old</strong> to create campaigns.
@@ -307,7 +308,7 @@ export default function TermsOfService() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-2xl text-amber-500">⚠️</span>
+                                        <span><AlertTriangle className="w-6 h-6 inline-block mr-2 align-middle text-amber-500" /></span>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Restricted Regions</h4>
                                             <p className="text-gray-600 text-sm">
@@ -444,7 +445,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-5 bg-white rounded-xl border border-gray-200">
-                                        <div className="text-3xl mb-3 text-green-500">✅</div>
+                                        <div className="mb-3"><CheckCircle className="w-10 h-10 mb-3 text-green-500" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Required Actions</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Keep contact information current</li>
@@ -461,7 +462,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <span className="text-amber-600">⚠️</span>
+                                            <span><AlertTriangle className="w-6 h-6 inline-block mr-2 align-middle text-amber-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Account Dormancy</h4>
@@ -473,7 +474,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                            <span className="text-red-600">🗑️</span>
+                                            <span><Trash2 className="w-6 h-6 inline-block mr-2 align-middle text-red-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Account Deletion</h4>
@@ -500,7 +501,7 @@ export default function TermsOfService() {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                                        <div className="text-3xl mb-3">❤️</div>
+                                        <div className="mb-3"><Heart className="w-10 h-10 mb-3" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Medical & Emergency</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Medical treatment costs</li>
@@ -520,7 +521,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-                                        <div className="text-3xl mb-3">🤝</div>
+                                        <div className="mb-3"><Handshake className="w-10 h-10 mb-3" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Community Projects</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Community development</li>
@@ -634,7 +635,7 @@ export default function TermsOfService() {
                                 <div className="space-y-6">
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div className="p-5 bg-white rounded-xl border border-gray-200">
-                                            <div className="text-3xl mb-3">💳</div>
+                                            <div className="mb-3"><CreditCard className="w-10 h-10 mb-3" /></div>
                                             <h4 className="font-bold text-gray-900 mb-2">Payment Methods</h4>
                                             <ul className="text-sm text-gray-600 space-y-1">
                                                 <li>• Credit/Debit Cards</li>
@@ -644,7 +645,7 @@ export default function TermsOfService() {
                                             </ul>
                                         </div>
                                         <div className="p-5 bg-white rounded-xl border border-gray-200">
-                                            <div className="text-3xl mb-3">💰</div>
+                                            <div className="mb-3"><DollarSign className="w-10 h-10 mb-3" /></div>
                                             <h4 className="font-bold text-gray-900 mb-2">Currencies</h4>
                                             <ul className="text-sm text-gray-600 space-y-1">
                                                 <li>• USD (United States Dollar)</li>
@@ -714,7 +715,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <span className="text-amber-600">⚠️</span>
+                                            <span><AlertTriangle className="w-6 h-6 inline-block mr-2 align-middle text-amber-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Personal Campaigns</h4>
@@ -799,7 +800,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <span className="text-amber-600">⚠️</span>
+                                            <span><AlertTriangle className="w-6 h-6 inline-block mr-2 align-middle text-amber-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Warning & Correction</h4>
@@ -810,7 +811,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                                            <span className="text-orange-600">⏸️</span>
+                                            <span><PauseCircle className="w-6 h-6 inline-block mr-2 align-middle text-orange-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Suspension</h4>
@@ -832,7 +833,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                                            <span className="text-purple-600">⚖️</span>
+                                            <span><Scale className="w-6 h-6 inline-block mr-2 align-middle text-purple-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Legal Action</h4>
@@ -926,7 +927,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <span className="text-amber-600">📧</span>
+                                            <span><Mail className="w-6 h-6 inline-block mr-2 align-middle text-amber-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Infringement Reports</h4>
@@ -1038,7 +1039,7 @@ export default function TermsOfService() {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="p-5 bg-white rounded-xl border border-gray-200">
-                                        <div className="text-3xl mb-3">👤</div>
+                                        <div className="mb-3"><User className="w-10 h-10 mb-3" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">User Termination</h4>
                                         <p className="text-sm text-gray-600">
                                             You may terminate your account at any time by requesting deletion
@@ -1046,7 +1047,7 @@ export default function TermsOfService() {
                                         </p>
                                     </div>
                                     <div className="p-5 bg-white rounded-xl border border-gray-200">
-                                        <div className="text-3xl mb-3">🏢</div>
+                                        <div className="mb-3"><Building2 className="w-10 h-10 mb-3" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">SangKumFund Termination</h4>
                                         <p className="text-sm text-gray-600">
                                             We may suspend or terminate your access to the Platform at our discretion,
@@ -1091,7 +1092,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <span className="text-blue-600">📧</span>
+                                            <span><Mail className="w-6 h-6 inline-block mr-2 align-middle text-blue-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Appeal Submission</h4>
@@ -1184,7 +1185,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                            <span className="text-red-600">⚖️</span>
+                                            <span><Scale className="w-6 h-6 inline-block mr-2 align-middle text-red-600" /></span>
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Intellectual Property Disputes</h4>
@@ -1219,7 +1220,7 @@ export default function TermsOfService() {
                         <div className="space-y-8">
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                                    <div className="text-4xl mb-4">📧</div>
+                                    <div className="mb-4"><Mail className="w-10 h-10 mb-3 mx-auto" /></div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">General Inquiries</h3>
                                     <p className="text-gray-600 mb-4">
                                         For questions about these Terms or other platform matters.
@@ -1247,7 +1248,7 @@ export default function TermsOfService() {
                                 <h3 className="text-xl font-bold text-gray-900 mb-4">Mailing Address</h3>
                                 <div className="p-5 bg-gray-50 rounded-xl border border-gray-200">
                                     <div className="flex items-start gap-3">
-                                        <span className="text-2xl mt-1">🏢</span>
+                                        <span><Building2 className="w-6 h-6 inline-block mr-2 align-middle mt-1" /></span>
                                         <div>
                                             <p className="font-bold text-gray-900">SangKumFund Legal Department</p>
                                             <p className="text-gray-600">Building 123, Street 456</p>

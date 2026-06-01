@@ -18,12 +18,12 @@ export default function MapPicker({ isOpen, onClose, onSelectLocation, initialLa
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white shadow-2xl w-full h-full sm:h-auto sm:rounded-2xl sm:max-w-4xl sm:max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-primary-600 to-purple-600 text-white p-6">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
                 <MapPin className="w-7 h-7" /> Select Event Location
               </h2>
               <p className="text-sm text-white/80 mt-1">Click on the map to set coordinates</p>
@@ -50,7 +50,7 @@ export default function MapPicker({ isOpen, onClose, onSelectLocation, initialLa
 
         {/* Footer */}
         <div className="bg-gray-50 p-4 border-t border-gray-200">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <p className="text-sm text-gray-600 flex items-center gap-1">
               <Lightbulb className="w-4 h-4" /> Tip: Click anywhere on the map to set your event location
             </p>

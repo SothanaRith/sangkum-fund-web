@@ -4,25 +4,42 @@ import {
   AlertTriangle,
   Bell,
   Check,
-  CheckCircle,
-  CloudUpload,
   Frown,
-  Image,
-  KeyRound,
   Link2,
-  Loader2,
   Lock,
-  Monitor,
-  Save,
   Settings as SettingsIcon,
   Shield,
   ShieldCheck,
-  Smartphone,
   User,
   ArrowRight,
 } from 'lucide-react';
 import { settingsAPI, userAPI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+
+import ProfileSettings from '../components/ProfileSettings';
+import NotificationSettings from '../components/NotificationSettings';
+import PrivacySettings from '../components/PrivacySettings';
+import SecuritySettings from '../components/SecuritySettings';
+import IntegrationSettings from '../components/IntegrationSettings';
+
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return 'Unknown';
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInMinutes = Math.floor((now - date) / 60000);
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+};
+
+const formatJoinedDate = (dateString) => {
+  if (!dateString) return 'Unknown';
+  return new Date(dateString).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+};
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -109,12 +126,12 @@ export default function SettingsPage() {
       setPreviewUrl(userData.avatar || null);
 
       if (settingsData) {
-        setSettings(settingsData);
-        setNotificationSettings(settingsData.notifications || notificationSettings);
-        setPrivacySettings(settingsData.privacy || privacySettings);
-        setSecuritySettings(settingsData.security || securitySettings);
-        setTelegramConnected(!!settingsData.telegramId);
-        setTwoFactorEnabled(!!settingsData.twoFactorEnabled);
+        // We don't have setSettings anymore or it's not needed, but keeping if it was there
+        setNotificationSettings(settingsData.notificationSettings || notificationSettings);
+        setPrivacySettings(settingsData.privacySettings || privacySettings);
+        setSecuritySettings(settingsData.securitySettings || securitySettings);
+        setTelegramConnected(settingsData.telegramSettings?.connected || false);
+        setTwoFactorEnabled(settingsData.securitySettings?.twoFactorEnabled || false);
       }
     } catch (err) {
       console.error('Failed to load settings:', err);
@@ -215,7 +232,9 @@ export default function SettingsPage() {
 
     try {
       setSaving(true);
-      await settingsAPI.toggleTwoFactor(!twoFactorEnabled);
+      const updatedSecurity = { ...securitySettings, twoFactorEnabled: !twoFactorEnabled };
+      await settingsAPI.update({ securitySettings: updatedSecurity });
+      setSecuritySettings(updatedSecurity);
       setTwoFactorEnabled(!twoFactorEnabled);
       showToast(
           twoFactorEnabled
@@ -287,10 +306,12 @@ export default function SettingsPage() {
                   <p className="text-sm text-gray-500">{profileData.email}</p>
                 </div>
                 <div className="relative">
-                  <img
+                  <Image
                       src={previewUrl || `https://ui-avatars.com/api/?name=${profileData.name}&background=orange`}
                       alt="Profile"
-                      className="w-12 h-12 rounded-full border-2 border-orange-300"
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 rounded-full border-2 border-orange-300 object-cover"
                   />
                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
                 </div>
@@ -336,16 +357,22 @@ export default function SettingsPage() {
                   <h3 className="font-semibold text-gray-900 mb-3">Account Status</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Role</span>
+                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${user?.role === 'ADMIN' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
+                        {user?.role || 'USER'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Joined</span>
-                      <span className="text-sm font-medium">Jan 2024</span>
+                      <span className="text-sm font-medium">{user?.createdAt ? formatJoinedDate(user.createdAt) : 'Unknown'}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Active Sessions</span>
-                      <span className="text-sm font-medium text-green-600">2</span>
+                      <span className="text-sm font-medium text-green-600">1</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Last Login</span>
-                      <span className="text-sm font-medium">2 hours ago</span>
+                      <span className="text-sm font-medium">{user?.lastLoginAt ? formatTimeAgo(user.lastLoginAt) : 'Unknown'}</span>
                     </div>
                   </div>
                 </div>
@@ -357,556 +384,48 @@ export default function SettingsPage() {
               <AnimatePresence mode="wait">
                 {/* Profile Tab */}
                 {activeTab === 'profile' && (
-                    <motion.div
-                        key="profile"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-white rounded-2xl shadow-xl p-8"
-                    >
-                      <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-2xl font-bold text-gray-900">Profile Information</h2>
-                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
-                      Public Profile
-                    </span>
-                      </div>
-
-                      <div className="grid md:grid-cols-2 gap-8">
-                        {/* Left Column */}
-                        <div>
-                          {/* Avatar Upload */}
-                          <div className="mb-8">
-                            <label className="block text-gray-700 font-semibold mb-4">Profile Picture</label>
-                            <div className="flex flex-col items-center space-y-4">
-                              <div className="relative">
-                                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
-                                  {previewUrl ? (
-                                      <img
-                                          src={previewUrl}
-                                          alt="Profile"
-                                          className="w-full h-full object-cover"
-                                      />
-                                  ) : (
-                                      <div className="w-full h-full bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center text-white text-4xl font-bold">
-                                        {profileData.name?.charAt(0)?.toUpperCase() || '?'}
-                                      </div>
-                                  )}
-                                </div>
-                                {uploading && (
-                                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-                                    </div>
-                                )}
-                              </div>
-
-                              <div className="text-center">
-                                <input
-                                    type="file"
-                                    id="avatar-upload"
-                                    accept="image/*"
-                                    onChange={handleAvatarUpload}
-                                    className="hidden"
-                                    disabled={uploading}
-                                />
-                                <label
-                                    htmlFor="avatar-upload"
-                                    className={`inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-md cursor-pointer ${
-                                        uploading ? 'opacity-50 cursor-not-allowed' : ''
-                                    }`}
-                                >
-                                  {uploading ? (
-                                    <CloudUpload className="w-5 h-5" />
-                                  ) : (
-                                    <Image className="w-5 h-5" />
-                                  )}
-                                  {uploading ? 'Uploading...' : 'Change Photo'}
-                                </label>
-                                <p className="text-sm text-gray-500 mt-2">
-                                  JPG, PNG or GIF. Max size 5MB.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Bio */}
-                          <div>
-                            <label className="block text-gray-700 font-semibold mb-3">Bio</label>
-                            <textarea
-                                value={profileData.bio}
-                                onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-                                rows="4"
-                                placeholder="Tell us about yourself..."
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                            />
-                            <p className="text-sm text-gray-500 mt-2">Max 500 characters</p>
-                          </div>
-                        </div>
-
-                        {/* Right Column */}
-                        <div className="space-y-6">
-                          <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Full Name</label>
-                            <input
-                                type="text"
-                                value={profileData.name}
-                                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Email Address</label>
-                            <input
-                                type="email"
-                                value={profileData.email}
-                                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Phone Number</label>
-                            <div className="flex gap-3">
-                              <select className="px-3 py-3 rounded-xl border-2 border-gray-200 bg-gray-50">
-                                <option>+855</option>
-                                <option>+1</option>
-                              </select>
-                              <input
-                                  type="tel"
-                                  value={profileData.phone}
-                                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                                  placeholder="123 456 789"
-                                  className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Location</label>
-                            <input
-                                type="text"
-                                value={profileData.location}
-                                onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
-                                placeholder="Phnom Penh, Cambodia"
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-gray-700 font-semibold mb-2">Website</label>
-                            <input
-                                type="url"
-                                value={profileData.website}
-                                onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
-                                placeholder="https://example.com"
-                                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-8 pt-8 border-t border-gray-100 flex justify-end">
-                        <button
-                            onClick={handleSaveProfile}
-                            disabled={saving}
-                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg disabled:opacity-50"
-                        >
-                          {saving ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <Save className="w-5 h-5" />
-                          )}
-                          {saving ? 'Saving Changes...' : 'Save Profile'}
-                        </button>
-                      </div>
-                    </motion.div>
+                  <ProfileSettings
+                    profileData={profileData}
+                    setProfileData={setProfileData}
+                    previewUrl={previewUrl}
+                    uploading={uploading}
+                    handleAvatarUpload={handleAvatarUpload}
+                    handleSaveProfile={handleSaveProfile}
+                    saving={saving}
+                  />
                 )}
 
                 {/* Notifications Tab */}
                 {activeTab === 'notifications' && (
-                    <motion.div
-                        key="notifications"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-white rounded-2xl shadow-xl p-8"
-                    >
-                      <h2 className="text-2xl font-bold text-gray-900 mb-8">Notification Preferences</h2>
-
-                      <div className="space-y-6">
-                        {/* Email Notifications */}
-                        <div className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl">
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <h3 className="font-bold text-gray-900 text-lg">Email Notifications</h3>
-                              <p className="text-gray-600 text-sm">Receive updates via email</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.emailNotifications}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        emailNotifications: e.target.checked,
-                                      })
-                                  }
-                                  className="sr-only peer"
-                              />
-                              <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                            </label>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4 pl-4">
-                            <label className="flex items-center gap-2">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.donationAlerts}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        donationAlerts: e.target.checked,
-                                      })
-                                  }
-                                  className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-                              />
-                              <span className="text-gray-700">Donation Alerts</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.milestoneNotifications}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        milestoneNotifications: e.target.checked,
-                                      })
-                                  }
-                                  className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-                              />
-                              <span className="text-gray-700">Milestones</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.eventUpdates}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        eventUpdates: e.target.checked,
-                                      })
-                                  }
-                                  className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-                              />
-                              <span className="text-gray-700">Event Updates</span>
-                            </label>
-                            <label className="flex items-center gap-2">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.weeklyDigest}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        weeklyDigest: e.target.checked,
-                                      })
-                                  }
-                                  className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-                              />
-                              <span className="text-gray-700">Weekly Digest</span>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* Push Notifications */}
-                        <div className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl">
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <h3 className="font-bold text-gray-900 text-lg">Push Notifications</h3>
-                              <p className="text-gray-600 text-sm">Browser and mobile notifications</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.pushNotifications}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        pushNotifications: e.target.checked,
-                                      })
-                                  }
-                                  className="sr-only peer"
-                              />
-                              <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                            </label>
-                          </div>
-                        </div>
-
-                        {/* SMS Notifications */}
-                        <div className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <h3 className="font-bold text-gray-900 text-lg">SMS Notifications</h3>
-                              <p className="text-gray-600 text-sm">Receive text messages for important updates</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                  type="checkbox"
-                                  checked={notificationSettings.smsNotifications}
-                                  onChange={(e) =>
-                                      setNotificationSettings({
-                                        ...notificationSettings,
-                                        smsNotifications: e.target.checked,
-                                      })
-                                  }
-                                  className="sr-only peer"
-                              />
-                              <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-8 pt-8 border-t border-gray-100 flex justify-end">
-                        <button
-                            onClick={() => handleSaveSettings('notifications', notificationSettings)}
-                            disabled={saving}
-                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg disabled:opacity-50"
-                        >
-                          <span className="inline-flex items-center gap-2">
-                            {saving ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Save className="w-4 h-4" />
-                            )}
-                            {saving ? 'Saving...' : 'Save Preferences'}
-                          </span>
-                        </button>
-                      </div>
-                    </motion.div>
+                  <NotificationSettings
+                    notificationSettings={notificationSettings}
+                    setNotificationSettings={setNotificationSettings}
+                    handleSaveSettings={handleSaveSettings}
+                    saving={saving}
+                  />
                 )}
 
                 {/* Privacy Tab */}
                 {activeTab === 'privacy' && (
-                    <div className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Privacy Settings</h2>
-
-                      <div className="space-y-6">
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-gray-900">Show my donations publicly</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                  type="checkbox"
-                                  checked={privacySettings.showDonations}
-                                  onChange={(e) =>
-                                      setPrivacySettings({ ...privacySettings, showDonations: e.target.checked })
-                                  }
-                                  className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                            </label>
-                          </div>
-                          <p className="text-sm text-gray-600">Your donations will be visible on event pages</p>
-                        </div>
-
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-gray-900">Allow anonymous donations</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                  type="checkbox"
-                                  checked={privacySettings.allowAnonymous}
-                                  onChange={(e) =>
-                                      setPrivacySettings({ ...privacySettings, allowAnonymous: e.target.checked })
-                                  }
-                                  className="sr-only peer"
-                              />
-                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                            </label>
-                          </div>
-                          <p className="text-sm text-gray-600">Option to donate anonymously</p>
-                        </div>
-
-                        <div>
-                          <label className="block text-gray-700 font-semibold mb-3">Profile Visibility</label>
-                          <select
-                              value={privacySettings.profileVisibility}
-                              onChange={(e) =>
-                                  setPrivacySettings({ ...privacySettings, profileVisibility: e.target.value })
-                              }
-                              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none"
-                          >
-                            <option value="PUBLIC">Public - Anyone can view</option>
-                            <option value="PRIVATE">Private - Only you</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <button
-                          onClick={() => handleSaveSettings({ ...settings, privacy: privacySettings })}
-                          disabled={saving}
-                          className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50"
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          {saving ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Save className="w-4 h-4" />
-                          )}
-                          {saving ? 'Saving...' : 'Save Privacy Settings'}
-                        </span>
-                      </button>
-                    </div>
+                  <PrivacySettings
+                    privacySettings={privacySettings}
+                    setPrivacySettings={setPrivacySettings}
+                    handleSaveSettings={handleSaveSettings}
+                    saving={saving}
+                  />
                 )}
 
                 {/* Security Tab */}
                 {activeTab === 'security' && (
-                    <motion.div
-                        key="security"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="bg-white rounded-2xl shadow-xl p-8"
-                    >
-                      <h2 className="text-2xl font-bold text-gray-900 mb-8">Security Settings</h2>
-
-                      <div className="space-y-6">
-                        {/* Two-Factor Authentication */}
-                        <div className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-200">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <KeyRound className="w-6 h-6 text-orange-600" />
-                                <h3 className="font-bold text-gray-900 text-lg">Two-Factor Authentication</h3>
-                                <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                    twoFactorEnabled
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-red-100 text-red-800'
-                                }`}>
-                              {twoFactorEnabled ? 'Enabled' : 'Disabled'}
-                            </span>
-                              </div>
-                              <p className="text-gray-600 mb-4">
-                                Add an extra layer of security to your account. When enabled, you'll need to enter a verification code from your authenticator app.
-                              </p>
-
-                              {twoFactorEnabled ? (
-                                  <div className="space-y-4">
-                                    <div className="p-4 bg-white rounded-xl border border-green-200">
-                                      <p className="text-green-700 font-medium mb-2 inline-flex items-center gap-2">
-                                        <CheckCircle className="w-4 h-4" />
-                                        2FA is active on your account
-                                      </p>
-                                      <p className="text-sm text-gray-600">Last used: Today at 14:30</p>
-                                    </div>
-                                    <button
-                                        onClick={handleTwoFactorToggle}
-                                        disabled={saving}
-                                        className="px-5 py-2.5 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 transition-colors"
-                                    >
-                                      Disable 2FA
-                                    </button>
-                                  </div>
-                              ) : (
-                                  <button
-                                      onClick={handleTwoFactorToggle}
-                                      disabled={saving}
-                                      className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-md"
-                                  >
-                                    Enable Two-Factor Authentication
-                                  </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Session Management */}
-                        <div className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl">
-                          <h3 className="font-bold text-gray-900 text-lg mb-4">Session Management</h3>
-
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-medium text-gray-900">Login Alerts</p>
-                                <p className="text-sm text-gray-600">Get notified of new sign-ins</p>
-                              </div>
-                              <label className="relative inline-flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={securitySettings.loginAlerts}
-                                    onChange={(e) =>
-                                        setSecuritySettings({ ...securitySettings, loginAlerts: e.target.checked })
-                                    }
-                                    className="sr-only peer"
-                                />
-                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                              </label>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-medium text-gray-900">Auto Logout</p>
-                                <p className="text-sm text-gray-600">Session timeout duration</p>
-                              </div>
-                              <select
-                                  value={securitySettings.sessionTimeout}
-                                  onChange={(e) =>
-                                      setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(e.target.value) })
-                                  }
-                                  className="px-4 py-2 rounded-lg border border-gray-300 bg-white"
-                              >
-                                <option value={15}>15 minutes</option>
-                                <option value={60}>1 hour</option>
-                                <option value={480}>8 hours</option>
-                                <option value={1440}>24 hours</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Active Sessions */}
-                        <div className="p-6 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-gray-900 text-lg">Active Sessions</h3>
-                            <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">
-                              View All
-                            </button>
-                          </div>
-
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                                  <Monitor className="w-4 h-4 text-orange-600" />
-                                </div>
-                                <div>
-                                  <p className="font-medium">Chrome on Windows</p>
-                                  <p className="text-sm text-gray-500">Phnom Penh, KH • Now</p>
-                                </div>
-                              </div>
-                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                            Current
-                          </span>
-                            </div>
-
-                            <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                  <Smartphone className="w-4 h-4 text-gray-600" />
-                                </div>
-                                <div>
-                                  <p className="font-medium">Safari on iPhone</p>
-                                  <p className="text-sm text-gray-500">2 hours ago</p>
-                                </div>
-                              </div>
-                              <button className="text-sm text-red-600 hover:text-red-700">
-                                Revoke
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
+                  <SecuritySettings
+                    user={user}
+                    securitySettings={securitySettings}
+                    setSecuritySettings={setSecuritySettings}
+                    handleSaveSettings={handleSaveSettings}
+                    twoFactorEnabled={twoFactorEnabled}
+                    handleTwoFactorToggle={handleTwoFactorToggle}
+                    saving={saving}
+                  />
                 )}
 
                 {/* Verification Tab */}
@@ -1006,64 +525,11 @@ export default function SettingsPage() {
 
                 {/* Integrations Tab */}
                 {activeTab === 'integrations' && (
-                    <div className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Integrations</h2>
-
-                      {/* Telegram */}
-                      <div className="border border-gray-200 rounded-xl p-6 mb-4">
-                        <div className="flex items-start gap-4">
-                          <div className="text-5xl">
-                            <Smartphone className="w-10 h-10 text-orange-600" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Telegram Bot</h3>
-                            <p className="text-gray-600 mb-4">
-                              Receive instant notifications on Telegram for donations, milestones, and updates.
-                            </p>
-
-                            {telegramConnected ? (
-                                <div className="flex items-center gap-4">
-                          <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg font-semibold">
-                            <Check className="w-4 h-4" />
-                            Connected
-                          </span>
-                                  <button
-                                      onClick={handleDisconnectTelegram}
-                                      className="px-6 py-2 bg-red-100 text-red-700 rounded-lg font-semibold hover:bg-red-200 transition-colors"
-                                  >
-                                    Disconnect
-                                  </button>
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={handleConnectTelegram}
-                                    className="px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-md"
-                                >
-                                  Connect Telegram
-                                </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Coming Soon */}
-                      <div className="border border-gray-200 rounded-xl p-6 opacity-50">
-                        <div className="flex items-start gap-4">
-                          <div className="text-5xl grayscale">
-                            <Link2 className="w-10 h-10 text-gray-500" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">More Integrations</h3>
-                            <p className="text-gray-600 mb-4">
-                              Slack, Discord, and Webhook integrations coming soon!
-                            </p>
-                            <span className="inline-block px-4 py-2 bg-gray-100 text-gray-600 rounded-lg font-semibold">
-                        Coming Soon
-                      </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <IntegrationSettings
+                    telegramConnected={telegramConnected}
+                    handleDisconnectTelegram={handleDisconnectTelegram}
+                    handleConnectTelegram={handleConnectTelegram}
+                  />
                 )}
 
                 {/* Danger Zone */}

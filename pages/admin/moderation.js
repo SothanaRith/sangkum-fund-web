@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
 import { eventsAPI, charitiesAPI, userAPI } from '@/lib/api';
 import { eventModerationAPI, charityModerationAPI, userModerationAPI } from '@/lib/moderation-api';
+import Toast from '@/components/Toast';
 
 export default function Moderation() {
   const router = useRouter();
@@ -15,6 +16,8 @@ export default function Moderation() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [blockReason, setBlockReason] = useState('');
   const [error, setError] = useState('');
+  const [toast, setToast] = useState(null);
+  const [confirmUnblockId, setConfirmUnblockId] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -43,36 +46,33 @@ export default function Moderation() {
 
   const handleBlockEvent = async (eventId) => {
     if (!blockReason.trim()) {
-      alert('Please provide a reason for blocking');
+      setToast({ type: 'error', message: 'Please provide a reason for blocking' });
       return;
     }
-
-    if (!confirm('Are you sure you want to block this event?')) return;
 
     try {
       setActionLoading(true);
       await eventModerationAPI.blockEvent(eventId, blockReason);
-      alert('Event blocked successfully');
+      setToast({ type: 'success', message: 'Event blocked successfully' });
       setSelectedItem(null);
       setBlockReason('');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to block event');
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to block event' });
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleUnblockEvent = async (eventId) => {
-    if (!confirm('Are you sure you want to unblock this event?')) return;
-
     try {
       setActionLoading(true);
       await eventModerationAPI.unblockEvent(eventId);
-      alert('Event unblocked successfully');
+      setToast({ type: 'success', message: 'Event unblocked successfully' });
+      setConfirmUnblockId(null);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to unblock event');
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to unblock event' });
     } finally {
       setActionLoading(false);
     }
@@ -80,36 +80,33 @@ export default function Moderation() {
 
   const handleBlockCharity = async (charityId) => {
     if (!blockReason.trim()) {
-      alert('Please provide a reason for blocking');
+      setToast({ type: 'error', message: 'Please provide a reason for blocking' });
       return;
     }
-
-    if (!confirm('Are you sure you want to block this charity?')) return;
 
     try {
       setActionLoading(true);
       await charityModerationAPI.blockCharity(charityId, blockReason);
-      alert('Charity blocked successfully');
+      setToast({ type: 'success', message: 'Charity blocked successfully' });
       setSelectedItem(null);
       setBlockReason('');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to block charity');
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to block charity' });
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleUnblockCharity = async (charityId) => {
-    if (!confirm('Are you sure you want to unblock this charity?')) return;
-
     try {
       setActionLoading(true);
       await charityModerationAPI.unblockCharity(charityId);
-      alert('Charity unblocked successfully');
+      setToast({ type: 'success', message: 'Charity unblocked successfully' });
+      setConfirmUnblockId(null);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to unblock charity');
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to unblock charity' });
     } finally {
       setActionLoading(false);
     }
@@ -117,36 +114,33 @@ export default function Moderation() {
 
   const handleBlockUser = async (userId) => {
     if (!blockReason.trim()) {
-      alert('Please provide a reason for blocking');
+      setToast({ type: 'error', message: 'Please provide a reason for blocking' });
       return;
     }
-
-    if (!confirm('Are you sure you want to block this user?')) return;
 
     try {
       setActionLoading(true);
       await userModerationAPI.blockUser(userId, blockReason);
-      alert('User blocked successfully');
+      setToast({ type: 'success', message: 'User blocked successfully' });
       setSelectedItem(null);
       setBlockReason('');
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to block user');
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to block user' });
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleUnblockUser = async (userId) => {
-    if (!confirm('Are you sure you want to unblock this user?')) return;
-
     try {
       setActionLoading(true);
       await userModerationAPI.unblockUser(userId);
-      alert('User unblocked successfully');
+      setToast({ type: 'success', message: 'User unblocked successfully' });
+      setConfirmUnblockId(null);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to unblock user');
+      setToast({ type: 'error', message: err.response?.data?.message || 'Failed to unblock user' });
     } finally {
       setActionLoading(false);
     }
@@ -230,13 +224,31 @@ export default function Moderation() {
 
                         <div className="ml-4">
                           {event.status === 'BLOCKED' ? (
-                            <button
-                              onClick={() => handleUnblockEvent(event.id)}
-                              disabled={actionLoading}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                            >
-                              Unblock
-                            </button>
+                            confirmUnblockId === `event-${event.id}` ? (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleUnblockEvent(event.id)}
+                                  disabled={actionLoading}
+                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm"
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => setConfirmUnblockId(null)}
+                                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setConfirmUnblockId(`event-${event.id}`)}
+                                disabled={actionLoading}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                              >
+                                Unblock
+                              </button>
+                            )
                           ) : selectedItem === `event-${event.id}` ? (
                             <div className="space-y-2">
                               <textarea
@@ -316,13 +328,31 @@ export default function Moderation() {
 
                         <div className="ml-4">
                           {charity.status === 'BLOCKED' ? (
-                            <button
-                              onClick={() => handleUnblockCharity(charity.id)}
-                              disabled={actionLoading}
-                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                            >
-                              Unblock
-                            </button>
+                            confirmUnblockId === `charity-${charity.id}` ? (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleUnblockCharity(charity.id)}
+                                  disabled={actionLoading}
+                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm"
+                                >
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => setConfirmUnblockId(null)}
+                                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setConfirmUnblockId(`charity-${charity.id}`)}
+                                disabled={actionLoading}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                              >
+                                Unblock
+                              </button>
+                            )
                           ) : selectedItem === `charity-${charity.id}` ? (
                             <div className="space-y-2">
                               <textarea
@@ -377,6 +407,7 @@ export default function Moderation() {
           </>
         )}
       </div>
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </Layout>
   );
 }

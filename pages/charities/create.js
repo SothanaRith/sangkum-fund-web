@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { charitiesAPI } from '@/lib/api';
+import { AlertTriangle, Scale, ClipboardList } from 'lucide-react';
 
 export default function CreateCharity() {
   const router = useRouter();
@@ -108,7 +109,7 @@ export default function CreateCharity() {
             {error && (
               <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-200">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">⚠️</span>
+                  <AlertTriangle className="w-6 h-6 inline-block mr-2 align-middle text-red-500" />
                   <div className="text-sm text-red-800 font-medium">{error}</div>
                 </div>
               </div>
@@ -155,8 +156,8 @@ export default function CreateCharity() {
                       <option value="Arts & Culture">🎨 Arts & Culture</option>
                       <option value="Sports">⚽ Sports</option>
                       <option value="Technology">💻 Technology</option>
-                      <option value="Human Rights">⚖️ Human Rights</option>
-                      <option value="Other">📋 Other</option>
+                      <option value="Human Rights"><Scale className="w-4 h-4 inline-block mr-1 align-middle" /> Human Rights</option>
+                      <option value="Other"><ClipboardList className="w-4 h-4 inline-block mr-1 align-middle" /> Other</option>
                     </select>
                   </div>
 

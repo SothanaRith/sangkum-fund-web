@@ -144,10 +144,12 @@ export default function AdminUsers() {
   };
 
   const getStatusBadge = (user) => {
-    if (user.isBlocked) {
+    const isActive = user.active !== undefined ? user.active : user.isActive;
+    const isBlocked = user.isBlocked;
+    if (isBlocked) {
       return <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">Blocked</span>;
     }
-    if (!user.isActive) {
+    if (!isActive) {
       return <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">Inactive</span>;
     }
     return <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">Active</span>;
@@ -168,12 +170,12 @@ export default function AdminUsers() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center animate-fadeIn">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
           <div>
             <Link href="/admin" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-block">
               ← Back to Dashboard
             </Link>
-            <h1 className="text-4xl font-bold flex items-center gap-3">
+            <h1 className="text-2xl sm:text-4xl font-bold flex items-center gap-3">
               <Users className="w-9 h-9 text-primary-600" />
               <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
                 User Management
@@ -210,7 +212,48 @@ export default function AdminUsers() {
         {/* Users Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden animate-fadeIn">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <div className="md:hidden space-y-3 p-4">
+              {users.length > 0 ? users.map((user) => (
+                <div key={`mobile-${user.id}`} className="bg-gray-50 rounded-xl p-4 space-y-3 border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-white font-bold overflow-hidden flex-shrink-0">
+                      {user.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : user.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{user.name}</p>
+                      <p className="text-xs text-gray-500">#{user.id}</p>
+                    </div>
+                    {getStatusBadge(user)}
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700"><Mail className="w-4 h-4 text-gray-400 flex-shrink-0" /><span className="truncate">{user.email}</span></div>
+                    {user.phone && <div className="flex items-center gap-2 text-gray-700"><Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />{user.phone}</div>}
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-1">
+                      {user.isOcrVerified ? <><CheckCircle className="w-4 h-4 text-green-600" /><span className="text-green-700 text-xs font-medium">Verified</span></> : <><AlertCircle className="w-4 h-4 text-gray-400" /><span className="text-gray-500 text-xs">Not Verified</span></>}
+                    </div>
+                    <span className="text-xs text-gray-500">{formatDate(user.createdAt)}</span>
+                  </div>
+                  <div className="flex gap-2 pt-2 border-t border-gray-200">
+                    {(user.active || user.isActive) && !user.isBlocked ? (
+                      <>
+                        <button onClick={() => handleDeactivate(user.id)} disabled={actionLoading[user.id]} className="flex-1 text-xs font-medium py-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 disabled:opacity-50">Deactivate</button>
+                        <button onClick={() => handleBlock(user.id)} disabled={actionLoading[user.id]} className="flex-1 text-xs font-medium py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 disabled:opacity-50">Block</button>
+                      </>
+                    ) : (
+                      <>
+                        {!(user.active || user.isActive) && <button onClick={() => handleActivate(user.id)} disabled={actionLoading[user.id]} className="flex-1 text-xs font-medium py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 disabled:opacity-50">Activate</button>}
+                        {user.isBlocked && <button onClick={() => handleUnblock(user.id)} disabled={actionLoading[user.id]} className="flex-1 text-xs font-medium py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 disabled:opacity-50">Unblock</button>}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )) : (
+                <div className="text-center py-8"><p className="text-gray-500">No users found</p></div>
+              )}
+            </div>
+            <table className="w-full hidden md:table">
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">User</th>
@@ -276,7 +319,7 @@ export default function AdminUsers() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          {user.isActive && !user.isBlocked ? (
+                          {(user.active || user.isActive) && !user.isBlocked ? (
                             <>
                               <button
                                 onClick={() => handleDeactivate(user.id)}
@@ -298,7 +341,7 @@ export default function AdminUsers() {
                             </>
                           ) : (
                             <>
-                              {!user.isActive && (
+                              {!(user.active || user.isActive) && (
                                 <button
                                   onClick={() => handleActivate(user.id)}
                                   disabled={actionLoading[user.id]}
@@ -339,7 +382,7 @@ export default function AdminUsers() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="border-t border-gray-200 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-sm text-gray-600">
                 Page <span className="font-semibold">{currentPage + 1}</span> of{' '}
                 <span className="font-semibold">{totalPages}</span>

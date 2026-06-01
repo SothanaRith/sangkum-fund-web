@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { eventMessagesAPI } from '@/lib/api';
 import { formatTimeAgo } from '@/lib/utils';
 import { Send, Trash2, MessageCircle, Users } from 'lucide-react';
+import Toast from '@/components/Toast';
 
 export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
   const [messages, setMessages] = useState([]);
@@ -9,6 +11,8 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [messageCount, setMessageCount] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -23,18 +27,20 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
       setMessages(response.reverse()); // Reverse to show oldest first
       setTimeout(scrollToBottom, 100);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      // Failed to load messages
     } finally {
       setLoading(false);
     }
   };
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
   const loadMessageCount = async () => {
     try {
       const response = await eventMessagesAPI.getMessageCount(eventId);
       setMessageCount(response.count);
     } catch (error) {
-      console.error('Failed to load message count:', error);
+      // Failed to load message count
     }
   };
 
@@ -66,23 +72,20 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
       setMessageCount(messageCount + 1);
       setTimeout(scrollToBottom, 100);
     } catch (error) {
-      console.error('Failed to send message:', error);
-      alert('Failed to send message. Please try again.');
+      setToast({ type: 'error', message: 'Failed to send message. Please try again.' });
     } finally {
       setSending(false);
     }
   };
 
   const handleDeleteMessage = async (messageId) => {
-    if (!confirm('Are you sure you want to delete this message?')) return;
-
     try {
       await eventMessagesAPI.deleteMessage(eventId, messageId);
       setMessages(messages.filter(msg => msg.id !== messageId));
       setMessageCount(messageCount - 1);
+      setConfirmDeleteId(null);
     } catch (error) {
-      console.error('Failed to delete message:', error);
-      alert('Failed to delete message. Please try again.');
+      setToast({ type: 'error', message: 'Failed to delete message. Please try again.' });
     }
   };
 
@@ -117,7 +120,7 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="flex flex-col items-center justify-center h-full text-gray-500">
             <MessageCircle className="w-16 h-16 mb-4 opacity-20" />
             <p className="text-lg font-medium">No messages yet</p>
             <p className="text-sm">Be the first to start the conversation!</p>
@@ -133,9 +136,11 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
               {/* Avatar */}
               <div className="flex-shrink-0">
                 {message.userAvatar ? (
-                  <img
-                    src={`http://localhost:8080${message.userAvatar}`}
-                    alt={message.userName}
+                  <Image
+                    src={message.userAvatar.startsWith('http') ? message.userAvatar : `${API_URL}${message.userAvatar}`}
+                    alt={message.userName || 'User avatar'}
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
@@ -158,7 +163,7 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
                       </span>
                     )}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-500">
                     {formatTimeAgo(message.createdAt)}
                   </span>
                 </div>
@@ -174,13 +179,20 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
                   
                   {/* Delete Button */}
                   {canDeleteMessage(message) && (
-                    <button
-                      onClick={() => handleDeleteMessage(message.id)}
-                      className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                      title="Delete message"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                    confirmDeleteId === message.id ? (
+                      <div className="absolute -top-6 -right-2 flex gap-1 bg-white shadow rounded p-1 z-10">
+                        <button onClick={() => handleDeleteMessage(message.id)} className="bg-red-500 text-white text-xs px-2 py-1 rounded">Confirm</button>
+                        <button onClick={() => setConfirmDeleteId(null)} className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">Cancel</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmDeleteId(message.id)}
+                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                        title="Delete message"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )
                   )}
                 </div>
               </div>
@@ -226,6 +238,7 @@ export default function EventChatBox({ eventId, currentUser, isEventOwner }) {
           </p>
         </div>
       )}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

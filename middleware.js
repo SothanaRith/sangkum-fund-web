@@ -61,9 +61,16 @@ export function middleware(request) {
   let user = null;
   if (userCookie) {
     try {
+      // Try parsing it directly first
       user = JSON.parse(userCookie);
-    } catch (e) {
-      console.error('Failed to parse user cookie:', e);
+    } catch (e1) {
+      try {
+        // If it fails, try decoding first (in case it was URL encoded)
+        const decodedUser = decodeURIComponent(userCookie);
+        user = JSON.parse(decodedUser);
+      } catch (e2) {
+        console.error('Failed to parse user cookie:', e2);
+      }
     }
   }
 
@@ -92,7 +99,7 @@ export function middleware(request) {
     const requiredRole = PROTECTED_ROUTES[protectedRoute];
 
     // Check authentication
-    if (!accessToken || !user) {
+    if (!accessToken) {
       // Redirect to login with return URL
       const url = request.nextUrl.clone();
       url.pathname = '/auth/login';

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { adminDonationsAPI } from '@/lib/admin-api';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CreditCard, Search } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminDonations() {
   const router = useRouter();
@@ -130,7 +130,7 @@ export default function AdminDonations() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8 flex justify-between items-center animate-fadeIn">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
           <div>
             <Link href="/admin" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-block">
               ← Back to Dashboard
@@ -176,7 +176,7 @@ export default function AdminDonations() {
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilter('all')}
                 className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all ${
@@ -214,7 +214,36 @@ export default function AdminDonations() {
         {/* Donations Table */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <div className="md:hidden space-y-3 p-4">
+              {filteredDonations.map((donation) => (
+                <div key={`mobile-${donation.id}`} className="bg-gray-50 rounded-xl p-4 space-y-2 border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-gray-900 text-sm">
+                      {donation.anonymous ? '🕵️ Anonymous' : donation.userName || 'User'}
+                    </span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusColor(donation.status)}`}>
+                      {donation.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 truncate">{donation.eventTitle || `Event #${donation.eventId}`}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-primary-600">{formatCurrency(donation.amount)}</span>
+                    <span className="text-xs text-gray-500">{donation.paymentMethod}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">{formatDate(donation.createdAt)}</span>
+                    <span className="text-xs text-gray-400 font-mono">#{donation.id}</span>
+                  </div>
+                  {donation.status === 'PENDING' && (
+                    <div className="flex gap-2 pt-2 border-t border-gray-200">
+                      <button onClick={() => handleApprove(donation.id)} disabled={processing[donation.id]} className="flex-1 text-sm text-green-600 font-semibold py-1.5 bg-green-50 rounded-lg hover:bg-green-100 disabled:opacity-50"><CheckCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Approve</button>
+                      <button onClick={() => handleReject(donation.id)} disabled={processing[donation.id]} className="flex-1 text-sm text-red-600 font-semibold py-1.5 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-50"><XCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Reject</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <table className="min-w-full divide-y divide-gray-200 hidden md:table">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
@@ -261,14 +290,14 @@ export default function AdminDonations() {
                             disabled={processing[donation.id]}
                             className="text-green-600 hover:text-green-800 font-semibold disabled:opacity-50"
                           >
-                            ✓ Approve
+                            <CheckCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Approve
                           </button>
                           <button
                             onClick={() => handleReject(donation.id)}
                             disabled={processing[donation.id]}
                             className="text-red-600 hover:text-red-800 font-semibold disabled:opacity-50"
                           >
-                            ✗ Reject
+                            <XCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Reject
                           </button>
                         </div>
                       )}

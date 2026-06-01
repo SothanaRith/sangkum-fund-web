@@ -3,7 +3,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
-  Loader2,
   ChevronRight,
   Calendar,
   User,
@@ -13,6 +12,7 @@ import {
 } from 'lucide-react';
 import { postsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { BlogCardSkeleton } from '@/components/Skeleton';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -62,17 +62,6 @@ export default function Blog() {
       setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50">
-          <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-orange-600 mx-auto mb-4" />
-            <p className="text-gray-600 text-lg font-medium">Loading stories...</p>
-          </div>
-        </div>
-    );
-  }
 
   if (error) {
     return (
@@ -178,7 +167,13 @@ export default function Blog() {
           </div>
 
           {/* Posts Grid */}
-          {posts.length > 0 ? (
+          {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <BlogCardSkeleton key={i} />
+                ))}
+              </div>
+          ) : posts.length > 0 ? (
               <motion.div
                   layout
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"

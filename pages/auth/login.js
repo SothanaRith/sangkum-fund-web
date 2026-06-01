@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { authAPI } from '@/lib/api';
@@ -17,6 +17,9 @@ export default function Login() {
   const [otpSent, setOtpSent] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [isAccountLocked, setIsAccountLocked] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const emailRef = useRef(null);
+  const otpRef = useRef(null);
 
   // Check for error from OAuth redirect
   useEffect(() => {
@@ -33,9 +36,27 @@ export default function Login() {
     }
   }, [resendTimer]);
 
+  // Auto-focus first field on step change (fires on mount for step 1)
+  useEffect(() => {
+    if (step === 1) emailRef.current?.focus();
+    else otpRef.current?.focus();
+  }, [step]);
+
   const handleSendOtp = async (e) => {
     e.preventDefault();
     setError('');
+
+    const emailErr = !formData.email ? 'Email is required'
+      : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) ? 'Please enter a valid email address'
+      : '';
+    const passwordErr = !formData.password ? 'Password is required'
+      : formData.password.length < 6 ? 'Password must be at least 6 characters'
+      : '';
+    if (emailErr || passwordErr) {
+      setFieldErrors({ email: emailErr, password: passwordErr });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -72,12 +93,8 @@ export default function Login() {
         document.cookie = `user=${encodeURIComponent(JSON.stringify(response.user))}; path=/; max-age=86400; SameSite=Lax`;
       }
 
-      // Check if there's a redirect path
       const redirectPath = router.query.redirect || '/';
-      await router.push(redirectPath);
-      
-      // Reload page to refresh all state
-      window.location.reload();
+      window.location.href = redirectPath;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials and try again.';
       setError(errorMessage);
@@ -118,16 +135,27 @@ export default function Login() {
       window.location.href = `${API_URL}/api/auth/oauth2/authorize/google`;
     } catch (err) {
       setError('Google login failed. Please try again.');
-      console.error('Google login error:', err);
       setGoogleLoading(false);
     }
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let error = '';
+    if (name === 'email') {
+      if (!value) error = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Please enter a valid email address';
+    } else if (name === 'password') {
+      if (!value) error = 'Password is required';
+      else if (value.length < 6) error = 'Password must be at least 6 characters';
+    }
+    if (error) setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   return (
@@ -211,16 +239,22 @@ export default function Login() {
                     📧 Email Address
                   </label>
                   <input
+                      ref={emailRef}
                       id="email"
                       name="email"
                       type="email"
                       autoComplete="email"
                       required
-                      className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all bg-white"
+                      className={`appearance-none relative block w-full px-4 py-3 border-2 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 transition-all bg-white ${fieldErrors.email ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-orange-500 focus:ring-orange-100'}`}
                       placeholder="Enter your email"
                       value={formData.email}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      aria-describedby={fieldErrors.email ? 'email-error' : undefined}
                   />
+                  {fieldErrors.email && (
+                    <p id="email-error" className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -240,11 +274,16 @@ export default function Login() {
                       type="password"
                       autoComplete="current-password"
                       required
-                      className="appearance-none relative block w-full px-4 py-3 border-2 border-gray-200 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100 transition-all bg-white"
+                      className={`appearance-none relative block w-full px-4 py-3 border-2 rounded-xl placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 transition-all bg-white ${fieldErrors.password ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-orange-500 focus:ring-orange-100'}`}
                       placeholder="Enter your password"
                       value={formData.password}
                       onChange={handleChange}
+                      onBlur={handleBlur}
+                      aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                   />
+                  {fieldErrors.password && (
+                    <p id="password-error" className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                  )}
                 </div>
               </div>
 
@@ -282,6 +321,7 @@ export default function Login() {
                   🔢 Enter OTP Code
                 </label>
                 <input
+                    ref={otpRef}
                     id="otp"
                     name="otp"
                     type="text"
@@ -329,7 +369,7 @@ export default function Login() {
                 <span className="mx-2 text-gray-300">|</span>
                 <button
                     type="button"
-                    onClick={() => setStep(1)}
+                    onClick={() => { setStep(1); setError(''); setFieldErrors({}); setIsAccountLocked(false); }}
                     className="text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
                 >
                   Change Email
@@ -351,21 +391,6 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Guest Login Option (for demo/testing) */}
-          <div className="text-center">
-            <p className="text-sm text-gray-500 mb-2">Want to try it out?</p>
-            <button
-                onClick={() => {
-                  setFormData({
-                    email: 'demo@sangkumfund.org',
-                    password: 'demo123'
-                  });
-                }}
-                className="text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
-            >
-              Fill demo credentials
-            </button>
-          </div>
         </div>
       </div>
   );

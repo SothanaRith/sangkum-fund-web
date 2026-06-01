@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { notificationsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
+import { NotificationRowSkeleton } from '@/components/Skeleton';
+import Toast from '@/components/Toast';
 
 const notificationIcons = {
   DONATION: Coins,
@@ -38,6 +40,8 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, unread, read
+  const [toast, setToast] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
     loadNotifications();
@@ -62,7 +66,7 @@ export default function NotificationsPage() {
           prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );
     } catch (err) {
-      alert('Failed to mark as read');
+      setToast({ type: 'error', message: 'Failed to mark as read' });
     }
   };
 
@@ -71,18 +75,17 @@ export default function NotificationsPage() {
       await notificationsAPI.markAllAsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     } catch (err) {
-      alert('Failed to mark all as read');
+      setToast({ type: 'error', message: 'Failed to mark all as read' });
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this notification?')) return;
-
     try {
       await notificationsAPI.delete(id);
       setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setConfirmDeleteId(null);
     } catch (err) {
-      alert('Failed to delete notification');
+      setToast({ type: 'error', message: 'Failed to delete notification' });
     }
   };
 
@@ -93,20 +96,6 @@ export default function NotificationsPage() {
   });
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
-
-  if (loading) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 via-amber-50 to-white">
-          <div className="text-center">
-            <div className="relative">
-              <Bell className="w-14 h-14 mb-4 animate-pulse text-orange-600 mx-auto" />
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-orange-600 to-amber-600 rounded-full animate-ping opacity-75"></div>
-            </div>
-            <p className="text-gray-600">Loading notifications...</p>
-          </div>
-        </div>
-    );
-  }
 
   return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-12">
@@ -218,7 +207,13 @@ export default function NotificationsPage() {
           )}
 
           {/* Notifications List */}
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <NotificationRowSkeleton key={i} />
+                ))}
+              </div>
+          ) : filteredNotifications.length === 0 ? (
               <div className="text-center py-16 bg-white rounded-2xl shadow-lg animate-fadeIn border border-gray-100" style={{ animationDelay: '0.2s' }}>
                 <div className="relative inline-block mb-6">
                   <div className="flex items-center justify-center">
@@ -333,15 +328,32 @@ export default function NotificationsPage() {
                                     </span>
                                   </button>
                               )}
-                              <button
-                                  onClick={() => handleDelete(notification.id)}
-                                  className="px-4 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors border border-red-200"
-                              >
-                                <span className="inline-flex items-center gap-2">
-                                  <Trash2 className="w-4 h-4" />
-                                  Delete
-                                </span>
-                              </button>
+                              {confirmDeleteId === notification.id ? (
+                                <div className="flex gap-1 items-center bg-white border border-red-200 rounded-lg px-2">
+                                  <button
+                                      onClick={() => handleDelete(notification.id)}
+                                      className="px-2 py-1 text-red-600 text-sm font-semibold hover:bg-red-50 rounded"
+                                  >
+                                    Confirm
+                                  </button>
+                                  <button
+                                      onClick={() => setConfirmDeleteId(null)}
+                                      className="px-2 py-1 text-gray-600 text-sm font-semibold hover:bg-gray-50 rounded"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                    onClick={() => setConfirmDeleteId(notification.id)}
+                                    className="px-4 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-semibold hover:bg-red-100 transition-colors border border-red-200"
+                                >
+                                  <span className="inline-flex items-center gap-2">
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete
+                                  </span>
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -351,6 +363,7 @@ export default function NotificationsPage() {
               </div>
           )}
         </div>
+        <Toast toast={toast} onClose={() => setToast(null)} />
       </div>
   );
 }

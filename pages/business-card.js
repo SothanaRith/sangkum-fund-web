@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { businessCardsAPI, userAPI } from '@/lib/api';
 import QRCode from 'qrcode.react';
 import {
@@ -642,9 +643,9 @@ export default function BusinessCardPage() {
                         formData.layout === 'centered' || formData.layout === 'minimal' ? 'mx-auto' : ''
                     } mb-4 flex items-center justify-center text-5xl backdrop-blur border-4 border-white border-opacity-30`}>
                       {user?.avatar ? (
-                          <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+                          <Image src={user.avatar} alt={user.name || 'User avatar'} width={96} height={96} className="w-full h-full rounded-full object-cover" />
                       ) : (
-                          <span className={formData.layout === 'minimal' ? 'text-3xl' : 'text-5xl'}>👤</span>
+                          <User className={formData.layout === 'minimal' ? 'w-8 h-8' : 'w-12 h-12'} />
                       )}
                     </div>
                     <div className={formData.layout === 'creative' ? 'col-span-2' : ''}>

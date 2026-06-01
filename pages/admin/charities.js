@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { adminAPI } from '@/lib/admin-api';
 import { formatDate } from '@/lib/utils';
-import { Building2 } from 'lucide-react';
+import { Building2, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminCharitiesPage() {
   const router = useRouter();
@@ -76,11 +76,11 @@ export default function AdminCharitiesPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-12">
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 animate-fadeIn">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 animate-fadeIn">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Building2 className="w-8 h-8 text-blue-600" />
-              <h1 className="text-4xl font-bold gradient-text">Charity Verification</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold gradient-text">Charity Verification</h1>
             </div>
             <p className="text-gray-600">
               {pendingCount > 0
@@ -97,7 +97,7 @@ export default function AdminCharitiesPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 mb-8 bg-white rounded-2xl shadow-lg p-2 animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+        <div className="flex gap-2 mb-8 bg-white rounded-2xl shadow-lg p-2 animate-fadeIn overflow-x-auto" style={{ animationDelay: '0.1s' }}>
           <button
             onClick={() => setFilter('all')}
             className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${
@@ -163,7 +163,7 @@ export default function AdminCharitiesPage() {
                 className="bg-white rounded-2xl shadow-lg p-8 animate-fadeIn"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
-                <div className="flex gap-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   {/* Logo */}
                   <div className="flex-shrink-0">
                     {charity.logo ? (
@@ -174,7 +174,7 @@ export default function AdminCharitiesPage() {
                       />
                     ) : (
                       <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-purple-100 rounded-2xl flex items-center justify-center text-5xl shadow-md">
-                        🏛️
+                        <Building2 className="w-12 h-12 text-gray-500" />
                       </div>
                     )}
                   </div>
@@ -194,12 +194,12 @@ export default function AdminCharitiesPage() {
                           )}
                           {charity.status === 'VERIFIED' && (
                             <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-semibold rounded-full">
-                              ✓ Verified
+                              <CheckCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Verified
                             </span>
                           )}
                           {charity.status === 'REJECTED' && (
                             <span className="px-3 py-1 bg-red-100 text-red-800 text-sm font-semibold rounded-full">
-                              ✕ Rejected
+                              <XCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Rejected
                             </span>
                           )}
                         </div>
@@ -262,20 +262,20 @@ export default function AdminCharitiesPage() {
                           onClick={() => handleVerify(charity.id)}
                           className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-semibold hover:from-green-700 hover:to-green-800 transition-all shadow-md"
                         >
-                          ✓ Verify Charity
+                          <CheckCircle className="w-5 h-5 inline-block mr-2 align-middle" /> Verify Charity
                         </button>
                         <button
                           onClick={() => handleReject(charity.id)}
                           className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-semibold hover:from-red-700 hover:to-red-800 transition-all shadow-md"
                         >
-                          ✕ Reject Application
+                          <XCircle className="w-5 h-5 inline-block mr-2 align-middle" /> Reject Application
                         </button>
                       </div>
                     )}
 
                     {charity.status === 'VERIFIED' && charity.verifiedAt && (
                       <div className="text-sm text-green-600 font-semibold">
-                        ✓ Verified on {formatDate(charity.verifiedAt)}
+                        <CheckCircle className="w-4 h-4 inline-block mr-1 align-middle" /> Verified on {formatDate(charity.verifiedAt)}
                       </div>
                     )}
                   </div>

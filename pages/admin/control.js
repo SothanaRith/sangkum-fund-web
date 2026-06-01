@@ -32,6 +32,10 @@ import {
   PieChart,
 } from 'lucide-react';
 
+import SystemStatsPanel from '@/components/SystemStatsPanel';
+import EventApprovalTable from '@/components/EventApprovalTable';
+import UserManagementTable from '@/components/UserManagementTable';
+
 export default function AdminControl() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -262,9 +266,9 @@ export default function AdminControl() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-lg backdrop-blur-sm bg-opacity-95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-3">
+              <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl">
                   <Shield className="w-8 h-8 text-orange-600" />
                 </div>
@@ -278,7 +282,7 @@ export default function AdminControl() {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <button
                 onClick={loadData}
                 className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 hover:shadow-md transition-all duration-200 font-medium"
@@ -449,283 +453,24 @@ export default function AdminControl() {
         <div className="bg-white rounded-2xl shadow-md border border-gray-100">
           {/* Overview Tab */}
           {activeTab === 'overview' && (
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Platform Overview</h2>
-              
-              {/* Quick Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-orange-900">Pending Approvals</span>
-                    <AlertTriangle className="w-4 h-4 text-orange-600" />
-                  </div>
-                  <div className="text-2xl font-bold text-orange-900">{stats.pendingEvents}</div>
-                  <p className="text-xs text-orange-700 mt-1">Events awaiting review</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-blue-900">Avg Donation</span>
-                    <TrendingUp className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div className="text-2xl font-bold text-blue-900">
-                    {stats.totalDonations > 0 ? formatCurrency(stats.totalAmount / stats.totalDonations) : '$0'}
-                  </div>
-                  <p className="text-xs text-blue-700 mt-1">Average per donation</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-green-900">Active Rate</span>
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div className="text-2xl font-bold text-green-900">
-                    {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
-                  </div>
-                  <p className="text-xs text-green-700 mt-1">Active users</p>
-                </div>
-
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-purple-900">Charity Pending</span>
-                    <Clock className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div className="text-2xl font-bold text-purple-900">{stats.notifications || 0}</div>
-                  <p className="text-xs text-purple-700 mt-1">Awaiting verification</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Recent Activity */}
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <Activity className="w-5 h-5 text-orange-600" />
-                      Recent Activity Feed
-                    </h3>
-                  </div>
-                  <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
-                    {[
-                      ...events.slice(0,5).map(e => ({
-                        icon: Calendar,
-                        title: 'New event submitted',
-                        detail: e.title,
-                        time: e.createdAt,
-                        color: 'orange',
-                      })),
-                      ...donations.slice(0,5).map(d => ({
-                        icon: DollarSign,
-                        title: 'New donation received',
-                        detail: `${d.donorName || 'Anonymous'} → ${d.eventTitle}`,
-                        time: d.createdAt,
-                        color: 'green',
-                      })),
-                      ...users.slice(0,5).map(u => ({
-                        icon: Users,
-                        title: 'New user registered',
-                        detail: u.username || u.email,
-                        time: u.createdAt,
-                        color: 'blue',
-                      })),
-                    ]
-                      .sort((a,b) => new Date(b.time) - new Date(a.time))
-                      .slice(0,8)
-                      .map((item, idx) => {
-                        const colorClasses = {
-                          orange: 'bg-orange-100 text-orange-600',
-                          green: 'bg-green-100 text-green-600',
-                          blue: 'bg-blue-100 text-blue-600',
-                        };
-                        return (
-                          <div key={idx} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-b-0">
-                            <div className={`p-2 rounded-lg ${colorClasses[item.color]}`}>
-                              <item.icon className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 text-sm">{item.title}</div>
-                              <div className="text-sm text-gray-600 truncate">{item.detail}</div>
-                              <div className="text-xs text-gray-500 mt-1">{item.time ? timeAgo(item.time) : 'Just now'}</div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </div>
-
-                {/* System Health */}
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <PieChart className="w-5 h-5 text-green-600" />
-                      System Health Metrics
-                    </h3>
-                  </div>
-                  <div className="p-4 space-y-5">
-                    {[
-                      { label: 'API Response Time', value: health.apiResponseTime, max: 100, color: 'from-green-500 to-emerald-500', unit: '%' },
-                      { label: 'Database Load', value: health.dbLoad, max: 100, color: 'from-blue-500 to-cyan-500', unit: '%' },
-                      { label: 'Storage Usage', value: health.storageUsage, max: 100, color: 'from-orange-500 to-amber-500', unit: '%' },
-                      { label: 'Active Sessions', value: Math.min(health.activeSessions, 100), max: 100, color: 'from-purple-500 to-pink-500', unit: '%' },
-                    ].map((metric) => {
-                      const percentage = (metric.value / metric.max) * 100;
-                      const isHealthy = percentage < 80;
-                      const statusColor = percentage < 50 ? 'text-green-600' : percentage < 80 ? 'text-yellow-600' : 'text-red-600';
-                      
-                      return (
-                        <div key={metric.label}>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-medium text-gray-700">{metric.label}</span>
-                            <span className={`text-sm font-bold ${statusColor}`}>{Math.round(metric.value)}{metric.unit}</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                            <div
-                              className={`h-3 rounded-full bg-gradient-to-r ${metric.color} transition-all duration-300`}
-                              style={{ width: `${percentage}%` }}
-                            ></div>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {percentage < 50 ? '✓ Excellent' : percentage < 80 ? '⚠ Good' : '✗ Warning'}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SystemStatsPanel
+              stats={stats}
+              health={health}
+              events={events}
+              donations={donations}
+              users={users}
+            />
           )}
 
           {/* Events Tab */}
           {activeTab === 'events' && (
-            <div className="space-y-4">
-              {/* Event List */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Event</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Organizer</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Funding Progress</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Created</th>
-                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {events.filter(e => {
-                      const matchesSearch = !searchTerm || 
-                        e.title?.toLowerCase().includes(searchTerm.toLowerCase());
-                      const matchesStatus = filterStatus === 'all' || 
-                        e.status?.toLowerCase() === filterStatus.toLowerCase();
-                      return matchesSearch && matchesStatus;
-                    }).map((event) => {
-                      const fundedPercentage = event.goalAmount ? 
-                        Math.round((event.currentAmount / event.goalAmount) * 100) : 0;
-                      
-                      return (
-                        <tr key={event.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                                <Calendar className="w-6 h-6 text-orange-600" />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="font-medium text-gray-900 truncate">{event.title}</div>
-                                <div className="text-sm text-gray-500 truncate">{event.category}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-700">{event.ownerName}</td>
-                          <td className="px-6 py-4">
-                            <div className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-gray-600">
-                                  {formatCurrency(event.currentAmount)} / {formatCurrency(event.goalAmount)}
-                                </span>
-                                <span className="text-xs font-bold text-orange-600">{fundedPercentage}%</span>
-                              </div>
-                              <div className="w-24 bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full transition-all"
-                                  style={{ width: `${Math.min(fundedPercentage, 100)}%` }}
-                                ></div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                              event.status === 'APPROVED' ? 'bg-green-100 text-green-700' :
-                              event.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                              event.status === 'ACTIVE' ? 'bg-blue-100 text-blue-700' :
-                              event.status === 'COMPLETED' ? 'bg-gray-100 text-gray-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {event.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{formatDate(event.createdAt)}</td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => {
-                                  // Show event details in a modal or navigate
-                                  alert(`Event: ${event.title}\n\nFunding: ${formatCurrency(event.currentAmount)} / ${formatCurrency(event.goalAmount)}\n\nStatus: ${event.status}`);
-                                }}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="View Details"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              {event.status === 'PENDING' && (
-                                <>
-                                  <button
-                                    onClick={() => handleEventAction(event.id, 'approve')}
-                                    className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                    title="Approve Event"
-                                  >
-                                    <CheckCircle className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      const reason = prompt('Enter rejection reason:', 'Event does not meet guidelines');
-                                      if (reason !== null) {
-                                        handleEventAction(event.id, 'reject', reason);
-                                      }
-                                    }}
-                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                    title="Reject Event"
-                                  >
-                                    <XCircle className="w-4 h-4" />
-                                  </button>
-                                </>
-                              )}
-                              <button
-                                onClick={() => {
-                                  if (confirm(`Delete event "${event.title}"?`)) {
-                                    handleEventAction(event.id, 'delete');
-                                  }
-                                }}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Delete Event"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              
-              {/* No events message */}
-              {events.length === 0 && (
-                <div className="text-center py-8">
-                  <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500">No events found</p>
-                </div>
-              )}
+            <div className="p-6">
+              <EventApprovalTable
+                events={events}
+                searchTerm={searchTerm}
+                filterStatus={filterStatus}
+                handleEventAction={handleEventAction}
+              />
             </div>
           )}
 
@@ -837,157 +582,15 @@ export default function AdminControl() {
 
           {/* Users Tab */}
           {activeTab === 'users' && (
-            <div className="space-y-4">
-              {/* Search and Filter */}
-              <div className="flex gap-4 mb-4 flex-wrap">
-                <div className="flex-1 min-w-64">
-                  <input
-                    type="text"
-                    placeholder="Search by username or email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  />
-                </div>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="all">All Status</option>
-                  <option value="active">Active Only</option>
-                  <option value="inactive">Inactive Only</option>
-                  <option value="blocked">Blocked Only</option>
-                </select>
-              </div>
-
-              {/* Users Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">User</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Role</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Activity</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Joined</th>
-                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {users.filter(u => {
-                      const matchesSearch = !searchTerm || 
-                        u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        u.email?.toLowerCase().includes(searchTerm.toLowerCase());
-                      
-                      const matchesStatus = 
-                        filterStatus === 'all' ||
-                        (filterStatus === 'active' && u.isActive && !u.isBlocked) ||
-                        (filterStatus === 'inactive' && !u.isActive) ||
-                        (filterStatus === 'blocked' && u.isBlocked);
-                      
-                      return matchesSearch && matchesStatus;
-                    }).map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
-                              <span className="text-sm font-medium text-orange-600">
-                                {user.name?.charAt(0).toUpperCase() || 'U'}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900">{user.name}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                        <td className="px-6 py-4">
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                            {user.role || 'USER'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            user.isBlocked 
-                              ? 'bg-red-100 text-red-700'
-                              : user.isActive 
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}>
-                            {user.isBlocked ? 'Blocked' : user.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${
-                              user.isActive && !user.isBlocked ? 'bg-green-500' : 'bg-gray-300'
-                            }`}></div>
-                            <span className="text-sm text-gray-600">
-                              {user.lastLoginAt ? `Last: ${timeAgo(user.lastLoginAt)}` : 'Never'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(user.createdAt)}</td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button 
-                              onClick={() => handleUserAction(user.id, user.isBlocked ? 'unblock' : (user.isActive ? 'deactivate' : 'activate'))}
-                              className={`p-2 rounded-lg transition-colors ${
-                                user.isBlocked
-                                  ? 'text-blue-600 hover:bg-blue-50'
-                                  : user.isActive
-                                  ? 'text-orange-600 hover:bg-orange-50'
-                                  : 'text-green-600 hover:bg-green-50'
-                              }`}
-                              title={user.isBlocked ? 'Unblock' : user.isActive ? 'Deactivate' : 'Activate'}
-                            >
-                              {user.isBlocked ? (
-                                <Shield className="w-4 h-4" />
-                              ) : user.isActive ? (
-                                <XCircle className="w-4 h-4" />
-                              ) : (
-                                <CheckCircle className="w-4 h-4" />
-                              )}
-                            </button>
-                            <button 
-                              onClick={() => handleUserAction(user.id, user.isBlocked ? 'unblock' : 'block')}
-                              className={`p-2 rounded-lg transition-colors ${
-                                user.isBlocked
-                                  ? 'text-gray-600 hover:bg-gray-100'
-                                  : 'text-red-600 hover:bg-red-50'
-                              }`}
-                              title={user.isBlocked ? 'Unblock' : 'Block'}
-                            >
-                              {user.isBlocked ? (
-                                <AlertTriangle className="w-4 h-4" />
-                              ) : (
-                                <AlertTriangle className="w-4 h-4" />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {users.filter(u => {
-                  const matchesSearch = !searchTerm || 
-                    u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    u.email?.toLowerCase().includes(searchTerm.toLowerCase());
-                  const matchesStatus = 
-                    filterStatus === 'all' ||
-                    (filterStatus === 'active' && u.isActive && !u.isBlocked) ||
-                    (filterStatus === 'inactive' && !u.isActive) ||
-                    (filterStatus === 'blocked' && u.isBlocked);
-                  return matchesSearch && matchesStatus;
-                }).length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    No users found matching your criteria
-                  </div>
-                )}
-              </div>
+            <div className="p-6">
+              <UserManagementTable
+                users={users}
+                searchTerm={searchTerm}
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
+                setSearchTerm={setSearchTerm}
+                handleUserAction={handleUserAction}
+              />
             </div>
           )}
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { contactAPI } from '@/lib/api';
 import {
     Building2,
@@ -27,17 +27,55 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
 
     const [submitting, setSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
+    const [fieldErrors, setFieldErrors] = useState({});
+    const nameRef = useRef(null);
+    const MESSAGE_MAX = 1000;
+
+    useEffect(() => {
+        nameRef.current?.focus();
+    }, []);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
+        if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: '' }));
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+        let error = '';
+        if (name === 'name') {
+            if (!value.trim()) error = 'Full name is required';
+        } else if (name === 'email') {
+            if (!value) error = 'Email is required';
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Please enter a valid email address';
+        } else if (name === 'category') {
+            if (!value) error = 'Please select a category';
+        } else if (name === 'subject') {
+            if (!value.trim()) error = 'Subject is required';
+        } else if (name === 'message') {
+            if (!value.trim()) error = 'Message is required';
+            else if (value.trim().length < 10) error = 'Message must be at least 10 characters';
+        }
+        if (error) setFieldErrors(prev => ({ ...prev, [name]: error }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const newErrors = {};
+        if (!formData.name.trim()) newErrors.name = 'Full name is required';
+        if (!formData.email) newErrors.email = 'Email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
+        if (!formData.category) newErrors.category = 'Please select a category';
+        if (!formData.subject.trim()) newErrors.subject = 'Subject is required';
+        if (!formData.message.trim()) newErrors.message = 'Message is required';
+        else if (formData.message.trim().length < 10) newErrors.message = 'Message must be at least 10 characters';
+        if (Object.keys(newErrors).length > 0) {
+            setFieldErrors(newErrors);
+            return;
+        }
+
         setSubmitting(true);
 
         try {
@@ -201,14 +239,21 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                 <div>
                                     <label className="block text-gray-700 font-semibold mb-2">Full Name *</label>
                                     <input
+                                        ref={nameRef}
                                         type="text"
                                         name="name"
+                                        autoComplete="name"
                                         value={formData.name}
                                         onChange={handleChange}
+                                        onBlur={handleBlur}
                                         required
                                         placeholder="Sokha Chan"
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors ${fieldErrors.name ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-orange-500'}`}
+                                        aria-describedby={fieldErrors.name ? 'cf-name-error' : undefined}
                                     />
+                                    {fieldErrors.name && (
+                                        <p id="cf-name-error" className="mt-1 text-sm text-red-600">{fieldErrors.name}</p>
+                                    )}
                                 </div>
 
                                 <div>
@@ -216,12 +261,18 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                     <input
                                         type="email"
                                         name="email"
+                                        autoComplete="email"
                                         value={formData.email}
                                         onChange={handleChange}
+                                        onBlur={handleBlur}
                                         required
                                         placeholder="sokha@example.com"
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors ${fieldErrors.email ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-orange-500'}`}
+                                        aria-describedby={fieldErrors.email ? 'cf-email-error' : undefined}
                                     />
+                                    {fieldErrors.email && (
+                                        <p id="cf-email-error" className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -231,6 +282,7 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                     <input
                                         type="tel"
                                         name="phone"
+                                        autoComplete="tel"
                                         value={formData.phone}
                                         onChange={handleChange}
                                         placeholder="+855 (0) 12 345 678"
@@ -244,8 +296,10 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                         name="category"
                                         value={formData.category}
                                         onChange={handleChange}
+                                        onBlur={handleBlur}
                                         required
-                                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors ${fieldErrors.category ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-orange-500'}`}
+                                        aria-describedby={fieldErrors.category ? 'cf-cat-error' : undefined}
                                     >
                                         <option value="">Select a category</option>
                                         <option value="technical">Technical Support</option>
@@ -256,6 +310,9 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                         <option value="feedback">Feedback</option>
                                         <option value="other">Other</option>
                                     </select>
+                                    {fieldErrors.category && (
+                                        <p id="cf-cat-error" className="mt-1 text-sm text-red-600">{fieldErrors.category}</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -266,23 +323,39 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                     name="subject"
                                     value={formData.subject}
                                     onChange={handleChange}
+                                    onBlur={handleBlur}
                                     required
                                     placeholder="What is this regarding?"
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors"
+                                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors ${fieldErrors.subject ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-orange-500'}`}
+                                    aria-describedby={fieldErrors.subject ? 'cf-subject-error' : undefined}
                                 />
+                                {fieldErrors.subject && (
+                                    <p id="cf-subject-error" className="mt-1 text-sm text-red-600">{fieldErrors.subject}</p>
+                                )}
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-2">Message *</label>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-gray-700 font-semibold">Message *</label>
+                                    <span className={`text-xs ${formData.message.length > MESSAGE_MAX * 0.9 ? 'text-red-500' : 'text-gray-400'}`}>
+                                        {formData.message.length}/{MESSAGE_MAX}
+                                    </span>
+                                </div>
                                 <textarea
                                     name="message"
                                     value={formData.message}
                                     onChange={handleChange}
+                                    onBlur={handleBlur}
                                     required
                                     rows="6"
+                                    maxLength={MESSAGE_MAX}
                                     placeholder="Please describe your message in detail..."
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:outline-none transition-colors resize-none"
+                                    className={`w-full px-4 py-3 rounded-xl border-2 focus:outline-none transition-colors resize-none ${fieldErrors.message ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-orange-500'}`}
+                                    aria-describedby={fieldErrors.message ? 'cf-message-error' : undefined}
                                 ></textarea>
+                                {fieldErrors.message && (
+                                    <p id="cf-message-error" className="mt-1 text-sm text-red-600">{fieldErrors.message}</p>
+                                )}
                             </div>
 
                             <button
@@ -290,8 +363,17 @@ export default function ContactForm({ showOfficeInfo = true, showFAQ = true, sho
                                 disabled={submitting}
                                 className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Send className="w-5 h-5" />
-                                {submitting ? 'Sending...' : 'Send Message'}
+                                {submitting ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send className="w-5 h-5" />
+                                        Send Message
+                                    </>
+                                )}
                             </button>
                         </form>
                     </div>

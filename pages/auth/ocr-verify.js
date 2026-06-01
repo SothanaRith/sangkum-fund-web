@@ -14,7 +14,7 @@ import {
   X,
   Eye,
 } from 'lucide-react';
-import { ocrAPI, usersAPI } from '@/lib/api';
+import { ocrAPI, userAPI } from '@/lib/api';
 import Layout from '@/components/Layout';
 
 export default function OcrVerificationPage() {
@@ -80,7 +80,7 @@ export default function OcrVerificationPage() {
 
     try {
       // Fetch user data for name verification
-      const currentUser = await usersAPI.getCurrentUser();
+      const currentUser = await userAPI.getProfile();
       setUserData(currentUser);
 
       // Extract base64 from preview

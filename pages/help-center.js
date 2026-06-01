@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { contactAPI } from '../lib/api';
+import Toast from '../components/Toast';
 import {
     Building2,
     Coins,
@@ -34,6 +35,7 @@ export default function HelpCenter() {
     const [activeCategory, setActiveCategory] = useState('all');
     const [expandedFaqs, setExpandedFaqs] = useState([]);
     const [showContactForm, setShowContactForm] = useState(false);
+    const [toast, setToast] = useState(null);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -275,12 +277,12 @@ export default function HelpCenter() {
         e.preventDefault();
         try {
             await contactAPI.sendMessage(formData.name, formData.email, formData.category, formData.message);
-            alert('Message sent! Our team will respond within 24 hours.');
+            setToast({ type: 'success', message: 'Message sent! Our team will respond within 24 hours.' });
             setFormData({ name: '', email: '', category: '', message: '' });
             setShowContactForm(false);
         } catch (error) {
             console.error('Error sending message:', error);
-            alert('Failed to send message. Please try again later.');
+            setToast({ type: 'error', message: 'Failed to send message. Please try again later.' });
         }
     };
 
@@ -797,6 +799,7 @@ export default function HelpCenter() {
                     </div>
                 )}
             </AnimatePresence>
+            <Toast toast={toast} onClose={() => setToast(null)} />
 
             {/* Bottom CTA */}
             <div className="bg-gradient-to-r from-orange-600 to-amber-600 py-16 px-4">

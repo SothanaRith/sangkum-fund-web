@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { charitiesAPI, announcementsAPI, eventsAPI } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
-import { Share2, Copy, Mail, AlertCircle, Building2, CheckCircle, Clock, Heart, Users, Calendar, MapPin, User, Image as ImageIcon, Camera, X } from 'lucide-react';
+import { Share2, Copy, Mail, AlertCircle, Building2, CheckCircle, Clock, Heart, Users, Calendar, MapPin, User, Image as ImageIcon, Camera, X, ClipboardList, Target, MessageCircle } from 'lucide-react';
+import Toast from '@/components/Toast';
 
 export default function CharityDetailPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function CharityDetailPage() {
   const [shareUrl, setShareUrl] = useState('');
   const [charityImages, setCharityImages] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [toast, setToast] = useState(null);
   const storyRef = useRef(null);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function CharityDetailPage() {
       
       setRelatedCharities(related.slice(0, 3));
     } catch (err) {
-      console.error('Failed to load related charities:', err);
+      // Failed to load related charities
     } finally {
       setLoadingRelated(false);
     }
@@ -55,7 +57,11 @@ export default function CharityDetailPage() {
       ]);
       
       setCharity(charityData);
-      setAnnouncements(announcementsData);
+      // Handle both plain array and paginated response shapes
+      const annList = Array.isArray(announcementsData)
+        ? announcementsData
+        : (announcementsData?.content ?? announcementsData?.data ?? []);
+      setAnnouncements(annList);
       
       // Load related events
       if (charityData.events) {
@@ -73,7 +79,7 @@ export default function CharityDetailPage() {
         setSelectedImage({ id: 1, imageUrl: charityData.logo, isPrimary: true });
       }
     } catch (err) {
-      console.error('Failed to load charity:', err);
+      // Failed to load charity
     } finally {
       setLoading(false);
     }
@@ -82,9 +88,9 @@ export default function CharityDetailPage() {
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      alert('Charity link copied to clipboard!');
+      setToast({ type: 'success', message: 'Charity link copied to clipboard!' });
     } catch (err) {
-      console.error('Failed to copy link:', err);
+      setToast({ type: 'error', message: 'Failed to copy link' });
     }
   };
 
@@ -97,7 +103,7 @@ export default function CharityDetailPage() {
           url: shareUrl,
         });
       } catch (err) {
-        console.error('Failed to share:', err);
+        // Failed to share
       }
     }
   };
@@ -278,7 +284,7 @@ export default function CharityDetailPage() {
                 : 'text-gray-600 hover:bg-orange-50'
             }`}
           >
-            📋 About
+            <ClipboardList className="w-4 h-4 inline-block mr-1 align-middle" /> About
           </button>
           <button
             onClick={() => setActiveTab('announcements')}
@@ -298,7 +304,7 @@ export default function CharityDetailPage() {
                 : 'text-gray-600 hover:bg-orange-50'
             }`}
           >
-            🎯 Campaigns ({events.length})
+            <Target className="w-4 h-4 inline-block mr-1 align-middle" /> Campaigns ({events.length})
           </button>
         </div>
 
@@ -429,10 +435,10 @@ export default function CharityDetailPage() {
                         <span className="text-orange-600 font-medium">{formatDate(announcement.createdAt)}</span>
                         <div className="flex gap-4">
                           <button className="text-orange-600 hover:text-orange-700 hover:bg-orange-100 px-3 py-1 rounded-lg transition-colors font-semibold">
-                            ❤️ {announcement.reactionCount || 0}
+                            <Heart className="w-4 h-4 inline-block mr-1 align-middle" /> {announcement.reactionCount || 0}
                           </button>
                           <button className="text-amber-600 hover:text-amber-700 hover:bg-amber-100 px-3 py-1 rounded-lg transition-colors font-semibold">
-                            💬 {announcement.commentCount || 0}
+                            <MessageCircle className="w-4 h-4 inline-block mr-1 align-middle" /> {announcement.commentCount || 0}
                           </button>
                         </div>
                       </div>
@@ -632,7 +638,7 @@ export default function CharityDetailPage() {
                 rel="noopener noreferrer"
                 className="w-full px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all flex items-center justify-center gap-2"
               >
-                <span>💬</span> WhatsApp
+                <span><MessageCircle className="w-5 h-5 inline-block mr-1 align-middle" /></span> WhatsApp
               </a>
 
               {/* Email Share */}
@@ -700,6 +706,7 @@ export default function CharityDetailPage() {
           </div>
         </div>
       )}
+      <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
   Landmark,
   LayoutDashboard,
   Linkedin,
+  LogOut,
   Mail,
   MapPin,
   Menu,
@@ -49,6 +50,10 @@ export default function Layout({ children }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [router.pathname]);
+
   const loadUnreadNotifications = async () => {
     try {
       if (typeof window === 'undefined') return;
@@ -61,7 +66,7 @@ export default function Layout({ children }) {
         : 0;
       setNotificationCount(unreadCount);
     } catch (error) {
-      console.error('Failed to load unread notifications:', error);
+      // Failed to load unread notifications
     }
   };
 
@@ -75,7 +80,7 @@ export default function Layout({ children }) {
       try {
         setUser(JSON.parse(userData));
       } catch (e) {
-        console.error('Failed to parse user data');
+        // Failed to parse user data
       }
     } else if (token) {
       try {
@@ -83,7 +88,7 @@ export default function Layout({ children }) {
         setUser(profile);
         localStorage.setItem('user', JSON.stringify(profile));
       } catch (e) {
-        console.error('Failed to load user profile');
+        // Failed to load user profile
       }
     }
   };
@@ -95,7 +100,7 @@ export default function Layout({ children }) {
         await authAPI.logout(refreshToken);
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      // Logout error
     } finally {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('accessToken');
@@ -109,14 +114,14 @@ export default function Layout({ children }) {
   };
 
   const isActive = (path) => router.pathname === path || router.pathname.startsWith(path + '/');
-  const isAdmin = user?.roles?.includes('ADMIN');
+  const isAdmin = user?.role === 'ADMIN' || user?.isAdmin === true;
 
   return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-orange-50 via-amber-50 to-white">
-        <nav className={`fixed w-full z-50 transition-all duration-300 ${
+        <header className={`fixed w-full z-50 transition-all duration-300 ${
             scrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm shadow-md'
         }`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main Navigation">
             <div className="flex justify-between h-16">
               <div className="flex items-center">
                 <Link href="/" className="flex items-center space-x-2 group">
@@ -212,6 +217,7 @@ export default function Layout({ children }) {
                     onClick={() => changeLanguage(language === 'en' ? 'km' : 'en')}
                     className="flex items-center gap-2 px-3 py-2 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-sm font-medium transition-all duration-200"
                     title={language === 'en' ? 'Switch to Khmer' : 'Switch to English'}
+                    aria-label={language === 'en' ? 'Switch to Khmer' : 'Switch to English'}
                 >
                   <Globe className="w-4 h-4" />
                   <span className="hidden sm:inline">{language === 'en' ? 'ខ្មែរ' : 'EN'}</span>
@@ -222,17 +228,18 @@ export default function Layout({ children }) {
                       {isAdmin && (
                         <Link
                             href="/admin"
-                            className="p-2 text-gray-600 hover:bg-amber-50 hover:text-amber-600 rounded-lg transition-colors"
-                            title="Admin Panel"
+                            className="hidden sm:inline-block p-2 text-gray-600 hover:bg-amber-50 hover:text-amber-600 rounded-lg transition-colors"
+                            aria-label="Admin Panel"
                         >
-                          <SlidersHorizontal className="w-5 h-5" />
+                          <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
                         </Link>
                       )}
                       <Link
                           href="/notifications"
+                          aria-label={notificationCount > 0 ? `Notifications (${notificationCount} unread)` : 'Notifications'}
                           className="relative p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors group"
                       >
-                        <Bell className="w-5 h-5" />
+                        <Bell className="w-5 h-5" aria-hidden="true" />
                         {notificationCount > 0 && (
                             <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-5 h-5 text-xs font-bold text-white bg-gradient-to-r from-red-500 to-red-600 rounded-full shadow-lg group-hover:shadow-red-500/50 animation pulse">
                               {notificationCount > 99 ? '99+' : notificationCount}
@@ -241,21 +248,24 @@ export default function Layout({ children }) {
                       </Link>
                       <Link
                           href="/settings"
+                          aria-label="Settings"
                           className="p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
-                        <Settings className="w-5 h-5" />
+                        <Settings className="w-5 h-5" aria-hidden="true" />
                       </Link>
                       <Link
                           href="/business-card"
+                          aria-label="Business card"
                           className="hidden lg:inline-block p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
-                        <Briefcase className="w-5 h-5" />
+                        <Briefcase className="w-5 h-5" aria-hidden="true" />
                       </Link>
                       <button
                           onClick={handleLogout}
                           className="text-gray-700 hover:bg-orange-50 hover:text-orange-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
                       >
-                        {t('nav.logout')}
+                        <LogOut className="w-5 h-5 sm:hidden" />
+                        <span className="hidden sm:inline">{t('nav.logout')}</span>
                       </button>
                     </>
                 ) : (
@@ -278,12 +288,22 @@ export default function Layout({ children }) {
                 {/* Mobile Menu Button */}
                 <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                    aria-expanded={mobileMenuOpen}
                     className="lg:hidden p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg"
                 >
                   {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
               </div>
             </div>
+
+            {/* Mobile Menu Backdrop */}
+            {mobileMenuOpen && (
+              <div 
+                className="lg:hidden fixed inset-0 bg-black/20 z-40"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+            )}
 
             {/* Mobile Menu */}
             {mobileMenuOpen && (
@@ -357,8 +377,8 @@ export default function Layout({ children }) {
                   )}
                 </div>
             )}
-          </div>
-        </nav>
+          </nav>
+        </header>
 
         <main className="flex-grow pt-16">{children}</main>
 
@@ -374,17 +394,17 @@ export default function Layout({ children }) {
                 </div>
                 <p className="text-orange-200 text-sm">Building a more compassionate Cambodia together.</p>
                 <div className="flex gap-3 mt-4">
-                  <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    <Facebook className="w-4 h-4" />
+                  <a href="#" aria-label="Facebook" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
+                    <Facebook className="w-4 h-4" aria-hidden="true" />
                   </a>
-                  <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    <Twitter className="w-4 h-4" />
+                  <a href="#" aria-label="Twitter" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
+                    <Twitter className="w-4 h-4" aria-hidden="true" />
                   </a>
-                  <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    <Linkedin className="w-4 h-4" />
+                  <a href="#" aria-label="LinkedIn" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
+                    <Linkedin className="w-4 h-4" aria-hidden="true" />
                   </a>
-                  <a href="#" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
-                    <Instagram className="w-4 h-4" />
+                  <a href="#" aria-label="Instagram" className="w-8 h-8 rounded-full bg-orange-700 hover:bg-orange-600 flex items-center justify-center">
+                    <Instagram className="w-4 h-4" aria-hidden="true" />
                   </a>
                 </div>
               </div>

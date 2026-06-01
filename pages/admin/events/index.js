@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { adminEventsAPI } from '@/lib/admin-api';
 import { formatCurrency, formatDate, calculateProgress } from '@/lib/utils';
+import { ClipboardList, Sparkles, Calendar, Trash2 } from 'lucide-react';
 
 export default function AdminEvents() {
   const router = useRouter();
@@ -90,8 +91,8 @@ export default function AdminEvents() {
               ← Back to Dashboard
             </Link>
             <h1 className="text-4xl font-bold">
-              <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-                📋 Event Management
+              <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent flex items-center">
+                <ClipboardList className="w-5 h-5 inline-block mr-2 align-middle text-primary-600" /> Event Management
               </span>
             </h1>
           </div>
@@ -157,7 +158,7 @@ export default function AdminEvents() {
                   <img src={event.imageUrl} alt={event.title} className="w-full h-48 object-cover" />
                 ) : (
                   <div className="w-full h-48 bg-gradient-to-br from-primary-400 to-purple-500 flex items-center justify-center">
-                    <span className="text-7xl">🌟</span>
+                    <Sparkles className="w-10 h-10 mx-auto mb-3 text-white" />
                   </div>
                 )}
 
@@ -208,7 +209,7 @@ export default function AdminEvents() {
 
                   {/* Dates */}
                   <div className="text-sm text-gray-600 mb-4">
-                    <div>📅 {formatDate(event.startDate)} - {formatDate(event.endDate)}</div>
+                    <div><Calendar className="w-4 h-4 inline-block mr-1 align-middle" /> {formatDate(event.startDate)} - {formatDate(event.endDate)}</div>
                   </div>
 
                   {/* Actions */}
@@ -230,7 +231,7 @@ export default function AdminEvents() {
                       onClick={() => handleDelete(event.id)}
                       className="px-4 bg-red-100 text-red-700 py-2 rounded-lg font-semibold hover:bg-red-200 transition-colors"
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4 inline-block mr-1 align-middle" />
                     </button>
                   </div>
                 </div>

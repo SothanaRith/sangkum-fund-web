@@ -36,6 +36,8 @@ import {
 } from 'lucide-react';
 import { eventsAPI } from '@/lib/api';
 import { formatCurrency, formatDate, calculateProgress, formatTimeAgo } from '@/lib/utils';
+import { useMotionVariants } from '@/lib/animations';
+import { EventCardSkeleton } from '@/components/Skeleton';
 import Pagination from '@/components/Pagination';
 import { useLanguage } from '@/lib/LanguageContext';
 
@@ -54,6 +56,7 @@ const EventsMap = dynamic(() => import('@/components/EventsMap'), {
 
 export default function Events() {
   const { t } = useLanguage();
+  const mv = useMotionVariants();
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -216,23 +219,6 @@ export default function Events() {
     return days > 0 ? days : 0;
   };
 
-  if (loading && currentPage === 1) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50">
-          <div className="text-center">
-            <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="mb-4"
-            >
-              <Star className="w-24 h-24 text-orange-500 mx-auto" fill="currentColor" />
-            </motion.div>
-            <p className="text-gray-600 text-lg font-medium">Discovering amazing causes...</p>
-          </div>
-        </div>
-    );
-  }
-
   if (error) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-amber-50 to-orange-50">
@@ -269,10 +255,10 @@ export default function Events() {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-center text-white"
             >
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6">
                 Make a Difference in Cambodia
               </h1>
-              <p className="text-xl text-orange-100 mb-10 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-xl text-orange-100 mb-6 sm:mb-10 max-w-3xl mx-auto leading-relaxed">
                 Support communities, change lives, and create lasting impact through verified campaigns
               </p>
 
@@ -291,10 +277,10 @@ export default function Events() {
                         transition={{ delay: index * 0.1 }}
                         className="bg-white/10 backdrop-blur-sm rounded-2xl p-4"
                     >
-                      <div className="text-3xl mb-2">
+                      <div className="text-2xl sm:text-3xl mb-2">
                         <stat.icon className="w-7 h-7" />
                       </div>
-                      <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                      <div className="text-xl sm:text-2xl font-bold mb-1">{stat.value}</div>
                       <div className="text-sm text-orange-200">{stat.label}</div>
                     </motion.div>
                 ))}
@@ -527,7 +513,7 @@ export default function Events() {
           </motion.div>
 
           {/* Results Summary */}
-          <div className="flex items-center justify-between mb-8 bg-white rounded-xl px-6 py-4 shadow-sm border border-gray-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-8 bg-white rounded-xl px-4 sm:px-6 py-3 sm:py-4 shadow-sm border border-gray-100">
             <div className="text-gray-700 font-medium">
               <span className="text-2xl font-bold text-orange-600">{totalElements}</span>
               <span className="text-gray-600 ml-2">campaigns found</span>
@@ -538,6 +524,14 @@ export default function Events() {
               Showing {filteredEvents.length} of {totalElements}
             </div>
           </div>
+
+          {/* Loading overlay during filter/sort/page changes */}
+          {loading && events.length > 0 && (
+              <div className="flex items-center justify-center gap-3 py-4 mb-4 bg-white/80 rounded-xl border border-orange-100 shadow-sm">
+                <Loader2 className="w-5 h-5 animate-spin text-orange-600" />
+                <span className="text-sm font-medium text-gray-600">Updating results...</span>
+              </div>
+          )}
 
           {/* Events Grid or Map */}
           {showMap ? (
@@ -561,7 +555,7 @@ export default function Events() {
                     </div>
 
                     {/* Map */}
-                    <div className="h-[600px] lg:h-[700px] rounded-xl overflow-hidden relative">
+                    <div className="h-[350px] sm:h-[500px] lg:h-[700px] rounded-xl overflow-hidden relative">
                       <EventsMap
                           events={filteredEvents}
                           selectedEvent={selectedEventOnMap}
@@ -838,25 +832,30 @@ export default function Events() {
                   )}
                 </div>
               </motion.div>
+          ) : loading && events.length === 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <EventCardSkeleton key={i} />
+                ))}
+              </div>
           ) : (
               <motion.div
-                  layout
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  variants={mv.listContainer}
+                  initial="hidden"
+                  animate="visible"
+                  key={`${category}-${sortBy}-${currentPage}-${selectedLocation}`}
               >
-                <AnimatePresence>
-                  {filteredEvents.map((event, index) => {
+                  {filteredEvents.map((event) => {
                     const progress = calculateProgress(event.currentAmount, event.goalAmount);
                     const daysLeft = getDaysLeft(event.endDate);
 
                     return (
                         <motion.div
                             key={event.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            transition={{ delay: index * 0.05 }}
-                            whileHover={{ y: -8 }}
+                            variants={mv.listItem}
+                            whileHover={mv.cardHover}
+                            whileTap={mv.cardTap}
                         >
                           <Link href={`/events/${event.id}`}>
                             <div className="group bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer h-full border border-gray-100 hover:shadow-2xl transition-all duration-300">
@@ -973,7 +972,6 @@ export default function Events() {
                         </motion.div>
                     );
                   })}
-                </AnimatePresence>
               </motion.div>
           )}
 

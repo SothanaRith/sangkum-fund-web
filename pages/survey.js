@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { surveyAPI } from '@/lib/api';
+import { AlertTriangle, CheckCircle, Target, Building2 } from 'lucide-react';
+
 
 const INTEREST_OPTIONS = [
   'Disaster Relief',
@@ -142,7 +144,7 @@ export default function Survey() {
             {error && (
               <div className="mb-6 rounded-xl bg-red-50 p-4 border border-red-200">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">⚠️</span>
+                  <AlertTriangle className="w-5 h-5 inline-block mr-2 align-middle text-red-500" />
                   <div className="text-sm text-red-800 font-medium">{error}</div>
                 </div>
               </div>
@@ -151,7 +153,7 @@ export default function Survey() {
             {success && (
               <div className="mb-6 rounded-xl bg-green-50 p-4 border border-green-200">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">✅</span>
+                  <CheckCircle className="w-5 h-5 inline-block mr-2 align-middle text-green-500" />
                   <div className="text-sm text-green-800 font-medium">{success}</div>
                 </div>
               </div>
@@ -186,7 +188,7 @@ export default function Survey() {
 
                 <div className="mt-8">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    🎯 What is your primary goal? <span className="text-red-500">*</span>
+                    <Target className="w-5 h-5 inline-block mr-2 align-middle text-gray-500" /> What is your primary goal? <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -261,7 +263,7 @@ export default function Survey() {
                   {formData.nonprofit && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        🏢 Organization name
+                        <Building2 className="w-5 h-5 inline-block mr-2 align-middle text-gray-500" /> Organization name
                       </label>
                       <input
                         type="text"

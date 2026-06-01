@@ -20,12 +20,15 @@ export default function CreateEventNew() {
   const router = useRouter();
   const { t } = useLanguage();
   const [step, setStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedImages, setSelectedImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [khqrFile, setKhqrFile] = useState(null);
+  const [khqrPreview, setKhqrPreview] = useState(null);
+  const [khqrInputMode, setKhqrInputMode] = useState('upload'); // 'upload' or 'url'
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -37,6 +40,8 @@ export default function CreateEventNew() {
     latitude: '',
     longitude: '',
     category: '',
+    khqrImage: '',
+    bakongAccountId: '',
   });
 
   const handleChange = (e) => {
@@ -84,6 +89,23 @@ export default function CreateEventNew() {
     setImagePreviews(imagePreviews.filter((_, i) => i !== index));
   };
 
+  const handleKhqrFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file for KHQR.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('KHQR image must be less than 5MB.');
+      return;
+    }
+    setKhqrFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setKhqrPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
+
   const handleMapSelect = (lat, lng) => {
     setFormData({
       ...formData,
@@ -110,6 +132,8 @@ export default function CreateEventNew() {
         return;
       }
       setStep(3);
+    } else if (step === 3) {
+      setStep(4);
     }
   };
 
@@ -130,9 +154,31 @@ export default function CreateEventNew() {
     }
 
     try {
+      // If KHQR file was uploaded, upload it first to get a URL
+      let khqrImageUrl = formData.khqrImage;
+      if (khqrInputMode === 'upload' && khqrFile) {
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', khqrFile);
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/upload/image`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: uploadFormData,
+          });
+          if (response.ok) {
+            const result = await response.json();
+            khqrImageUrl = result.url || result.imageUrl || result.path || '';
+          }
+        } catch (uploadErr) {
+          console.warn('KHQR image upload failed, using data URL as fallback:', uploadErr);
+          khqrImageUrl = khqrPreview; // Use base64 as fallback
+        }
+      }
+
       const eventData = {
         ...formData,
         targetAmount: parseFloat(formData.targetAmount),
+        khqrImage: khqrImageUrl,
       };
 
       const createdEvent = await eventsAPI.create(eventData);
@@ -165,14 +211,16 @@ export default function CreateEventNew() {
             <div className="mt-10">
               <div className="text-sm text-gray-500">{step} of {totalSteps}</div>
               <h1 className="mt-4 text-3xl font-semibold text-gray-900">
-                {step === 1 ? 'Create Your Event' : step === 2 ? 'Set Details' : 'Add Media'}
+                {step === 1 ? 'Create Your Event' : step === 2 ? 'Set Details' : step === 3 ? 'Add Media' : 'Payment Setup'}
               </h1>
               <p className="mt-4 text-gray-600">
                 {step === 1
                   ? 'Tell your story and describe your cause'
                   : step === 2
                   ? 'Set fundraising goals and timeline'
-                  : 'Upload images and finalize'}
+                  : step === 3
+                  ? 'Upload images and finalize'
+                  : 'Setup Bakong KHQR for donations'}
               </p>
             </div>
           </div>
@@ -459,14 +507,132 @@ export default function CreateEventNew() {
                     />
                   </div>
                 )}
+              </div>
+            )}
 
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            {step === 4 && (
+              <div className="max-w-2xl space-y-6">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+                  <h3 className="text-lg font-semibold text-emerald-800 mb-2">🏦 Bakong KHQR Integration</h3>
+                  <p className="text-sm text-emerald-700">
+                    We exclusively support Bakong KHQR for secure, instant, and transparent donations directly to your account. Upload your personal KHQR image so donors can scan it.
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Bakong Account ID
+                  </label>
+                  <input
+                    type="text"
+                    name="bakongAccountId"
+                    value={formData.bakongAccountId}
+                    onChange={handleChange}
+                    placeholder="e.g., sokkha@aclb"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                  />
+                  <p className="text-sm text-gray-500 mt-2">Your Bakong ID ensures payments are verified correctly.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    KHQR Image
+                  </label>
+                  {/* Toggle between upload and URL */}
+                  <div className="flex gap-2 mb-4">
+                    <button
+                      type="button"
+                      onClick={() => setKhqrInputMode('upload')}
+                      className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all border-2 ${
+                        khqrInputMode === 'upload'
+                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      📤 Upload Image
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setKhqrInputMode('url')}
+                      className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all border-2 ${
+                        khqrInputMode === 'url'
+                          ? 'border-orange-500 bg-orange-50 text-orange-700'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      }`}
+                    >
+                      🔗 Paste URL
+                    </button>
+                  </div>
+
+                  {khqrInputMode === 'upload' ? (
+                    <div>
+                      <label
+                        htmlFor="khqr-upload"
+                        className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-all"
+                      >
+                        {khqrPreview ? (
+                          <img src={khqrPreview} alt="KHQR Preview" className="h-full object-contain p-2 rounded-xl" />
+                        ) : (
+                          <div className="text-center">
+                            <div className="text-4xl mb-2">📷</div>
+                            <p className="text-sm text-gray-600 font-medium">Click to upload your KHQR image</p>
+                            <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</p>
+                          </div>
+                        )}
+                        <input
+                          id="khqr-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleKhqrFileSelect}
+                        />
+                      </label>
+                      {khqrFile && (
+                        <div className="mt-2 flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                          <span className="text-sm text-green-700 font-medium">✓ {khqrFile.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => { setKhqrFile(null); setKhqrPreview(null); }}
+                            className="text-red-500 hover:text-red-700 text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="url"
+                        name="khqrImage"
+                        value={formData.khqrImage}
+                        onChange={handleChange}
+                        placeholder="https://example.com/your-khqr.jpg"
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                      />
+                      <p className="text-sm text-gray-500 mt-2">Paste a direct link to your KHQR image.</p>
+                      {formData.khqrImage && (
+                        <div className="rounded-xl overflow-hidden border-2 border-gray-200 mt-4 max-w-xs">
+                          <img
+                            src={formData.khqrImage}
+                            alt="KHQR Preview"
+                            className="w-full h-auto"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-2">
                   <p className="text-sm text-amber-800">
-                    <strong>ℹ️ Admin Verification:</strong> Your event will be reviewed by our admin team before it becomes visible to the public.
+                    <strong>ℹ️ Admin Verification:</strong> Your event will be reviewed by our admin team before it becomes visible to the public. Once approved, donors can scan your KHQR to send payments that are verified via Bakong's API.
                   </p>
                 </div>
               </div>
             )}
+
           </div>
 
           <div className="border-t border-gray-100 px-6 py-4 sm:px-10 flex items-center justify-between">
