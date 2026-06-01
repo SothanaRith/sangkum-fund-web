@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, PieChart, AlertTriangle, TrendingUp, CheckCircle, Clock, Calendar, DollarSign, Users } from 'lucide-react';
+import { Activity, PieChart, AlertTriangle, TrendingUp, CheckCircle, Clock, Calendar, DollarSign, Users, Check, X } from 'lucide-react';
 import { formatCurrency, timeAgo } from '@/lib/utils';
 
 export default function SystemStatsPanel({ stats, health, events, donations, users }) {
@@ -137,8 +137,8 @@ export default function SystemStatsPanel({ stats, health, events, donations, use
                       style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {percentage < 50 ? '✓ Excellent' : percentage < 80 ? '⚠ Good' : '✗ Warning'}
+                  <div className="text-xs text-gray-500 mt-1 inline-flex items-center gap-1">
+                    {percentage < 50 ? <><Check className="w-3 h-3 mr-1 inline" />Excellent</> : percentage < 80 ? <><AlertTriangle className="w-3 h-3 mr-1 inline" />Good</> : <><X className="w-3 h-3 mr-1 inline" />Warning</>}
                   </div>
                 </div>
               );

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { authAPI } from '@/lib/api';
+import { Mail, Key, Lock, Check, AlertTriangle } from 'lucide-react';
 
 export default function Register() {
   const router = useRouter();
@@ -75,7 +76,7 @@ export default function Register() {
       }
 
       const redirectPath = router.query.redirect || '/survey';
-      window.location.href = redirectPath;
+      router.push(redirectPath);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
@@ -88,9 +89,7 @@ export default function Register() {
     setError('');
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-      // Redirect to backend's Google OAuth endpoint
-      window.location.href = `${API_URL}/api/auth/oauth2/authorize/google`;
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/auth/oauth2/authorize/google`;
     } catch (err) {
       setError('Google sign-up failed. Please try again.');
       setGoogleLoading(false);
@@ -147,7 +146,7 @@ export default function Register() {
           {error && (
               <div className="rounded-xl bg-red-50 p-4 border border-red-200 animate-slideInRight">
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">⚠️</span>
+                  <AlertTriangle className="w-6 h-6 mr-2 flex-shrink-0" />
                   <div className="text-sm text-red-800 font-medium">{error}</div>
                 </div>
               </div>
@@ -208,7 +207,7 @@ export default function Register() {
               </div>
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  📧 Email Address
+                  <span className="inline-flex items-center gap-1"><Mail className="w-4 h-4" /> Email Address</span>
                 </label>
                 <input
                     id="email"
@@ -229,7 +228,7 @@ export default function Register() {
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  🔑 Password
+                  <span className="inline-flex items-center gap-1"><Key className="w-4 h-4" /> Password</span>
                 </label>
                 <input
                     id="password"
@@ -262,7 +261,7 @@ export default function Register() {
               </div>
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
-                  🔒 Confirm Password
+                  <span className="inline-flex items-center gap-1"><Lock className="w-4 h-4" /> Confirm Password</span>
                 </label>
                 <input
                     id="confirmPassword"
@@ -357,19 +356,19 @@ export default function Register() {
             </h4>
             <ul className="text-sm text-gray-600 space-y-1">
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <Check className="w-4 h-4 text-green-500" />
                 <span>Create fundraising campaigns for causes you care about</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <Check className="w-4 h-4 text-green-500" />
                 <span>Support verified charities and community projects</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <Check className="w-4 h-4 text-green-500" />
                 <span>Track your impact and donation history</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <Check className="w-4 h-4 text-green-500" />
                 <span>Join a community making real change in Cambodia</span>
               </li>
             </ul>

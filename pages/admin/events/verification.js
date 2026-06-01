@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
 import { eventVerificationAPI } from '@/lib/admin-event-api';
-import { CheckCircle, ClipboardList, User } from 'lucide-react';
+import { CheckCircle, ClipboardList, User, Check, X, Tag, Clock, CalendarCheck, AlertTriangle } from 'lucide-react';
+import Toast from '@/components/Toast';
 
 export default function EventVerification() {
   const router = useRouter();
@@ -12,6 +12,8 @@ export default function EventVerification() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
 
   useEffect(() => {
     fetchPendingEvents();
@@ -31,41 +33,48 @@ export default function EventVerification() {
     }
   };
 
-  const handleApprove = async (eventId) => {
-    if (!confirm('Are you sure you want to approve this event?')) return;
+  const showToast = (message, type = 'success') => setToast({ message, type });
 
-    try {
-      setActionLoading(true);
-      await eventVerificationAPI.approveEvent(eventId);
-      alert('Event approved successfully!');
-      fetchPendingEvents(); // Refresh list
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to approve event');
-    } finally {
-      setActionLoading(false);
-    }
+  const handleApprove = (eventId) => {
+    setPendingAction({
+      message: 'Are you sure you want to approve this event?',
+      onConfirm: async () => {
+        try {
+          setActionLoading(true);
+          await eventVerificationAPI.approveEvent(eventId);
+          showToast('Event approved successfully!');
+          fetchPendingEvents();
+        } catch (err) {
+          showToast(err.response?.data?.message || 'Failed to approve event', 'error');
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
-  const handleReject = async (eventId) => {
+  const handleReject = (eventId) => {
     if (!rejectionReason.trim()) {
-      alert('Please provide a reason for rejection');
+      showToast('Please provide a reason for rejection', 'error');
       return;
     }
-
-    if (!confirm('Are you sure you want to reject this event?')) return;
-
-    try {
-      setActionLoading(true);
-      await eventVerificationAPI.rejectEvent(eventId, rejectionReason);
-      alert('Event rejected');
-      setSelectedEvent(null);
-      setRejectionReason('');
-      fetchPendingEvents(); // Refresh list
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to reject event');
-    } finally {
-      setActionLoading(false);
-    }
+    setPendingAction({
+      message: 'Are you sure you want to reject this event?',
+      onConfirm: async () => {
+        try {
+          setActionLoading(true);
+          await eventVerificationAPI.rejectEvent(eventId, rejectionReason);
+          showToast('Event rejected');
+          setSelectedEvent(null);
+          setRejectionReason('');
+          fetchPendingEvents();
+        } catch (err) {
+          showToast(err.response?.data?.message || 'Failed to reject event', 'error');
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
   const formatDate = (dateString) => {
@@ -86,17 +95,14 @@ export default function EventVerification() {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Event Verification</h1>
@@ -144,7 +150,7 @@ export default function EventVerification() {
                       />
                     ) : (
                       <div className="w-full h-64 md:h-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center">
-                        <span className="text-white text-6xl">🎉</span>
+                        <CalendarCheck className="w-16 h-16 text-white opacity-70" />
                       </div>
                     )}
                   </div>
@@ -159,12 +165,12 @@ export default function EventVerification() {
                             <User className="w-4 h-4 inline-block mr-1 align-middle" /> {event.owner?.name || 'Unknown'}
                           </span>
                           <span className="flex items-center gap-1">
-                            🏷️ {event.visibility}
+                            <Tag className="w-4 h-4" /> {event.visibility}
                           </span>
                         </div>
                       </div>
-                      <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                        ⏳ Pending
+                      <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> Pending
                       </span>
                     </div>
 
@@ -226,7 +232,7 @@ export default function EventVerification() {
                           disabled={actionLoading}
                           className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                         >
-                          <span>✓</span>
+                          <Check className="w-4 h-4" />
                           <span>{actionLoading ? 'Processing...' : 'Approve Event'}</span>
                         </button>
                         <button
@@ -234,7 +240,7 @@ export default function EventVerification() {
                           disabled={actionLoading}
                           className="flex-1 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                         >
-                          <span>✕</span>
+                          <X className="w-4 h-4" />
                           <span>Reject Event</span>
                         </button>
                         <button
@@ -251,7 +257,31 @@ export default function EventVerification() {
             ))}
           </div>
         )}
+        <Toast toast={toast} onClose={() => setToast(null)} />
+        {pendingAction && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+              <div className="flex items-start gap-3 mb-5">
+                <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-800 font-medium">{pendingAction.message}</p>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setPendingAction(null)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { pendingAction.onConfirm(); setPendingAction(null); }}
+                  className="px-4 py-2 rounded-lg bg-orange-600 text-white font-medium hover:bg-orange-700 transition-colors"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-    </Layout>
   );
 }

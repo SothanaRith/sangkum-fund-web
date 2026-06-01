@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { adminEventsAPI } from '@/lib/admin-api';
+import { Plus, ArrowLeft } from 'lucide-react';
 
 export default function NewEvent() {
   const router = useRouter();
@@ -51,12 +52,12 @@ export default function NewEvent() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <Link href="/admin/events" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-block">
-            ← Back to Events
+          <Link href="/admin/events" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-flex items-center gap-1">
+            <ArrowLeft className="w-4 h-4" /> Back to Events
           </Link>
           <h1 className="text-4xl font-bold">
-            <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-              ➕ Create New Event
+            <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+              <Plus className="w-8 h-8" /> Create New Event
             </span>
           </h1>
         </div>

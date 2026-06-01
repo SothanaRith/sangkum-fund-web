@@ -4,7 +4,7 @@ import Link from 'next/link';
 import apiClient from '@/lib/api';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { useProtectedRoute } from '@/hooks/useProtectedRoute';
-import { AlertTriangle, BarChart3, CheckCircle, ClipboardList, CreditCard, DollarSign, Target, Trophy } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckCircle, ClipboardList, CreditCard, DollarSign, Target, Trophy, LayoutDashboard, Plus, Building, Users, Megaphone, Newspaper, Heart, Shield, Clock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -109,17 +109,17 @@ export default function AdminDashboard() {
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
           <div>
             <h1 className="text-4xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-                🎛️ Admin Dashboard
+              <span className="bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
+                <LayoutDashboard className="w-9 h-9" /> Admin Dashboard
               </span>
             </h1>
             <p className="text-gray-600">Manage events, donations, and monitor activity</p>
           </div>
           <Link
             href="/admin/events/new"
-            className="bg-gradient-to-r from-primary-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-primary-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl inline-flex items-center gap-2"
           >
-            ➕ Create Event
+            <Plus className="w-4 h-4" /> Create Event
           </Link>
         </div>
 
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
                 <p className="text-4xl font-bold">{stats.pendingDonations}</p>
                 <p className="text-yellow-100 text-xs mt-1">Awaiting verification</p>
               </div>
-              <div className="text-5xl opacity-80">⏳</div>
+              <Clock className="w-12 h-12 opacity-80" />
             </div>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
             style={{ animationDelay: '0.45s' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">📋</div>
+              <Shield className="w-10 h-10" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   Verify Events
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
             style={{ animationDelay: '0.6s' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">🏛️</div>
+              <Heart className="w-10 h-10" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   Verify Charities
@@ -242,7 +242,7 @@ export default function AdminDashboard() {
             style={{ animationDelay: '0.7s' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">👥</div>
+              <Users className="w-10 h-10" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   Manage Users
@@ -258,12 +258,28 @@ export default function AdminDashboard() {
             style={{ animationDelay: '0.8s' }}
           >
             <div className="flex items-center space-x-4">
-              <div className="text-4xl">📢</div>
+              <Megaphone className="w-10 h-10" />
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
                   Manage Announcements
                 </h3>
                 <p className="text-sm text-gray-600">Create and manage announcements</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/blog"
+            className="bg-white rounded-2xl shadow-lg p-6 card-hover animate-fadeIn group"
+            style={{ animationDelay: '0.9s' }}
+          >
+            <div className="flex items-center space-x-4">
+              <Newspaper className="w-10 h-10" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                  Manage Blog
+                </h3>
+                <p className="text-sm text-gray-600">Create and manage blog stories</p>
               </div>
             </div>
           </Link>
@@ -293,7 +309,7 @@ export default function AdminDashboard() {
                   <div key={`mobile-${donation.id}`} className="bg-gray-50 rounded-xl p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-gray-900">
-                        {donation.anonymous ? '🕵️ Anonymous' : donation.userName || 'User'}
+                        {donation.anonymous ? 'Anonymous' : donation.userName || 'User'}
                       </span>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         donation.status === 'SUCCESS' ? 'bg-green-100 text-green-800' :
@@ -327,7 +343,7 @@ export default function AdminDashboard() {
                   {recentDonations.map((donation) => (
                     <tr key={donation.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {donation.anonymous ? '🕵️ Anonymous' : donation.userName || 'User'}
+                        {donation.anonymous ? 'Anonymous' : donation.userName || 'User'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {donation.eventTitle || `Event #${donation.eventId}`}

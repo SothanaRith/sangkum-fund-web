@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
 import { eventsAPI, charitiesAPI, userAPI } from '@/lib/api';
 import { eventModerationAPI, charityModerationAPI, userModerationAPI } from '@/lib/moderation-api';
 import Toast from '@/components/Toast';
@@ -147,8 +146,7 @@ export default function Moderation() {
   };
 
   return (
-    <Layout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Content Moderation</h1>
@@ -406,8 +404,7 @@ export default function Moderation() {
             )}
           </>
         )}
+        <Toast toast={toast} onClose={() => setToast(null)} />
       </div>
-      <Toast toast={toast} onClose={() => setToast(null)} />
-    </Layout>
   );
 }

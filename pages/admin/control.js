@@ -30,6 +30,10 @@ import {
   Activity,
   BarChart3,
   PieChart,
+  Check,
+  X,
+  Inbox,
+  Timer,
 } from 'lucide-react';
 
 import SystemStatsPanel from '@/components/SystemStatsPanel';
@@ -617,7 +621,7 @@ export default function AdminControl() {
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  🔔 Pending ({notifications.filter(n => !n.read).length})
+                  <span className="inline-flex items-center gap-1"><Bell className="w-4 h-4" /> Pending ({notifications.filter(n => !n.read).length})</span>
                 </button>
                 <button
                   onClick={() => setFilterStatus('system')}
@@ -627,14 +631,14 @@ export default function AdminControl() {
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  📬 System
+                  <span className="inline-flex items-center gap-1"><Inbox className="w-4 h-4" /> System</span>
                 </button>
                 <button
                   onClick={() => handleNotificationAction('mark-all-read')}
                   disabled={notifications.filter(n => !n.read).length === 0}
                   className="px-4 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50 font-medium"
                 >
-                  ✓ Mark All Read
+                  <span className="inline-flex items-center gap-1"><Check className="w-4 h-4" /> Mark All Read</span>
                 </button>
               </div>
 
@@ -698,8 +702,8 @@ export default function AdminControl() {
                               {notification.message}
                             </p>
                             <div className="flex items-center gap-3 mt-2">
-                              <span className="text-xs text-gray-500">
-                                ⏰ {timeAgo(notification.createdAt)}
+                              <span className="text-xs text-gray-500 inline-flex items-center gap-1">
+                                <Timer className="w-3 h-3" /> {timeAgo(notification.createdAt)}
                               </span>
                               <span className={`text-xs px-2 py-1 rounded ${
                                 notification.type === 'SYSTEM'
@@ -729,16 +733,16 @@ export default function AdminControl() {
                           {!notification.read && (
                             <button
                               onClick={() => handleNotificationAction('read', notification.id)}
-                              className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs rounded-lg hover:bg-blue-100 transition-colors font-medium"
+                              className="px-3 py-1.5 bg-blue-50 text-blue-600 text-xs rounded-lg hover:bg-blue-100 transition-colors font-medium inline-flex items-center gap-1"
                             >
-                              ✓ Mark Read
+                              <Check className="w-3 h-3" /> Mark Read
                             </button>
                           )}
                           <button
                             onClick={() => handleNotificationAction('dismiss', notification.id)}
-                            className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                            className="px-3 py-1.5 bg-gray-100 text-gray-600 text-xs rounded-lg hover:bg-gray-200 transition-colors font-medium inline-flex items-center gap-1"
                           >
-                            ✕ Dismiss
+                            <X className="w-3 h-3" /> Dismiss
                           </button>
                         </div>
                       </div>
@@ -837,7 +841,7 @@ export default function AdminControl() {
                               : 'bg-yellow-100 text-yellow-700'
                           }`}
                         >
-                          {article.status === 'PUBLISHED' ? '✓ Published' : '⊘ Draft'}
+                          {article.status === 'PUBLISHED' ? <span className="inline-flex items-center gap-1"><Check className="w-3 h-3" />Published</span> : <span className="inline-flex items-center gap-1"><X className="w-3 h-3" />Draft</span>}
                         </span>
                         <span className="text-xs text-gray-500">
                           {new Date(article.createdAt).toLocaleDateString()}

@@ -152,7 +152,7 @@ export default function NotificationSettings({
 
       <div className="mt-8 pt-8 border-t border-gray-100 flex justify-end">
         <button
-          onClick={() => handleSaveSettings('notifications', notificationSettings)}
+          onClick={() => handleSaveSettings('notificationSettings', notificationSettings)}
           disabled={saving}
           className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 transition-all shadow-lg disabled:opacity-50"
         >

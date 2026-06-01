@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
-import { Scale, Calendar, ClipboardList, User, AlertTriangle, Target, CheckCircle, Trash2, Heart, Handshake, CreditCard, DollarSign, PauseCircle, Mail, Building2 } from 'lucide-react';
+import { Scale, Calendar, ClipboardList, User, AlertTriangle, Target, CheckCircle, Trash2, Heart, Handshake, CreditCard, DollarSign, PauseCircle, Mail, Building2, ScrollText, Lock, Ban, GraduationCap, Briefcase, Bot, Link2, Search, Phone, HelpCircle, Clock } from 'lucide-react';
 
 export default function TermsOfService() {
     const [activeSection, setActiveSection] = useState('introduction');
@@ -112,7 +112,7 @@ export default function TermsOfService() {
                                     </p>
                                 </div>
                                 <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                                    <div className="text-3xl mb-3">📜</div>
+                                    <div className="mb-3"><ScrollText className="w-6 h-6" /></div>
                                     <h4 className="font-bold text-gray-900 mb-2">Legal Agreement</h4>
                                     <p className="text-sm text-gray-600">
                                         By using our Platform, you agree to these Terms and our Privacy Policy.
@@ -202,7 +202,7 @@ export default function TermsOfService() {
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-orange-200">
                                         <div className="flex items-center gap-3">
-                                            <span className="text-xl">🔒</span>
+                                            <Lock className="w-6 h-6" />
                                             <div>
                                                 <h4 className="font-medium text-gray-900">Privacy Policy</h4>
                                                 <p className="text-sm text-gray-600">How we collect, use, and protect your data</p>
@@ -289,7 +289,7 @@ export default function TermsOfService() {
 
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-2xl text-green-500">✓</span>
+                                        <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
                                         <div>
                                             <h4 className="font-bold text-gray-900">Cambodian Residents</h4>
                                             <p className="text-gray-600 text-sm">
@@ -299,7 +299,7 @@ export default function TermsOfService() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
-                                        <span className="text-2xl text-blue-500">✓</span>
+                                        <CheckCircle className="w-6 h-6 text-blue-500 flex-shrink-0" />
                                         <div>
                                             <h4 className="font-bold text-gray-900">International Donors</h4>
                                             <p className="text-gray-600 text-sm">
@@ -435,7 +435,7 @@ export default function TermsOfService() {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="p-5 bg-white rounded-xl border border-gray-200">
-                                        <div className="text-3xl mb-3 text-red-500">🚫</div>
+                                        <div className="mb-3"><Ban className="w-6 h-6 text-red-500" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Prohibited Actions</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Sharing account credentials</li>
@@ -511,7 +511,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-5 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-                                        <div className="text-3xl mb-3">🎓</div>
+                                        <div className="mb-3"><GraduationCap className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Education</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• School fees & supplies</li>
@@ -531,7 +531,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                                        <div className="text-3xl mb-3">💼</div>
+                                        <div className="mb-3"><Briefcase className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Business & Creative</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Small business startups</li>
@@ -582,7 +582,7 @@ export default function TermsOfService() {
 
                                 <div className="grid md:grid-cols-2 gap-4">
                                     <div className="p-4 bg-white rounded-xl border border-red-200">
-                                        <div className="text-xl mb-2">🚫</div>
+                                        <div className="mb-2"><Ban className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Illegal Activities</h4>
                                         <ul className="text-sm text-gray-600">
                                             <li>• Gambling or lottery</li>
@@ -591,7 +591,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-4 bg-white rounded-xl border border-red-200">
-                                        <div className="text-xl mb-2">🚫</div>
+                                        <div className="mb-2"><Ban className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Harmful Content</h4>
                                         <ul className="text-sm text-gray-600">
                                             <li>• Hate speech or discrimination</li>
@@ -600,7 +600,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-4 bg-white rounded-xl border border-red-200">
-                                        <div className="text-xl mb-2">🚫</div>
+                                        <div className="mb-2"><Ban className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Financial Schemes</h4>
                                         <ul className="text-sm text-gray-600">
                                             <li>• Pyramid schemes</li>
@@ -609,7 +609,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-4 bg-white rounded-xl border border-red-200">
-                                        <div className="text-xl mb-2">🚫</div>
+                                        <div className="mb-2"><Ban className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Misrepresentation</h4>
                                         <ul className="text-sm text-gray-600">
                                             <li>• Fake emergencies</li>
@@ -703,7 +703,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                            <span className="text-green-600">✓</span>
+                                            <CheckCircle className="w-5 h-5 text-green-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Verified Charities</h4>
@@ -772,7 +772,7 @@ export default function TermsOfService() {
 
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="p-5 bg-white rounded-xl border border-red-200">
-                                        <div className="text-3xl mb-3">🤖</div>
+                                        <div className="mb-3"><Bot className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Automation & Bots</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Using bots to create accounts</li>
@@ -782,7 +782,7 @@ export default function TermsOfService() {
                                         </ul>
                                     </div>
                                     <div className="p-5 bg-white rounded-xl border border-red-200">
-                                        <div className="text-3xl mb-3">🔗</div>
+                                        <div className="mb-3"><Link2 className="w-6 h-6" /></div>
                                         <h4 className="font-bold text-gray-900 mb-2">Link Spamming</h4>
                                         <ul className="text-sm text-gray-600 space-y-1">
                                             <li>• Posting affiliate links</li>
@@ -822,7 +822,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                            <span className="text-red-600">🚫</span>
+                                            <Ban className="w-6 h-6 text-red-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Termination</h4>
@@ -914,7 +914,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                            <span className="text-red-600">🚫</span>
+                                            <Ban className="w-6 h-6 text-red-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">DMCA Compliance</h4>
@@ -1000,7 +1000,7 @@ export default function TermsOfService() {
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <span className="text-amber-600">🔍</span>
+                                            <Search className="w-6 h-6 text-amber-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Due Diligence</h4>
@@ -1012,7 +1012,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                                            <span className="text-amber-600">💼</span>
+                                            <Briefcase className="w-6 h-6 text-amber-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Campaign Risks</h4>
@@ -1104,7 +1104,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                            <span className="text-green-600">⏳</span>
+                                            <Clock className="w-5 h-5 text-green-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Review Process</h4>
@@ -1197,7 +1197,7 @@ export default function TermsOfService() {
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
-                                            <span className="text-red-600">🚫</span>
+                                            <Ban className="w-6 h-6 text-red-600" />
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-gray-900">Injunctive Relief</h4>
@@ -1232,7 +1232,7 @@ export default function TermsOfService() {
                                 </div>
 
                                 <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-                                    <div className="text-4xl mb-4">📞</div>
+                                    <div className="mb-4"><Phone className="w-6 h-6" /></div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-3">Support Team</h3>
                                     <p className="text-gray-600 mb-4">
                                         For technical issues or account-related questions.
@@ -1277,7 +1277,7 @@ export default function TermsOfService() {
                             </div>
 
                             <div className="text-center p-8 bg-gradient-to-br from-orange-100 to-amber-100 rounded-2xl border border-orange-200">
-                                <div className="text-5xl mb-4">📜</div>
+                                <div className="mb-4 flex justify-center"><ScrollText className="w-6 h-6" /></div>
                                 <h3 className="text-2xl font-bold text-gray-900 mb-3">Thank You</h3>
                                 <p className="text-gray-700 max-w-2xl mx-auto">
                                     Thank you for taking the time to read our Terms of Service.
@@ -1297,7 +1297,7 @@ export default function TermsOfService() {
                         href="/privacy"
                         className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
                     >
-                        <div className="text-2xl mb-2">🔒</div>
+                        <div className="mb-2 flex justify-center"><Lock className="w-6 h-6" /></div>
                         <h4 className="font-bold text-gray-900">Privacy Policy</h4>
                         <p className="text-sm text-gray-600">How we protect your data</p>
                     </Link>
@@ -1305,7 +1305,7 @@ export default function TermsOfService() {
                         href="/help-center"
                         className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
                     >
-                        <div className="text-2xl mb-2">❓</div>
+                        <div className="mb-2 flex justify-center"><HelpCircle className="w-6 h-6" /></div>
                         <h4 className="font-bold text-gray-900">Help Center</h4>
                         <p className="text-sm text-gray-600">Get help with platform questions</p>
                     </Link>
@@ -1313,7 +1313,7 @@ export default function TermsOfService() {
                         href="/contact"
                         className="p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all text-center"
                     >
-                        <div className="text-2xl mb-2">📞</div>
+                        <div className="mb-2 flex justify-center"><Phone className="w-6 h-6" /></div>
                         <h4 className="font-bold text-gray-900">Contact Us</h4>
                         <p className="text-sm text-gray-600">Get in touch with our team</p>
                     </Link>

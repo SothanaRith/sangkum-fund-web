@@ -1,4 +1,3 @@
-import Layout from '@/components/Layout';
 import { Lightbulb, Heart, Target, TrendingUp, Users, Shield, Camera, MessageSquare, Clock, Award, Sparkles, CheckCircle, AlertTriangle, Star, Gift, Share2, Zap } from 'lucide-react';
 
 export default function Tips() {
@@ -137,8 +136,7 @@ export default function Tips() {
   ];
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-16">
@@ -315,6 +313,5 @@ export default function Tips() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

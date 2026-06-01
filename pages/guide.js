@@ -1,4 +1,4 @@
-import Layout from '@/components/Layout';
+
 import { BookOpen, CheckCircle, UserPlus, Heart, Target, Shield, Bell, CreditCard, BarChart3, HelpCircle } from 'lucide-react';
 
 export default function Guide() {

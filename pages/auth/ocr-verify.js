@@ -15,7 +15,6 @@ import {
   Eye,
 } from 'lucide-react';
 import { ocrAPI, userAPI } from '@/lib/api';
-import Layout from '@/components/Layout';
 
 export default function OcrVerificationPage() {
   const router = useRouter();
@@ -121,8 +120,7 @@ export default function OcrVerificationPage() {
 
   if (step === 'preview' && preview) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-amber-50 py-12">
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-amber-50 py-12">
           <div className="container mx-auto px-4 max-w-4xl">
             {/* Header */}
             <div className="text-center mb-8">
@@ -284,13 +282,11 @@ export default function OcrVerificationPage() {
             </div>
           </div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-amber-50 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-amber-50 py-12">
         <div className="container mx-auto px-4 max-w-2xl">
           {/* Header */}
           <div className="text-center mb-12">
@@ -461,6 +457,5 @@ export default function OcrVerificationPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

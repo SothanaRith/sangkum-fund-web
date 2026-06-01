@@ -1,4 +1,4 @@
-import Layout from '@/components/Layout';
+
 import { Rocket, Users, Shield, TrendingUp, CheckCircle, ArrowRight, Search, Heart, FileCheck, CreditCard, Bell, BarChart3, Award, Zap, Lock, Globe } from 'lucide-react';
 
 export default function HowItWorks() {

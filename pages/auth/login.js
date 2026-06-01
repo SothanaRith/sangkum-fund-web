@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { authAPI } from '@/lib/api';
+import { Mail, Key, Lock, Check, AlertTriangle, Send, Hash } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -94,7 +95,7 @@ export default function Login() {
       }
 
       const redirectPath = router.query.redirect || '/';
-      window.location.href = redirectPath;
+      router.push(redirectPath);
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Login failed. Please check your credentials and try again.';
       setError(errorMessage);
@@ -130,9 +131,7 @@ export default function Login() {
     setError('');
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-      // Redirect to backend's Google OAuth endpoint
-      window.location.href = `${API_URL}/api/auth/oauth2/authorize/google`;
+      window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/auth/oauth2/authorize/google`;
     } catch (err) {
       setError('Google login failed. Please try again.');
       setGoogleLoading(false);
@@ -185,7 +184,7 @@ export default function Login() {
                 isAccountLocked ? 'bg-red-100 border-red-300' : 'bg-red-50 border-red-200'
               }`}>
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">{isAccountLocked ? '🔒' : '⚠️'}</span>
+                  <span className="text-2xl mr-2">{isAccountLocked ? <Lock className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}</span>
                   <div>
                     <div className={`text-sm font-medium ${
                       isAccountLocked ? 'text-red-900' : 'text-red-800'
@@ -236,7 +235,7 @@ export default function Login() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                    📧 Email Address
+                    <span className="inline-flex items-center gap-1"><Mail className="w-4 h-4" /> Email Address</span>
                   </label>
                   <input
                       ref={emailRef}
@@ -259,7 +258,7 @@ export default function Login() {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
-                      🔑 Password
+                      <span className="inline-flex items-center gap-1"><Key className="w-4 h-4" /> Password</span>
                     </label>
                     <Link
                         href="/auth/forgot-password"
@@ -301,7 +300,7 @@ export default function Login() {
                       </>
                   ) : (
                       <>
-                        <span>🔐</span>
+                        <Lock className="w-4 h-4" />
                         <span>Send OTP Code</span>
                       </>
                   )}
@@ -312,13 +311,13 @@ export default function Login() {
             <form className="space-y-5" onSubmit={handleVerifyOtp}>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                 <p className="text-sm text-blue-800">
-                  📨 We've sent a 6-digit verification code to <strong>{formData.email}</strong>
+                  <span className="inline-flex items-center gap-1"><Send className="w-4 h-4" /> We've sent a 6-digit verification code to <strong>{formData.email}</strong></span>
                 </p>
               </div>
 
               <div>
                 <label htmlFor="otp" className="block text-sm font-semibold text-gray-700 mb-2">
-                  🔢 Enter OTP Code
+                  <span className="inline-flex items-center gap-1"><Hash className="w-4 h-4" /> Enter OTP Code</span>
                 </label>
                 <input
                     ref={otpRef}
@@ -349,7 +348,7 @@ export default function Login() {
                       </>
                   ) : (
                       <>
-                        <span>✓</span>
+                        <Check className="w-4 h-4" />
                         <span>Verify & Login</span>
                       </>
                   )}

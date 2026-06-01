@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { settingsAPI, userAPI } from '@/lib/api';
+import Toast from '../components/Toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
@@ -51,6 +52,8 @@ export default function SettingsPage() {
   const [telegramConnected, setTelegramConnected] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [toast, setToast] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   const [profileData, setProfileData] = useState({
     name: '',
@@ -204,32 +207,39 @@ export default function SettingsPage() {
   };
 
   const handleConnectTelegram = async () => {
-    // In a real implementation, this would redirect to Telegram OAuth or show instructions
-    const botUsername = 'donation_platform_bot'; // Replace with actual bot username
-    const telegramUrl = `https://t.me/${botUsername}`;
-    window.open(telegramUrl, '_blank');
-
-    alert('Please follow the instructions in Telegram to complete the connection.');
+    const botUsername = 'donation_platform_bot';
+    window.open(`https://t.me/${botUsername}`, '_blank');
+    showToast('Follow the instructions in Telegram to complete the connection.', 'info');
   };
 
   const handleDisconnectTelegram = async () => {
-    if (!confirm('Disconnect Telegram notifications?')) return;
-
-    try {
-      await settingsAPI.disconnectTelegram();
-      setTelegramConnected(false);
-      alert('Telegram disconnected successfully');
-    } catch (err) {
-      alert('Failed to disconnect Telegram');
-    }
+    setConfirmModal({
+      message: 'Disconnect Telegram notifications?',
+      onConfirm: async () => {
+        try {
+          await settingsAPI.disconnectTelegram();
+          setTelegramConnected(false);
+          showToast('Telegram disconnected successfully', 'success');
+        } catch {
+          showToast('Failed to disconnect Telegram', 'error');
+        }
+      },
+    });
   };
 
   const handleTwoFactorToggle = async () => {
     if (twoFactorEnabled) {
-      const confirm = window.confirm('Are you sure you want to disable Two-Factor Authentication?');
-      if (!confirm) return;
+      setConfirmModal({
+        message: 'Are you sure you want to disable Two-Factor Authentication?',
+        onConfirm: () => _doTwoFactorToggle(),
+      });
+      return;
     }
 
+    _doTwoFactorToggle();
+  };
+
+  const _doTwoFactorToggle = async () => {
     try {
       setSaving(true);
       const updatedSecurity = { ...securitySettings, twoFactorEnabled: !twoFactorEnabled };
@@ -237,12 +247,10 @@ export default function SettingsPage() {
       setSecuritySettings(updatedSecurity);
       setTwoFactorEnabled(!twoFactorEnabled);
       showToast(
-          twoFactorEnabled
-              ? 'Two-Factor Authentication disabled'
-              : 'Two-Factor Authentication enabled',
+          twoFactorEnabled ? 'Two-Factor Authentication disabled' : 'Two-Factor Authentication enabled',
           'success'
       );
-    } catch (err) {
+    } catch {
       showToast('Failed to update Two-Factor Authentication', 'error');
     } finally {
       setSaving(false);
@@ -265,8 +273,7 @@ export default function SettingsPage() {
   };
 
   const showToast = (message, type = 'info') => {
-    // You can implement a toast notification system here
-    alert(message); // Temporary
+    setToast({ message, type });
   };
 
   if (loading) {
@@ -473,8 +480,8 @@ export default function SettingsPage() {
                                 <p className="text-sm text-gray-600">Extracted Name</p>
                                 <p className="font-semibold text-gray-900">{user.ocrExtractedName || 'N/A'}</p>
                               </div>
-                              <p className="text-sm text-green-700 bg-green-50 p-3 rounded-lg">
-                                ✓ Your identity has been verified and confirmed
+                              <p className="text-sm text-green-700 bg-green-50 p-3 rounded-lg flex items-center gap-2">
+                                <Check className="w-4 h-4 flex-shrink-0" /> Your identity has been verified and confirmed
                               </p>
                             </div>
                         ) : (
@@ -640,6 +647,31 @@ export default function SettingsPage() {
                 </div>
               </motion.div>
             </div>
+        )}
+        <Toast toast={toast} onClose={() => setToast(null)} />
+        {confirmModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+              <div className="flex items-start gap-3 mb-5">
+                <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-gray-800 font-medium">{confirmModal.message}</p>
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { confirmModal.onConfirm(); setConfirmModal(null); }}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
   );

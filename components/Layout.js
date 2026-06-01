@@ -19,7 +19,6 @@ import {
   Newspaper,
   Phone,
   Settings,
-  SlidersHorizontal,
   Target,
   Twitter,
   X,
@@ -194,19 +193,6 @@ export default function Layout({ children }) {
                           <LayoutDashboard className="inline-block w-4 h-4 mr-2" />
                           {t('nav.dashboard')}
                         </Link>
-                        {isAdmin && (
-                            <Link
-                                href="/admin"
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                    isActive('/admin')
-                                        ? 'bg-amber-100 text-amber-700'
-                                        : 'text-gray-700 hover:bg-amber-50 hover:text-amber-600'
-                                }`}
-                            >
-                              <SlidersHorizontal className="inline-block w-4 h-4 mr-2" />
-                              Admin
-                            </Link>
-                        )}
                       </>
                   )}
                 </div>
@@ -225,16 +211,7 @@ export default function Layout({ children }) {
 
                 {isLoggedIn ? (
                     <>
-                      {isAdmin && (
-                        <Link
-                            href="/admin"
-                            className="hidden sm:inline-block p-2 text-gray-600 hover:bg-amber-50 hover:text-amber-600 rounded-lg transition-colors"
-                            aria-label="Admin Panel"
-                        >
-                          <SlidersHorizontal className="w-5 h-5" aria-hidden="true" />
-                        </Link>
-                      )}
-                      <Link
+                            <Link
                           href="/notifications"
                           aria-label={notificationCount > 0 ? `Notifications (${notificationCount} unread)` : 'Notifications'}
                           className="relative p-2 text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors group"
@@ -364,15 +341,6 @@ export default function Layout({ children }) {
                           <Briefcase className="inline-block w-4 h-4 mr-2" />
                           {t('nav.businessCard')}
                         </Link>
-                        {isAdmin && (
-                            <Link
-                                href="/admin"
-                                className="block px-4 py-2 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-50"
-                            >
-                              <SlidersHorizontal className="inline-block w-4 h-4 mr-2" />
-                              Admin
-                            </Link>
-                        )}
                       </>
                   )}
                 </div>

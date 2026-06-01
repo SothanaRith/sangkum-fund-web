@@ -515,13 +515,17 @@ export default function Events() {
           {/* Results Summary */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-8 bg-white rounded-xl px-4 sm:px-6 py-3 sm:py-4 shadow-sm border border-gray-100">
             <div className="text-gray-700 font-medium">
-              <span className="text-2xl font-bold text-orange-600">{totalElements}</span>
+              <span className="text-2xl font-bold text-orange-600">
+                {(category !== 'all' || searchTerm || selectedLocation !== 'all') ? filteredEvents.length : totalElements}
+              </span>
               <span className="text-gray-600 ml-2">campaigns found</span>
               {searchTerm && <span className="text-gray-500"> for "<span className="font-semibold text-gray-700">{searchTerm}</span>"</span>}
               {category !== 'all' && <span className="text-gray-500"> in <span className="font-semibold text-gray-700">{categories.find(c => c.id === category)?.label}</span></span>}
             </div>
             <div className="text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg">
-              Showing {filteredEvents.length} of {totalElements}
+              {(category !== 'all' || searchTerm || selectedLocation !== 'all')
+                ? `Showing ${filteredEvents.length}`
+                : `Showing ${filteredEvents.length} of ${totalElements}`}
             </div>
           </div>
 
@@ -714,7 +718,7 @@ export default function Events() {
                                 <Users className="w-3.5 h-3.5 text-orange-600" />
                                 <p className="text-xs text-gray-600">Supporters</p>
                               </div>
-                              <p className="font-bold text-orange-600 text-lg">{selectedEventOnMap.donors || 0}</p>
+                              <p className="font-bold text-orange-600 text-lg">{selectedEventOnMap.participantCount || 0}</p>
                             </div>
                             <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg p-3 border border-amber-200">
                               <div className="flex items-center gap-1 mb-1">
@@ -807,7 +811,7 @@ export default function Events() {
                             <p className="text-3xl font-bold text-purple-600">
                               {filteredEvents
                                   .filter(e => e.latitude && e.longitude)
-                                  .reduce((sum, e) => sum + (e.donors || 0), 0)
+                                  .reduce((sum, e) => sum + (e.participantCount || 0), 0)
                                   .toLocaleString()}
                             </p>
                             <p className="text-xs text-gray-600 mt-1">helping communities</p>
@@ -933,7 +937,7 @@ export default function Events() {
                                     <span>{event.location || 'Cambodia'}</span>
                                   </div>
                                   <div className="flex items-center gap-1">
-                                    <span>{formatDate(event.startDate)}</span>
+                                    <span>Ends {formatDate(event.endDate)}</span>
                                   </div>
                                 </div>
 
@@ -955,7 +959,7 @@ export default function Events() {
                                     <div className="text-xs text-gray-500 flex items-center gap-2">
                                       <span className="inline-flex items-center gap-2">
                                         <Users className="w-4 h-4" />
-                                        {event.donorsCount || 0} supporters
+                                        {event.participantCount || 0} supporters
                                       </span>
                                       {event.verified && (
                                           <span className="inline-flex items-center gap-1 text-green-600">

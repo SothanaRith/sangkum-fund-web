@@ -63,7 +63,7 @@ export default function PrivacySettings({
       </div>
 
       <button
-        onClick={() => handleSaveSettings('privacy', privacySettings)}
+        onClick={() => handleSaveSettings('privacySettings', privacySettings)}
         disabled={saving}
         className="w-full mt-6 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-purple-700 transition-all shadow-lg disabled:opacity-50"
       >

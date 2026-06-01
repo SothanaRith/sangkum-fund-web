@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { platformFeedbackAPI } from '@/lib/api';
-import { Star, MessageCircle, CheckCircle } from 'lucide-react';
+import { Star, MessageCircle, CheckCircle, Check } from 'lucide-react';
 
 
 const STAR_COUNT = 5;
@@ -80,7 +80,7 @@ export default function FeedbackPage() {
           {success && (
             <div className="mt-6 rounded-xl bg-green-50 p-4 border border-green-200 flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-green-600 text-xl font-bold">✓</span>
+                <Check className="w-4 h-4 text-green-600" />
               </div>
               <div>
                 <div className="text-sm font-semibold text-green-800">Feedback submitted!</div>
@@ -102,12 +102,12 @@ export default function FeedbackPage() {
                       type="button"
                       key={value}
                       onClick={() => setRating(value)}
-                      className={`text-3xl transition-transform ${
+                      className={`transition-transform ${
                         rating >= value ? 'text-amber-500' : 'text-gray-300'
                       } hover:scale-110`}
                       aria-label={`Rate ${value} star${value > 1 ? 's' : ''}`}
                     >
-                      ★
+                      <Star className={`w-8 h-8 ${rating >= value ? 'fill-current' : ''}`} />
                     </button>
                   );
                 })}
@@ -160,8 +160,10 @@ export default function FeedbackPage() {
               {history.map((item) => (
                 <div key={item.id} className="border border-gray-100 rounded-2xl p-4">
                   <div className="flex items-center justify-between">
-                    <div className="text-amber-500">
-                      {'★'.repeat(item.rating)}{'☆'.repeat(STAR_COUNT - item.rating)}
+                    <div className="flex items-center gap-0.5 text-amber-500">
+                      {Array.from({ length: STAR_COUNT }).map((_, i) => (
+                        <Star key={i} className={`w-4 h-4 ${i < item.rating ? 'fill-current' : ''}`} />
+                      ))}
                     </div>
                     <span className="text-xs text-gray-500">
                       {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ''}

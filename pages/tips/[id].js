@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router';
-import Layout from '@/components/Layout';
 import { ArrowLeft, ArrowRight, Lightbulb, Heart, Target, Users, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
@@ -109,8 +108,7 @@ export default function TipsDetail() {
 
   if (!tip) {
     return (
-      <Layout>
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-16">
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-16">
           <div className="max-w-3xl mx-auto px-4 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 mb-6">
               <Lightbulb className="w-8 h-8 text-white" />
@@ -126,15 +124,13 @@ export default function TipsDetail() {
             </Link>
           </div>
         </div>
-      </Layout>
     );
   }
 
   const Icon = tip.icon || Lightbulb;
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-12">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-amber-50 to-white py-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-8">
             <Link
@@ -215,6 +211,5 @@ export default function TipsDetail() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

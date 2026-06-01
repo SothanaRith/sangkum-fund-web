@@ -1,14 +1,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
-
 export default function AdminEventDetailPlaceholder() {
   const router = useRouter();
   const { id } = router.query;
 
   return (
-    <Layout>
-      <div className="min-h-[70vh] bg-gray-50">
+    <div className="min-h-[70vh] bg-gray-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -48,6 +45,5 @@ export default function AdminEventDetailPlaceholder() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { adminDonationsAPI } from '@/lib/admin-api';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { CreditCard, Search, CheckCircle, XCircle } from 'lucide-react';
+import { CreditCard, Search, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 export default function AdminDonations() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function AdminDonations() {
     if (searchTerm.trim()) {
       filtered = filtered.filter(d =>
         d.eventTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        d.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        d.donorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         d.transactionRef?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -132,8 +132,8 @@ export default function AdminDonations() {
         {/* Header */}
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fadeIn">
           <div>
-            <Link href="/admin" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-block">
-              ← Back to Dashboard
+            <Link href="/admin" className="text-primary-600 hover:text-primary-700 font-semibold mb-2 inline-flex items-center gap-1">
+              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
             </Link>
             <h1 className="text-4xl font-bold flex items-center gap-3">
               <CreditCard className="w-9 h-9 text-primary-600" />
@@ -219,7 +219,7 @@ export default function AdminDonations() {
                 <div key={`mobile-${donation.id}`} className="bg-gray-50 rounded-xl p-4 space-y-2 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-gray-900 text-sm">
-                      {donation.anonymous ? '🕵️ Anonymous' : donation.userName || 'User'}
+                      {donation.anonymous ? 'Anonymous' : donation.donorName || 'Unknown'}
                     </span>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getStatusColor(donation.status)}`}>
                       {donation.status}
@@ -263,7 +263,7 @@ export default function AdminDonations() {
                       #{donation.id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {donation.anonymous ? '🕵️ Anonymous' : donation.userName || 'User'}
+                      {donation.anonymous ? 'Anonymous' : donation.donorName || 'Unknown'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {donation.eventTitle || `Event #${donation.eventId}`}

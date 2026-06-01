@@ -37,7 +37,7 @@ export default function AdminBlog() {
 
   useEffect(() => {
     applyFilters();
-  }, [searchTerm, filter]);
+  }, [searchTerm, filter, posts]);
 
   const loadPosts = async () => {
     try {

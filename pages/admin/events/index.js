@@ -62,11 +62,12 @@ export default function AdminEvents() {
   };
 
   const filteredEvents = (Array.isArray(events) ? events : []).filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         event.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (event.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (event.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const isActive = event.status === 'ACTIVE' || event.status === 'APPROVED';
     const matchesFilter = filter === 'all' ||
-                         (filter === 'active' && event.isActive) ||
-                         (filter === 'inactive' && !event.isActive);
+                         (filter === 'active' && isActive) ||
+                         (filter === 'inactive' && !isActive);
     return matchesSearch && matchesFilter;
   });
 
@@ -146,7 +147,7 @@ export default function AdminEvents() {
         {/* Events Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {filteredEvents.map((event, index) => {
-            const progress = calculateProgress(event.currentAmount, event.targetAmount);
+            const progress = calculateProgress(event.currentAmount, event.goalAmount);
             
             return (
               <div
@@ -170,12 +171,12 @@ export default function AdminEvents() {
                     <button
                       onClick={() => handleToggleStatus(event.id)}
                       className={`ml-4 px-3 py-1 rounded-full text-xs font-semibold ${
-                        event.isActive
+                        (event.status === 'ACTIVE' || event.status === 'APPROVED')
                           ? 'bg-green-100 text-green-800 border border-green-200'
                           : 'bg-gray-100 text-gray-800 border border-gray-200'
                       }`}
                     >
-                      {event.isActive ? '✓ Active' : '○ Inactive'}
+                      {(event.status === 'ACTIVE' || event.status === 'APPROVED') ? '✓ Active' : '○ Inactive'}
                     </button>
                   </div>
 
@@ -203,7 +204,7 @@ export default function AdminEvents() {
                     </div>
                     <div className="text-right">
                       <div className="text-xs text-gray-500">Goal</div>
-                      <div className="font-bold text-gray-900">{formatCurrency(event.targetAmount)}</div>
+                      <div className="font-bold text-gray-900">{formatCurrency(event.goalAmount)}</div>
                     </div>
                   </div>
 

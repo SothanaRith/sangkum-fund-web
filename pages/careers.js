@@ -1,10 +1,7 @@
 import Link from 'next/link';
-import Layout from '../components/Layout';
-
 export default function CareersPage() {
   return (
-    <Layout>
-      <div className="min-h-[70vh] bg-gray-50">
+    <div className="min-h-[70vh] bg-gray-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Careers</h1>
@@ -34,6 +31,5 @@ export default function CareersPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }
